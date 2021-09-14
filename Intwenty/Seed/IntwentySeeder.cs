@@ -46,7 +46,7 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOCKED_OUT_ACCOUNT", Text = "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "API Key Updated", Text = "API nyckeln uppdaterades" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "You must type a user name and a password", Text = "Vänligen ange användarnamn och lösenord" });
-            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Invalid login attemt", Text = "Inloggningen misslyckades" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Invalid login attempt", Text = "Inloggningen misslyckades" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "LOGIN_REQUIRE_CONF", Text = "Your account must be confirmed before you can login, pleas check your email and follow the instructions." });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOGIN_REQUIRE_CONF", Text = "Du måste bekräfta ditt konto innan du kan logga in, vänligen kontrollera din epost" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "FREJA_SERVICE_FAILURE", Text = "Sorry, the service is temporary unavailable" });

@@ -328,7 +328,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
                         var client = _userManager.GetIAMDataClient();
 
-                        var attemptinguser = await _userManager.GetUserWithSettingValue("SWEPNR", authresult.CompletionData.User.PersonalNumber);
+                        var attemptinguser = await _userManager.FindByLegalIdIdNumberAsync(authresult.CompletionData.User.PersonalNumber);
 
                         if (attemptinguser == null)
                         {

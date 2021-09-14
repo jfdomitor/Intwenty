@@ -883,7 +883,7 @@ namespace Intwenty.Areas.Identity.Data
 
         }
 
-        public async Task<IntwentyUser> GetUserWithSettingValue(string key, string value)
+        public async Task<IntwentyUser> FindBySettingValueAsync(string key, string value)
         {
             if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value))
                 return null;
@@ -898,6 +898,20 @@ namespace Intwenty.Areas.Identity.Data
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Find a user by legal id number (social security number or other standard)
+        /// </summary>
+        public async Task<IntwentyUser> FindByLegalIdIdNumberAsync(string idnumber)
+        {
+          
+            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            await client.OpenAsync();
+            var users = await GetUsersAsync();
+            var user = users.Find(p => p.LegalIdNumber == idnumber);
+            await client.CloseAsync();
+            return user;
         }
 
         private async Task<List<IntwentyUserSetting>> GetAllUserSettings()

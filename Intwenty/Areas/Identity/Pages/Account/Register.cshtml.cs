@@ -315,10 +315,11 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     else if (authresult.IsAuthOk)
                     {
 
-                        var attemptinguser = await _userManager.GetUserWithSettingValue("SWEPNR", authresult.CompletionData.User.PersonalNumber);
+                        var attemptinguser = await _userManager.FindByLegalIdIdNumberAsync(authresult.CompletionData.User.PersonalNumber);
                         if (attemptinguser == null)
                         {
                             var user = new IntwentyUser { UserName = model.Email, Email = model.Email, Culture = model.Language };
+                            user.LegalIdNumber = authresult.CompletionData.User.PersonalNumber;
                             user.FirstName = authresult.CompletionData.User.Name;
                             user.LastName = authresult.CompletionData.User.Surname;
 
@@ -346,7 +347,6 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                     await _organizationManager.AddMemberAsync(new IntwentyOrganizationMember() { OrganizationId = org.Id, UserId = user.Id, UserName = user.UserName });
                                 }
 
-                                await _userManager.AddUpdateUserSetting(user, "SWEPNR", authresult.CompletionData.User.PersonalNumber);
 
                                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

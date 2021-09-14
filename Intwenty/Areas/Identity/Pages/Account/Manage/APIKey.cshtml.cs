@@ -34,7 +34,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
 
 
         [TempData]
-        public string StatusCode { get; set; }
+        public string ResultCode { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; }
@@ -88,7 +88,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
            user.APIKey = Intwenty.Model.BaseModelItem.GetQuiteUniqueString();
            await _userManager.UpdateAsync(user);
 
-           StatusCode = "SUCCESS";
+           ResultCode = "SUCCESS";
            return RedirectToPage();
       
         }
