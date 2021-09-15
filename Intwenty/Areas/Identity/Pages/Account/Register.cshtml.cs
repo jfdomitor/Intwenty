@@ -172,7 +172,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = user.Id, code = code }, protocol: Request.Scheme);
-                    await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.Email, ConfirmCallbackUrl = callbackUrl });
+                    await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.UserName, Email=model.Email, ConfirmCallbackUrl = callbackUrl });
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
 
@@ -191,8 +191,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 }
 
             }
-            catch
+            catch(Exception ex)
             {
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Register.OnPostLocalRegistration: " + ex.Message);
                 return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "An unexpected error occured, contact support")) { StatusCode = 500 };
             }
 
