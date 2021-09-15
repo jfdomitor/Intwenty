@@ -113,10 +113,29 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 user.AllowEmailNotifications = model.AllowEmailNotifications;
                 user.AllowPublicProfile =model.AllowPublicProfile;
 
-             
+
                 if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+                {
                     user.UserName = model.Email;
-                
+                }
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+                {
+                    var p1 = user.FirstName;
+                    if (p1.Length > 4)
+                        p1 = p1.Substring(0, 4);
+                    var p2 = user.LastName;
+                    if (p2.Length > 4)
+                        p2 = p2.Substring(0, 4);
+
+                    user.UserName = string.Format("{0}_{1}_{2}", p1, p2, DateTime.Now.Millisecond);
+                }
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+                {
+                    user.UserName = BaseModelItem.GetQuiteUniqueString();
+                }
+
 
                 if (string.IsNullOrEmpty(user.Culture))
                     user.Culture = _settings.LocalizationDefaultCulture;
