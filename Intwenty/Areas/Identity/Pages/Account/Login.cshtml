@@ -2,24 +2,14 @@
 @model LoginModel
 @using Microsoft.Extensions.Options
 @using Intwenty.Model
-
-
 @{
     ViewData["Title"] = Localizer["Log In"].Value;
 }
 
-<br />
-<br />
 
-<div class="card">
-    <div class="card-header"><h2>@ViewData["Title"]</h2></div>
-    <div class="card-body">
 
-    </div>
-</div>
+<partial name="_LoginHeader" model="Model" />
 
-<br />
-<br />
 
 <div class="row" id="app">
 

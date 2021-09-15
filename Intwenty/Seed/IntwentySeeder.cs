@@ -57,8 +57,8 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_INSTRUCTION", Text = "För att logga in öppnar du Bank ID appen på din telefon och skannar sedan QR koden nedan." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_SERVICE_FAILURE", Text = "Authentication failed" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_SERVICE_FAILURE", Text = "Autentiseringen misslyckades, försök igen" });
-            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Welcome. Please input your email below and then click on 'Register'. You will need your Bank ID or mobile Bank ID to finnish the registration." });
-            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Välkommen ! Börja med att ange din epostaddress, därefter klickar du på registreara. Du kommer behöva bankid eller mobilt bankid för att slutföra registreringen." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Welcome. Please input the requested information below and then click 'Register'. You will need your Bank ID to finnish the registration." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Välkommen ! Börja med att ange efterfrågad information och klicka sedan på registreara. Du kommer behöva Bank ID för att slutföra registreringen." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_USE_OTHER_DEVICE", Text = "Bank ID on another device" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_USE_OTHER_DEVICE", Text = "Bank ID på annan enhet" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_USE_THIS_DEVICE", Text = "Bank ID on this device" });
@@ -228,6 +228,8 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "ADDEDIT", Text = "Lägg till / Ändra" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "COPYRIGHT", Text = "2021 Intwenty - All rights reserved" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "COPYRIGHT", Text = "2021 Intwenty - Alla rättighter reserverade" });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PRODUCT_LOGIN", Text = "Welcome ! Follow the instructions below to login" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PRODUCT_LOGIN", Text = "Välkommen ! Följ instruktionerna nedan för att logga in" });
 
             client.Open();
 
