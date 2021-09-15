@@ -98,14 +98,14 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
                 if (result.Succeeded)
                 {
                     await _userManager.SetTwoFactorEnabledAsync(user, true);
-                    await _userManager.AddUpdateUserSetting(user, "SMSMFA", "TRUE");
+                    await _userManager.AddUpdateUserSettingAsync(user, "SMSMFA", "TRUE");
                     return new JsonResult(model);
                 }
                 else
                 {
                     model.ResultCode = "ERROR_VERIFY_TOKEN";
                     await _userManager.SetTwoFactorEnabledAsync(user, false);
-                    await _userManager.AddUpdateUserSetting(user, "SMSMFA", "FALSE");
+                    await _userManager.AddUpdateUserSettingAsync(user, "SMSMFA", "FALSE");
                     return new JsonResult(model) { StatusCode = 501 };
                 }
             }

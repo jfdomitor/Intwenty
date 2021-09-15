@@ -35,13 +35,16 @@
         @Localizer["Invalid login attemt"]
     </div>
 
-    <div v-if="model.resultCode=='INIT'">
+    <!-- Iif the option BankidUsageType.OtherDevice is used, startBankId('BANKID_START_OTHER') will execute automaticly -->
+    @if (Settings.Value.BankIdUsage == BankIdUsageTypes.OtherAndThisDevice)
+    {
+        <div v-if="model.resultCode=='INIT'">
 
-        <button class="btn btn-primary m-3" v-on:click="startBankId('BANKID_START_OTHER')">@Localizer["BANKID_USE_OTHER_DEVICE"]</button>
+            <button class="btn btn-primary m-3" v-on:click="startBankId('BANKID_START_OTHER')">@Localizer["BANKID_USE_OTHER_DEVICE"]</button>
 
-        <button class="btn btn-secondary m-3" v-on:click="startBankId('BANKID_START_THIS')">@Localizer["BANKID_USE_THIS_DEVICE"]</button>
-    </div>
-
+            <button class="btn btn-secondary m-3" v-on:click="startBankId('BANKID_START_THIS')">@Localizer["BANKID_USE_THIS_DEVICE"]</button>
+        </div>
+    }
 
 
 
@@ -55,7 +58,7 @@
     </div>
 
     <div v-if="(model.resultCode=='BANKID_AUTH_BUTTON')">
-        <a class="btn btn-primary m-3" v-bind:href="model.authServiceUrl" v-on:click="AuthenticateBankId()">
+        <a class="btn btn-primary m-3" v-bind:href="model.authServiceUrl" v-on:click="authenticateBankId()">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" v-if="model.actionCode == 'WAIT_FOR_BANKID_AUTH'"></span>
             @Localizer["BANKID_OPEN_THIS_DEVICE"]
         </a>

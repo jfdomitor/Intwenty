@@ -402,7 +402,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
             //Even if local accounts is not used, there's a way to access local accounts for a super admin, if _settings.Value.AccountEmergencyLoginQueryKey is passed in the query string
             if (!_settings.Value.UseLocalLogins)
             {
-                if (!HttpContext.Request.Query.ContainsKey(_settings.Value.AccountEmergencyLoginQueryKey) && !await _userManager.IsInRoleAsync(attemptinguser, IntwentyRoles.RoleSuperAdmin))
+                if (!HttpContext.Request.Query.ContainsKey(_settings.Value.AccountsEmergencyLoginQueryKey) && !await _userManager.IsInRoleAsync(attemptinguser, IntwentyRoles.RoleSuperAdmin))
                 {
                     model.ResultCode = "INVALID_LOGIN_ATTEMPT";
                     return new JsonResult(model) { StatusCode = 401 };

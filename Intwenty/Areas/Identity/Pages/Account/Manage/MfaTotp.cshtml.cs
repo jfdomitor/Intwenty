@@ -87,7 +87,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
-            await _userManager.AddUpdateUserSetting(user, "TOTPMFA", "TRUE");
+            await _userManager.AddUpdateUserSettingAsync(user, "TOTPMFA", "TRUE");
             return new JsonResult(model);
 
         }

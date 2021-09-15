@@ -77,42 +77,19 @@
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Register?handler=LocalRegistration";
                     var valid = true;
-                    @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization)
-                    {
-                        <text>
-                        if (!context.model.language)
-                        {
-                            $("#lang").addClass('requiredNotValid');
-                            valid = false;
-                        }
-                        </text>
-                    }
 
-                    @if (Settings.Value.AccountsRegistrationRequireName)
-                    {
-                        <text>
-                        if (!context.model.firstName)
-                        {
-                            $("#firstname").addClass('requiredNotValid');
-                            valid = false;
+                    $("[data-required]").each(function () {
+                        var required = $(this).data('required');
+                        var id = $(this).attr('id');
+                        if (required === "True" && id) {
+                            var element = $("#" + id);
+                            var val = element[0].value;
+                            if (!val || (val && val.length < 1)) {
+                                element.addClass('requiredNotValid');
+                                valid = false;
+                            }
                         }
-                        if (!context.model.lastName) {
-                            $("#lastname").addClass('requiredNotValid');
-                            valid = false;
-                        }
-                        </text>
-                    }
-
-                     @if (!Settings.Value.AccountsUseEmailAsUserName)
-                    {
-                        <text>
-                        if (!context.model.userName)
-                        {
-                            $("#username").addClass('requiredNotValid');
-                            valid = false;
-                        }
-                        </text>
-                    }
+                    });
 
                     if (!context.model.email) {
                         $("#email").addClass('requiredNotValid');
@@ -175,33 +152,21 @@
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Register?handler=InitBankId";
                     var valid = true;
-                    @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization)
-                    {
-                        <text>
-                        if (!context.model.language)
+                  
+
+                    $("[data-required]").each(function () {
+                        var required = $(this).data('required');
+                        var id = $(this).attr('id');
+                        if (required === "True" && id)
                         {
-                            $("#lang").addClass('requiredNotValid');
-                            valid = false;
+                            var element = $("#" + id);
+                            var val = element[0].value;
+                            if (!val || (val && val.length < 1)) {
+                                element.addClass('requiredNotValid');
+                                valid = false;
+                            }
                         }
-                        </text>
-                    }
-
-                     @if (!Settings.Value.AccountsUseEmailAsUserName)
-                    {
-                        <text>
-                        if (!context.model.userName)
-                        {
-                            $("#username").addClass('requiredNotValid');
-                            valid = false;
-                        }
-                        </text>
-                    }
-
-                    if (!context.model.email) {
-                        $("#email").addClass('requiredNotValid');
-                        valid = false;
-                    }
-
+                    });
 
                     if (!valid)
                         return;
@@ -221,7 +186,11 @@
                         success: function (response)
                         {
                             context.model = response;
-                        },
+                            @if (Settings.Value.BankIdUsage == BankIdUsageTypes.OtherDevice)
+                            {
+                                <text>context.startBankId('BANKID_START_OTHER');</text>
+                            }
+                         },
                         error: function (response)
                         {
                             raiseErrorModal(response.responseJSON);
@@ -251,7 +220,7 @@
                         {
                             context.model = response;
                             if (context.model.resultCode =="BANKID_AUTH_QR")
-                                setTimeout(function () { context.AuthenticateBankId(); }, 500);
+                                setTimeout(function () { context.authenticateBankId(); }, 500);
                         },
                         error: function (response)
                         {
@@ -259,7 +228,7 @@
                         }
                     });
                 },
-                AuthenticateBankId: function ()
+                authenticateBankId: function ()
                 {
 
                     var context = this;

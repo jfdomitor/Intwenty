@@ -16,13 +16,12 @@
                 <input asp-for="Username" class="form-control" disabled />
             </div>
 
-            @if (!Settings.Value.AccountsUseEmailAsUserName)
-            {
+       
                 <div class="form-group">
                     <label>Email</label>
                     <input asp-for="Input.Email" class="form-control"  />
                 </div>
-            }
+
 
             <div class="form-group">
                 <label>@Localizer["Phone"]</label>

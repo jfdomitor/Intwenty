@@ -23,7 +23,7 @@
 
 <div class="row" id="app">
 
-    @if (HttpContext.Request.Query.ContainsKey(Settings.Value.AccountEmergencyLoginQueryKey))
+    @if (HttpContext.Request.Query.ContainsKey(Settings.Value.AccountsEmergencyLoginQueryKey))
     {
         <partial name="_LoginLocal" model="Model" />
 
@@ -124,7 +124,7 @@
                         {
                             context.model = response;
                             if (context.model.resultCode =="BANKID_AUTH_QR")
-                                setTimeout(function () { context.AuthenticateBankId(); }, 500);
+                                setTimeout(function () { context.authenticateBankId(); }, 500);
                         },
                         error: function (response)
                         {
@@ -132,7 +132,7 @@
                         }
                     });
                 },
-                AuthenticateBankId: function ()
+                authenticateBankId: function ()
                 {
 
                     var context = this;
@@ -184,7 +184,7 @@
                         success: function (response)
                         {
                             context.model = response;
-                            
+
                         },
                         error: function (response)
                         {
@@ -192,7 +192,7 @@
                         }
                     });
                 },
-                AuthenticateFreja: function ()
+                authenticateFreja: function ()
                 {
 
                     var context = this;
@@ -239,7 +239,13 @@
                @if(Settings.Value.UseFrejaEIdLogin)
                {
                    <text>
-                         this.StartFreja();
+                        this.startFreja();
+                   </text>
+               }
+               @if(Settings.Value.UseBankIdLogin && Settings.Value.BankIdUsage == BankIdUsageTypes.OtherDevice)
+               {
+                   <text>
+                        this.startBankId('BANKID_START_OTHER');
                    </text>
                }
 
