@@ -100,6 +100,27 @@ namespace IntwentyDemo.Seed
         public override void SeedUsersAndRoles()
         {
             base.SeedUsersAndRoles();
+            var t = Task.Run(async () =>
+            {
+                if (Settings.AccountsUserSelectableRoles != null)
+                {
+                    foreach (var t in Settings.AccountsUserSelectableRoles)
+                    {
+                        var check = await RoleManager.FindByNameAsync(t.RoleName);
+                        if (check == null)
+                        {
+                            var role = new IntwentyProductAuthorizationItem();
+                            role.ProductId = this.Settings.ProductId;
+                            role.Name = t.RoleName;
+                            role.AuthorizationType = "ROLE";
+                            await RoleManager.CreateAsync(role);
+                        }
+
+                    }
+
+                }
+               
+            });
         }
 
         public override void SeedModel()
