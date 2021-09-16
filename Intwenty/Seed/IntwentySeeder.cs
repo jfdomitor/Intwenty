@@ -230,6 +230,8 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "COPYRIGHT", Text = "2021 Intwenty - Alla rättighter reserverade" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PRODUCT_LOGIN", Text = "Welcome ! Follow the instructions below to login" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PRODUCT_LOGIN", Text = "Välkommen ! Följ instruktionerna nedan för att logga in" });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PROFILE_SAVE_ERROR", Text = "An error occured when saving the profile" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PROFILE_SAVE_ERROR", Text = "Ett fel uppstod när profilen skulle sparas" });
 
             client.Open();
 

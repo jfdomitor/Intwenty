@@ -84,73 +84,70 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
                 model.ResultCode = "";
 
                 var user = await _userManager.FindByNameAsync(model.UserName);
-                if (user != null)
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                if (model.PhoneNumber != string.Empty && model.PhoneNumber != user.PhoneNumber)
                 {
-                    user.FirstName = model.FirstName;
-                    user.LastName = model.LastName;
-                    if (model.PhoneNumber != string.Empty && model.PhoneNumber != user.PhoneNumber)
+                    var t = model.PhoneNumber.GetCellPhone();
+                    if (t != string.Empty && t != "INVALID")
                     {
-                        var t = model.PhoneNumber.GetCellPhone();
-                        if (t != string.Empty && t != "INVALID")
-                        {
-                            user.PhoneNumber = t;
-                            user.PhoneNumberConfirmed = true;
-                        }
+                        user.PhoneNumber = t;
+                        user.PhoneNumberConfirmed = true;
+                        model.PhoneNumber = t;
                     }
-                    if (model.Email != string.Empty && model.Email != user.Email)
-                    {
-                        user.Email = model.Email;
-                        if (_settings.AccountsRequireConfirmed)
-                            emailconf = true;
+                }
+                if (model.Email != string.Empty && model.Email != user.Email)
+                {
+                    user.Email = model.Email;
+                    if (_settings.AccountsRequireConfirmed)
+                        emailconf = true;
                        
+                }
+
+                var currentrole = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_REQUESTEDROLE");
+                if (!string.IsNullOrEmpty(model.RequestedRole) && model.RequestedRole != currentrole && _settings.AccountsUserSelectableRoles != null)
+                {
+                    var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
+                    if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()) && org!= null)
+                    {
+                        var authlist = await _userManager.GetUserAuthorizationsAsync(user);
+                        var currentauth = authlist.Find(p => p.AuthorizationNormalizedName == currentrole.ToUpper() && _settings.AccountsUserSelectableRoles.Exists(x => x.RoleName == currentrole));
+                        if (currentauth != null)
+                            await _userManager.RemoveUserAuthorizationAsync(user, currentauth);
+
+                        await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                        await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
                     }
 
-                    var currentrole = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_REQUESTEDROLE");
-                    if (!string.IsNullOrEmpty(model.RequestedRole) && model.RequestedRole != currentrole && _settings.AccountsUserSelectableRoles != null)
+                }
+
+                user.Address = model.Address;
+                user.AllowEmailNotifications = model.AllowEmailNotifications;
+                user.AllowPublicProfile = model.AllowPublicProfile;
+                user.AllowSmsNotifications = model.AllowSmsNotifications;
+                user.City = model.City;
+                user.CompanyName = model.CompanyName;
+                user.Country = model.Country;
+                user.LegalIdNumber = model.LegalIdNumber;
+                user.ZipCode = model.ZipCode;
+
+                var updateresult = await _userManager.UpdateAsync(user);
+                if (!updateresult.Succeeded)
+                {
+                    throw new InvalidOperationException("Unexpected error occurred updating user.");
+                }
+                else
+                {
+                    if (emailconf)
                     {
-                        var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
-                        if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()) && org!= null)
-                        {
-                            var authlist = await _userManager.GetUserAuthorizationsAsync(user);
-                            var currentauth = authlist.Find(p => p.AuthorizationNormalizedName == currentrole.ToUpper() && _settings.AccountsUserSelectableRoles.Exists(x => x.RoleName == currentrole));
-                            if (currentauth != null)
-                                await _userManager.RemoveUserAuthorizationAsync(user, currentauth);
-
-                            await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
-                            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
-                        }
-
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = user.Id, code = code }, protocol: Request.Scheme);
+                        await _eventService.EmailChanged(new EmailChangedData() { UserName = user.Email, ConfirmCallbackUrl = callbackUrl });
                     }
-
-                    user.Address = model.Address;
-                    user.AllowEmailNotifications = model.AllowEmailNotifications;
-                    user.AllowPublicProfile = model.AllowPublicProfile;
-                    user.AllowSmsNotifications = model.AllowSmsNotifications;
-                    user.City = model.City;
-                    user.CompanyName = model.CompanyName;
-                    user.Country = model.Country;
-                    user.LegalIdNumber = model.LegalIdNumber;
-                    user.ZipCode = model.ZipCode;
-
-                    var updateresult = await _userManager.UpdateAsync(user);
-                    if (!updateresult.Succeeded)
-                    {
-                        throw new InvalidOperationException("Unexpected error occurred updating user.");
-                    }
-                    else
-                    {
-                        if (emailconf)
-                        {
-                            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                            var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = user.Id, code = code }, protocol: Request.Scheme);
-                            await _eventService.EmailChanged(new EmailChangedData() { UserName = user.Email, ConfirmCallbackUrl = callbackUrl });
-                        }
 
                        
-                        return new JsonResult(model);
-
-                    }
+                    return new JsonResult(model);
 
                 }
 
@@ -161,7 +158,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
 
             }
 
-            model.ResultCode = "ERROR_UPDATE_USER";
+            model.ResultCode = "PROFILE_SAVE_ERROR";
             return new JsonResult(model) { StatusCode = 500 };
 
         }

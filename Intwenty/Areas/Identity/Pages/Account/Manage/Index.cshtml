@@ -18,6 +18,10 @@
         </button>
     </div>
 
+    <div class="alert alert-danger" v-if="(model.resultCode=='PROFILE_SAVE_ERROR')">
+        @Localizer["PROFILE_SAVE_ERROR"]
+    </div>
+
     <div class="row">
 
         <div class="col-md-6">
@@ -34,7 +38,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Legal ID Number"]</label>
-                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" disable />
+                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.Editable)
@@ -59,7 +63,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Email"]</label>
-                        <input type="email" v-model="model.email" class="form-control" id="email" disable />
+                        <input type="email" v-model="model.email" class="form-control" id="email" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.Editable)
@@ -84,7 +88,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Phone"]</label>
-                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" disable />
+                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.Editable)
@@ -112,12 +116,12 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["First Name"]</label>
-                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" disable />
+                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" disabled />
                     </div>
 
                     <div class="form-group">
                         <label>@Localizer["Last Name"]</label>
-                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" disable />
+                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.Editable)
@@ -158,7 +162,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Company Name"]</label>
-                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" disable />
+                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.Editable)
@@ -188,7 +192,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Requested Role"]</label>
-                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" disable>
+                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" disabled>
                             @{
                                 foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                                 {
@@ -241,7 +245,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Address"]</label>
-                        <input type="text" v-model="model.address" class="form-control" id="address" disable />
+                        <input type="text" v-model="model.address" class="form-control" id="address" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.Editable)
@@ -266,7 +270,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Zipcode"]</label>
-                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" disable />
+                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.Editable)
@@ -291,7 +295,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["City"]</label>
-                        <input type="text" v-model="model.city" class="form-control" id="city" disable />
+                        <input type="text" v-model="model.city" class="form-control" id="city" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.Editable)
@@ -316,7 +320,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["County"]</label>
-                        <input type="text" v-model="model.county" class="form-control" id="county" disable />
+                        <input type="text" v-model="model.county" class="form-control" id="county" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.Editable)
@@ -341,7 +345,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Country"]</label>
-                        <input type="text" v-model="model.country" class="form-control" id="country" disable />
+                        <input type="text" v-model="model.country" class="form-control" id="country" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.Editable)
@@ -397,8 +401,8 @@
             }
 
             @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsAccountPageVisible ||
-               Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible ||
-                Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
+              Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible ||
+               Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
             {
 
 
@@ -446,7 +450,7 @@
                         if (Settings.Value.AccountsAllowSmsNotificationsUsage.AccountPage == InputUsageType.Readonly)
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
+                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" disabled /><label>@Localizer["Allow SMS Notifications"]</label>
                             </div>
                         }
                         else
