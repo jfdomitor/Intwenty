@@ -3,9 +3,9 @@
     <section>
 
 
-        @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization && Settings.Value.AccountsCultureUsage.RegisterPageEditable)
+        @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization && Settings.Value.AccountsCultureUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsCultureUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsCultureUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Language"] <span style="color: red"> *</span></label>
@@ -36,9 +36,9 @@
 
         }
 
-        @if (Settings.Value.AccountsLegalIdNumberUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsLegalIdNumberUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsLegalIdNumberUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsLegalIdNumberUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Legal ID number"] <span style="color: red"> *</span></label>
@@ -71,7 +71,7 @@
                 </div>
             }
 
-            @if (Settings.Value.AccountsEmailUsage.RegisterPageEditable)
+            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Email"] <span style="color: red"> *</span></label>
@@ -79,11 +79,19 @@
                 </div>
             }
 
+            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.Editable)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Email"]</label>
+                    <input type="email" v-model="model.email" class="form-control" id="email" autocomplete="nope" />
+                </div>
+            }
+
         }
 
-        @if (Settings.Value.AccountsPhoneUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsPhoneUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsPhoneUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsPhoneUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Phone"] <span style="color: red"> *</span></label>
@@ -99,9 +107,9 @@
             }
         }
 
-        @if (Settings.Value.AccountsCompanyNameUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsCompanyNameUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsCompanyNameUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsCompanyNameUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Company Name"] <span style="color: red"> *</span></label>
@@ -117,13 +125,13 @@
             }
         }
 
-        @if (Settings.Value.AccountsUserSelectableRoleUsage.RegisterPageEditable && Settings.Value.AccountsUserSelectableRoles != null)
+        @if (Settings.Value.AccountsUserSelectableRoleUsage.IsRegisterPageEditable && Settings.Value.AccountsUserSelectableRoles != null)
         {
-            if (Settings.Value.AccountsUserSelectableRoleUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsUserSelectableRoleUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
-                    <label>@Localizer["Usertype"]</label>
-                    <select v-model="model.userSelectedRole" class="form-control" id="userselectedrole" v-on:input="onUserInput(event)" data-required="True">
+                    <label>@Localizer["Requested Role"]</label>
+                    <select v-model="model.requestedRole" class="form-control" id="userselectedrole" v-on:input="onUserInput(event)" data-required="True">
                         @{
                             foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                             {
@@ -136,8 +144,8 @@
             else
             {
                 <div class="form-group">
-                    <label>@Localizer["Usertype"]</label>
-                    <select v-model="model.userSelectedRole" class="form-control" id="userselectedrole">
+                    <label>@Localizer["Requested Role"]</label>
+                    <select v-model="model.requestedRole" class="form-control" id="userselectedrole">
                         @{
                             foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                             {
@@ -149,9 +157,9 @@
             }
         }
 
-        @if (Settings.Value.AccountsNameUsage.RegisterPageEditable || Settings.Value.AccountsUserNameUsage== UserNameGenerationStyles.GenerateFromName)
+        @if (Settings.Value.AccountsNameUsage.IsRegisterPageEditable || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
         {
-            if (Settings.Value.AccountsNameUsage.RegisterPageRequired || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+            if (Settings.Value.AccountsNameUsage.RegisterPage == InputUsageType.EditableRequired || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
             {
                 <div class="form-group">
                     <label>@Localizer["First Name"] <span style="color: red"> *</span></label>
@@ -177,9 +185,9 @@
             }
         }
 
-        @if (Settings.Value.AccountsAddressUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsAddressUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsAddressUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsAddressUsage.RegisterPage == InputUsageType.EditableRequired)
             {
 
                 <div class="form-group">
@@ -196,9 +204,9 @@
             }
         }
 
-        @if (Settings.Value.AccountsZipCodeUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsZipCodeUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsZipCodeUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsZipCodeUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Zipcode"] <span style="color: red"> *</span></label>
@@ -215,9 +223,9 @@
 
         }
 
-        @if (Settings.Value.AccountsCityUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsCityUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsCityUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsCityUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["City"] <span style="color: red"> *</span></label>
@@ -234,9 +242,9 @@
 
         }
 
-        @if (Settings.Value.AccountsCountyUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsCountyUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsCountyUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsCountyUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["County"] <span style="color: red"> *</span></label>
@@ -253,9 +261,9 @@
 
         }
 
-        @if (Settings.Value.AccountsCountryUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsCountryUsage.IsRegisterPageEditable)
         {
-            if (Settings.Value.AccountsCountryUsage.RegisterPageRequired)
+            if (Settings.Value.AccountsCountryUsage.RegisterPage == InputUsageType.EditableRequired)
             {
                 <div class="form-group">
                     <label>@Localizer["Country"] <span style="color: red"> *</span></label>
@@ -272,7 +280,7 @@
 
         }
 
-        @if (Settings.Value.AccountsAllowEmailNotificationsUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsRegisterPageEditable)
         {
             <div class="largecheckbox">
                 <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" /><label>@Localizer["Allow Email Notifications"]</label>
@@ -280,7 +288,7 @@
 
         }
 
-        @if (Settings.Value.AccountsAllowSmsNotificationsUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsAllowSmsNotificationsUsage.IsRegisterPageEditable)
         {
             <div class="largecheckbox">
                 <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
@@ -288,7 +296,7 @@
 
         }
 
-        @if (Settings.Value.AccountsAllowPublicProfileUsage.RegisterPageEditable)
+        @if (Settings.Value.AccountsAllowPublicProfileUsage.IsRegisterPageEditable)
         {
             <div class="largecheckbox">
                 <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" /><label>@Localizer["Allow Public Profile"]</label>

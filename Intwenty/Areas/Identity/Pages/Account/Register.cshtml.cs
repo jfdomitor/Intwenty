@@ -147,12 +147,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
                     if (org != null)
                     {
-                        if (!string.IsNullOrEmpty(model.UserSelectedRole) && _settings.AccountsUserSelectableRoleUsage.RegisterPageEditable)
+                        if (!string.IsNullOrEmpty(model.RequestedRole) && _settings.AccountsUserSelectableRoleUsage.IsRegisterPageEditable)
                         {
-                            if (!IntwentyRoles.AdminRoles.Any(p => p == model.UserSelectedRole.ToUpper()))
+                            if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()))
                             {
-                                await _userManager.AddUpdateUserRoleAuthorizationAsync(model.UserSelectedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
-                                await _userManager.AddUpdateUserSettingAsync(user,"USERSELECTEDROLE", model.UserSelectedRole.ToUpper());
+                                await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                                await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
                             }
                         }
                        
@@ -418,12 +418,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                 var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
                                 if (org != null)
                                 {
-                                    if (!string.IsNullOrEmpty(model.UserSelectedRole) && _settings.AccountsUserSelectableRoleUsage.RegisterPageEditable)
+                                    if (!string.IsNullOrEmpty(model.RequestedRole) && _settings.AccountsUserSelectableRoleUsage.IsRegisterPageEditable)
                                     {
-                                        if (!IntwentyRoles.AdminRoles.Any(p => p == model.UserSelectedRole.ToUpper()))
+                                        if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()))
                                         {
-                                            await _userManager.AddUpdateUserRoleAuthorizationAsync(model.UserSelectedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
-                                            await _userManager.AddUpdateUserSettingAsync(user, "USERSELECTEDROLE", model.UserSelectedRole.ToUpper());
+                                            await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                                            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
                                         }
                                     }
 

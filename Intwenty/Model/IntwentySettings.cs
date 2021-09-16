@@ -11,6 +11,8 @@ namespace Intwenty.Model
 
     public enum UserNameGenerationStyles { Email, Input, GenerateFromName, GenerateRandom };
 
+    public enum InputUsageType { Hidden, Readonly, Editable, EditableRequired };
+
     public enum BankIdUsageTypes { OtherDevice, OtherAndThisDevice };
 
     public enum MfaAuthTypes { Totp,Sms,Email,Fido2 };
@@ -37,9 +39,9 @@ namespace Intwenty.Model
             AccountsEmergencyLoginQueryKey = "ISADMINEMERGENCYLOGIN";
             AccountsUserSelectableRoles = new List<IntwentyUserRegistrationRole>();
             AccountsUserNameUsage = UserNameGenerationStyles.Email;
-            AccountsEmailUsage = new IntwentyAccountDataUsage() { AccountPageReadOnly = true, AccountPageEditable = true, RegisterPageEditable = true };
-            AccountsPhoneUsage = new IntwentyAccountDataUsage() { AccountPageEditable = true, RegisterPageEditable = true };
-            AccountsNameUsage = new IntwentyAccountDataUsage() { AccountPageEditable = true };
+            AccountsEmailUsage = new IntwentyAccountDataUsage() { AccountPage =  InputUsageType.Readonly, RegisterPage =  InputUsageType.EditableRequired };
+            AccountsPhoneUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable, RegisterPage = InputUsageType.Editable };
+            AccountsNameUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable };
             AccountsAddressUsage = new IntwentyAccountDataUsage();
             AccountsZipCodeUsage = new IntwentyAccountDataUsage();
             AccountsCityUsage = new IntwentyAccountDataUsage();
@@ -163,11 +165,12 @@ namespace Intwenty.Model
         /// A group admin can invite users to the group
         /// </summary>
         public bool AccountsEnableUserGroups { get; set; }
+        public bool AccountsEnableProfilePicture { get; set; }
         public string AccountsFacebookAppId { get; set; }
         public string AccountsFacebookAppSecret { get; set; }
         public string AccountsGoogleClientId { get; set; }
         public string AccountsGoogleClientSecret { get; set; }
-        public string AccountsEmergencyLoginQueryKey { get; set; }
+        public string AccountsEmergencyLoginQueryKey { get; set; }     
         public UserNameGenerationStyles AccountsUserNameUsage { get; set; }
         public IntwentyAccountDataUsage AccountsEmailUsage { get; set; }
         public IntwentyAccountDataUsage AccountsPhoneUsage { get; set; }
@@ -581,15 +584,52 @@ namespace Intwenty.Model
 
     public class IntwentyAccountDataUsage
     {
-        public bool RegisterPageEditable { get; set; }
+        public IntwentyAccountDataUsage()
+        {
+            RegisterPage = InputUsageType.Hidden;
+            AccountPage = InputUsageType.Hidden;
+        }
 
-        public bool AccountPageEditable { get; set; }
+        public InputUsageType RegisterPage { get; set; }
 
-        public bool RegisterPageRequired { get; set; }
+        public InputUsageType AccountPage { get; set; }
 
-        public bool AccountPageRequired { get; set; }
+        public bool IsRegisterPageVisible
+        {
+            get
+            {
+                return RegisterPage != InputUsageType.Hidden;
+            }
 
-        public bool AccountPageReadOnly { get; set; }
+        }
+
+        public bool IsAccountPageVisible
+        {
+            get
+            {
+                return AccountPage != InputUsageType.Hidden;
+            }
+
+        }
+
+        public bool IsRegisterPageEditable
+        {
+            get
+            {
+                return RegisterPage == InputUsageType.Editable || RegisterPage== InputUsageType.EditableRequired;
+            }
+
+        }
+
+        public bool IsAccountPageEditable
+        {
+            get
+            {
+                return AccountPage == InputUsageType.Editable || AccountPage == InputUsageType.EditableRequired;
+            }
+
+        }
+
     }
 
    
