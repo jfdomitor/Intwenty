@@ -1,47 +1,670 @@
 ﻿@page
 @model IndexModel
 @{
+
     ViewData["Title"] = Localizer["Profile"].Value;
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
 <h4>@ViewData["Title"]</h4>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="profile-form" method="post">
-      
+
+
+<div id="app">
+
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
+        <strong>@Localizer["Changes Saved"]</strong><br />
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="alert alert-danger" v-if="(model.resultCode=='PROFILE_SAVE_ERROR')">
+        @Localizer["PROFILE_SAVE_ERROR"]
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
             <div class="form-group">
                 <label>@Localizer["User Name"]</label>
-                <input asp-for="Username" class="form-control" disabled />
+                <input type="text" v-model="model.userName" class="form-control" disabled />
             </div>
 
-            @if (!Settings.Value.AccountsUseEmailAsUserName)
+
+            @if (Settings.Value.AccountsLegalIdNumberUsage.IsAccountPageVisible)
             {
-                <div class="form-group">
-                    <label>Email</label>
-                    <input asp-for="Input.Email" class="form-control"  />
+                if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Legal ID Number"]</label>
+                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Legal ID Number"]</label>
+                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Legal ID Number"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsEmailUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Email"]</label>
+                        <input type="email" v-model="model.email" class="form-control" id="email" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Email"]</label>
+                        <input type="email" v-model="model.email" class="form-control" id="email" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Email"] <span style="color: red"> *</span></label>
+                        <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsPhoneUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Phone"]</label>
+                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Phone"]</label>
+                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Phone"] <span style="color: red"> *</span></label>
+                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsNameUsage.IsAccountPageVisible)
+            {
+                <br />
+                <i><b>@Localizer["Name"]</b></i>
+                <br />
+                if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["First Name"]</label>
+                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" disabled />
+                    </div>
+
+                    <div class="form-group">
+                        <label>@Localizer["Last Name"]</label>
+                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["First Name"]</label>
+                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" autocomplete="nope" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>@Localizer["Last Name"]</label>
+                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["First Name"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>@Localizer["Last Name"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+
+
+            @if (Settings.Value.AccountsCompanyNameUsage.IsAccountPageVisible)
+            {
+                <br />
+                <i><b>@Localizer["Company Name"]</b></i>
+                <br />
+
+                if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Company Name"]</label>
+                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Company Name"]</label>
+                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Company Name"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+
+            @if (Settings.Value.AccountsUserSelectableRoleUsage.IsAccountPageVisible && Settings.Value.AccountsUserSelectableRoles != null)
+            {
+                <br />
+                <i><b>@Localizer["Requested Role"]</b></i>
+                <br />
+
+                if (Settings.Value.AccountsUserSelectableRoleUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Requested Role"]</label>
+                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" disabled>
+                            @{
+                                foreach (var t in Settings.Value.AccountsUserSelectableRoles)
+                                {
+                                    <option value="@t.RoleName">@t.Title</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+                else if (Settings.Value.AccountsUserSelectableRoleUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Requested Role"]</label>
+                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole">
+                            @{
+                                foreach (var t in Settings.Value.AccountsUserSelectableRoles)
+                                {
+                                    <option value="@t.RoleName">@t.Title</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+                else if (Settings.Value.AccountsUserSelectableRoleUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Requested Role"] <span style="color: red"> *</span></label>
+                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" v-on:input="onUserInput(event)" data-required="True">
+                            @{
+                                foreach (var t in Settings.Value.AccountsUserSelectableRoles)
+                                {
+                                    <option value="@t.RoleName">@t.Title</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+
+            }
+
+
+
+            @if (Settings.Value.AccountsAddressUsage.IsAccountPageVisible)
+            {
+                <br />
+                <i><b>@Localizer["Address"]</b></i>
+                <br />
+
+                if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Address"]</label>
+                        <input type="text" v-model="model.address" class="form-control" id="address" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Address"]</label>
+                        <input type="text" v-model="model.address" class="form-control" id="address" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Address"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.address" class="form-control" id="address" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsZipCodeUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Zipcode"]</label>
+                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Zipcode"]</label>
+                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Zipcode"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsCityUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["City"]</label>
+                        <input type="text" v-model="model.city" class="form-control" id="city" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["City"]</label>
+                        <input type="text" v-model="model.city" class="form-control" id="city" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["City"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.city" class="form-control" id="city" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsCountyUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["County"]</label>
+                        <input type="text" v-model="model.county" class="form-control" id="county" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["County"]</label>
+                        <input type="text" v-model="model.county" class="form-control" id="county" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["County"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.county" class="form-control" id="county" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+            @if (Settings.Value.AccountsCountryUsage.IsAccountPageVisible)
+            {
+                if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.Readonly)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Country"]</label>
+                        <input type="text" v-model="model.country" class="form-control" id="country" disabled />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.Editable)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Country"]</label>
+                        <input type="text" v-model="model.country" class="form-control" id="country" autocomplete="nope" />
+                    </div>
+                }
+                else if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.EditableRequired)
+                {
+                    <div class="form-group">
+                        <label>@Localizer["Country"] <span style="color: red"> *</span></label>
+                        <input type="text" v-model="model.country" class="form-control" id="country" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                    </div>
+                }
+            }
+
+
+
+        </div>
+        <div class="col-md-6">
+
+            @if (Settings.Value.AccountsEnableProfilePicture)
+            {
+                <div>
+
+                    <div hidden photosuccess class="alert alert-success"><i class="far fa-check-circle"></i><span></span></div>
+                    <!-- img src="Url(Model.UserPhoto)" style="width:120px; background: #FFFFFF; margin: auto; padding: 6px" /  -->
+                    <div id="modal">
+                        <div id="croppercontainer"></div>
+                        <div>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label for="upfile" class="btn btn-secondary" id="select_file" style="margin-left:25px">@Localizer["Add/Change Photo"]</label>
+                                        <input id="upfile" style="visibility:hidden;display:none" type="file" accept="image/*">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" id="uploadPictureBtn" style="margin-left:2px;margin-top:-8px">@Localizer["Upload"]</button>
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            }
+
+            @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsAccountPageVisible ||
+              Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible ||
+               Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
+            {
+
+
+                <br />
+                <br />
+                <div style="margin-left:25px">
+                    <br />
+                    <i><b>@Localizer["Settings"]</b></i>
+                    <br />
+
+                    @if (Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
+                    {
+                        if (Settings.Value.AccountsAllowPublicProfileUsage.AccountPage == InputUsageType.Readonly)
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" disabled /><label>@Localizer["Allow Public Profile"]</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" /><label>@Localizer["Allow Public Profile"]</label>
+                            </div>
+                        }
+                    }
+
+                    @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsAccountPageVisible)
+                    {
+                        if (Settings.Value.AccountsAllowEmailNotificationsUsage.AccountPage == InputUsageType.Readonly)
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" disabled /><label>@Localizer["Allow Email Notifications"]</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" /><label>@Localizer["Allow Email Notifications"]</label>
+                            </div>
+                        }
+                    }
+
+                    @if (Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible)
+                    {
+                        if (Settings.Value.AccountsAllowSmsNotificationsUsage.AccountPage == InputUsageType.Readonly)
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" disabled /><label>@Localizer["Allow SMS Notifications"]</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="largecheckbox">
+                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
+                            </div>
+                        }
+                    }
+
                 </div>
             }
 
-            <div class="form-group">
-                <label>@Localizer["Phone"]</label>
-                <input asp-for="Input.PhoneNumber" class="form-control" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label>@Localizer["First Name"]</label>
-                <input asp-for="Input.FirstName" class="form-control" />
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label>@Localizer["Last Name"]</label>
-                <input asp-for="Input.LastName" class="form-control" />
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-
-            <button id="update-profile-button" type="submit" class="btn btn-primary">@Localizer["Save"]</button>
-        </form>
+        </div>
     </div>
+
+
+    <button id="update-profile-button" type="button" v-on:click="saveUserInfo()" class="btn btn-primary">@Localizer["Save"]</button>
+
 </div>
 
+
+@section Scripts
+{
+    <script>
+
+        var app = new Vue({
+            el: '#app',
+            data:
+            {
+                model: { resultCode: "" }
+
+            },
+            methods: {
+
+                saveUserInfo: function ()
+                {
+
+
+                    var context = this;
+                    var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                    var endpointurl = baseurl + "Index?handler=UpdateUser";
+                    var valid = true;
+
+                    $("[data-required]").each(function () {
+                        var required = $(this).data('required');
+                        var id = $(this).attr('id');
+                        if (required === "True" && id) {
+                            var element = $("#" + id);
+                            var val = element[0].value;
+                            if (!val || (val && val.length < 1)) {
+                                element.addClass('requiredNotValid');
+                                valid = false;
+                            }
+                        }
+                    });
+
+
+                    if (!valid)
+                        return;
+
+
+                    var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(context.model),
+                        headers: {
+                            RequestVerificationToken: antiforgerytoken
+                        },
+                        success: function (response)
+                        {
+                            context.model = response;
+                            context.model.modelSaved = true;
+                            setTimeout(function () { context.model.modelSaved = false; }, 3000);
+                        },
+                        error: function (response)
+                        {
+                            context.model = response.responseJSON;
+                        }
+                    });
+                },
+                onUserInput: function (event)
+                {
+                    if (!event)
+                        return;
+
+                    var elementId = event.srcElement.id;
+                    if (!elementId)
+                        return;
+
+                    //Remove requiredNotValid if the input is valid
+                    $("[data-required]").each(function () {
+                        var required = $(this).data('required');
+                        var id = $(this).attr('id');
+                        if (required === "True" && id === elementId) {
+                            var val = event.srcElement.value;
+                            if (val) {
+                                if (val.length > 0)
+                                    $("#" + elementId).removeClass('requiredNotValid');
+                            }
+                        }
+                    });
+                },
+                setUpCroppie: function ()
+                {
+                    var context = this;
+
+                    var basic = $('#croppercontainer').croppie({
+                        viewport: { width: 160, height: 160 },
+                        boundary: { width: 210, height: 210 },
+                        showZoomer: true,
+                        url: context.model.profilePictureBase64
+                    });
+
+                    $('.cr-image').hide();
+                    $('#uploadPictureBtn').hide();
+
+                    function readFile(input) {
+                        if (input.files && input.files[0])
+                        {
+                            var reader = new FileReader();
+
+                            reader.onload = function (e)
+                            {
+                                $('.cr-image').show();
+                                $('#uploadPictureBtn').show();
+                                $('#upfile').hide();
+
+                                $('#croppercontainer').croppie('bind', {
+                                    url: e.target.result
+                                });
+
+                            }
+
+                            reader.readAsDataURL(input.files[0]);
+                        }
+                    };
+
+                    $('#upfile').on('change', function ()
+                    {
+                        readFile(this);
+                    });
+
+                    $('#uploadPictureBtn').on('click', function ()
+                    {
+
+                        basic.croppie('result', {'type':'blob'}).then(function (resp)
+                        {
+                            var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                            var endpointurl = baseurl + "Index?handler=ProfilePicture";
+
+                            var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                            var formdata = new FormData();
+                            formdata.append("profilePicture", resp);
+                            formdata.append("fileName", "user_profile_picture.png");
+                            formdata.append("userName", "@User.Identity.Name");
+
+
+                            $.ajax({
+                                url: endpointurl,
+                                method: 'POST',
+                                type: 'POST',
+                                data: formdata,
+                                cache: false,
+                                contentType: false,
+                                processData: false,
+                                headers: {
+                                    RequestVerificationToken: antiforgerytoken
+                                },
+                                success: function (data, textStatus, jqXHR)
+                                {
+                                    $('#uploadPictureBtn').hide();
+                                },
+                                error: function (jqXHR, textStatus, errorThrown) {
+
+                                }
+                            });
+
+                         });
+
+                    });
+
+                }
+
+
+            },
+            computed:
+            {
+
+
+            },
+            mounted: function ()
+            {
+                var context = this;
+                var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                var endpointurl = baseurl + "Index/?handler=Load";
+                $.get(endpointurl, function (response)
+                {
+                    context.model = response;
+                    context.setUpCroppie();
+                });
+
+
+            }
+        });
+    </script>
+
+
+
+
+
+
+}

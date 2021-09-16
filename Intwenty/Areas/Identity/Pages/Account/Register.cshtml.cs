@@ -95,15 +95,47 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 model.Message = "";
                 model.ReturnUrl = Url.Content("~/");
 
-                var user = new IntwentyUser { UserName = model.Email, Email = model.Email, Culture = model.Language };
-                if (_settings.AccountsRegistrationRequireName)
+                var user = new IntwentyUser();
+                user.LegalIdNumber = model.LegalIdNumber;
+                user.UserName = model.UserName;
+                user.Email = model.Email;
+                user.PhoneNumber = model.PhoneNumber;
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.CompanyName = model.CompanyName;
+                user.Culture = model.Culture;
+                user.Address = model.Address;
+                user.ZipCode = model.City;
+                user.City = model.Address;
+                user.County = model.County;
+                user.Country = model.Country;
+                user.AllowSmsNotifications = model.AllowSmsNotifications;
+                user.AllowEmailNotifications = model.AllowEmailNotifications;
+                user.AllowPublicProfile =model.AllowPublicProfile;
+
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
                 {
-                    user.FirstName = model.FirstName;
-                    user.LastName = model.LastName;
+                    user.UserName = model.Email;
                 }
-                if (!_settings.AccountsUseEmailAsUserName)
-                    user.UserName = model.UserName;
-                
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+                {
+                    var p1 = user.FirstName;
+                    if (p1.Length > 4)
+                        p1 = p1.Substring(0, 4);
+                    var p2 = user.LastName;
+                    if (p2.Length > 4)
+                        p2 = p2.Substring(0, 4);
+
+                    user.UserName = string.Format("{0}_{1}_{2}", p1, p2, DateTime.Now.Millisecond);
+                }
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+                {
+                    user.UserName = BaseModelItem.GetQuiteUniqueString();
+                }
+
 
                 if (string.IsNullOrEmpty(user.Culture))
                     user.Culture = _settings.LocalizationDefaultCulture;
@@ -115,6 +147,15 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
                     if (org != null)
                     {
+                        if (!string.IsNullOrEmpty(model.RequestedRole) && _settings.AccountsUserSelectableRoleUsage.IsRegisterPageEditable)
+                        {
+                            if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()))
+                            {
+                                await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                                await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
+                            }
+                        }
+                       
                         if (!string.IsNullOrEmpty(_settings.AccountsRegistrationAssignRoles))
                         {
 
@@ -131,7 +172,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = user.Id, code = code }, protocol: Request.Scheme);
-                    await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.Email, ConfirmCallbackUrl = callbackUrl });
+                    await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.UserName, Email=model.Email, ConfirmCallbackUrl = callbackUrl });
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
 
@@ -150,8 +191,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 }
 
             }
-            catch
+            catch(Exception ex)
             {
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Register.OnPostLocalRegistration: " + ex.Message);
                 return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "An unexpected error occured, contact support")) { StatusCode = 500 };
             }
 
@@ -198,6 +240,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
                 if (!_settings.UseBankIdLogin)
                     throw new InvalidOperationException("Bank ID is not active in settings");
+
+                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email && string.IsNullOrEmpty(model.Email))
+                {
+                    model.ResultCode = "BANKID_NO_EMAIL";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
 
                 if (model.ActionCode == "BANKID_START_OTHER")
                 {
@@ -315,15 +363,51 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     else if (authresult.IsAuthOk)
                     {
 
-                        var attemptinguser = await _userManager.GetUserWithSettingValue("SWEPNR", authresult.CompletionData.User.PersonalNumber);
+                        var attemptinguser = await _userManager.FindByLegalIdIdNumberAsync(authresult.CompletionData.User.PersonalNumber);
                         if (attemptinguser == null)
                         {
-                            var user = new IntwentyUser { UserName = model.Email, Email = model.Email, Culture = model.Language };
-                            user.FirstName = authresult.CompletionData.User.Name;
+                            var user = new IntwentyUser();
+
+                            user.LegalIdNumber = authresult.CompletionData.User.PersonalNumber;
+                            user.FirstName = authresult.CompletionData.User.GivenName;
                             user.LastName = authresult.CompletionData.User.Surname;
 
-                            if (!_settings.AccountsUseEmailAsUserName)
-                                user.UserName = model.UserName;
+                            user.UserName = model.UserName;
+                            user.Email = model.Email;
+                            user.PhoneNumber = model.PhoneNumber;
+                            user.CompanyName = model.CompanyName;
+                            user.Culture = model.Culture;
+                            user.Address = model.Address;
+                            user.ZipCode = model.City;
+                            user.City = model.Address;
+                            user.County = model.County;
+                            user.Country = model.Country;
+                            user.AllowSmsNotifications = model.AllowSmsNotifications;
+                            user.AllowEmailNotifications = model.AllowEmailNotifications;
+                            user.AllowPublicProfile = model.AllowPublicProfile;
+
+
+                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+                            {
+                                user.UserName = model.Email;
+                            }
+
+                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+                            {
+                                var p1 = user.FirstName;
+                                if (p1.Length > 4)
+                                    p1 = p1.Substring(0, 4);
+                                var p2 = user.LastName;
+                                if (p2.Length > 4)
+                                    p2 = p2.Substring(0, 4);
+
+                                user.UserName = string.Format("{0}_{1}_{2}",p1,p2,DateTime.Now.Millisecond);
+                            }
+
+                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+                            {
+                                user.UserName = BaseModelItem.GetQuiteUniqueString();
+                            }
 
                             if (string.IsNullOrEmpty(user.Culture))
                                 user.Culture = _settings.LocalizationDefaultCulture;
@@ -334,6 +418,15 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                 var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
                                 if (org != null)
                                 {
+                                    if (!string.IsNullOrEmpty(model.RequestedRole) && _settings.AccountsUserSelectableRoleUsage.IsRegisterPageEditable)
+                                    {
+                                        if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()))
+                                        {
+                                            await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                                            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
+                                        }
+                                    }
+
                                     if (!string.IsNullOrEmpty(_settings.AccountsRegistrationAssignRoles))
                                     {
                                         var roles = _settings.AccountsRegistrationAssignRoles.Split(",".ToCharArray());
@@ -346,7 +439,6 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                     await _organizationManager.AddMemberAsync(new IntwentyOrganizationMember() { OrganizationId = org.Id, UserId = user.Id, UserName = user.UserName });
                                 }
 
-                                await _userManager.AddUpdateUserSetting(user, "SWEPNR", authresult.CompletionData.User.PersonalNumber);
 
                                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

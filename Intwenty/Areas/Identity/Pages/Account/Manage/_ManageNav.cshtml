@@ -17,7 +17,7 @@
 
     <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">@Localizer["Profile"]</a></li>
 
-    @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization)
+    @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization && Settings.Value.AccountsCultureUsage.IsAccountPageEditable)
     {
         <li class="nav-item"><a class="nav-link @ManageNavPages.LanguageNavClass(ViewContext)" id="profile" asp-page="./Language">@Localizer["Language"]</a></li>
     }

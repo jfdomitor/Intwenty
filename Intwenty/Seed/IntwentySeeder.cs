@@ -46,7 +46,7 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOCKED_OUT_ACCOUNT", Text = "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "API Key Updated", Text = "API nyckeln uppdaterades" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "You must type a user name and a password", Text = "Vänligen ange användarnamn och lösenord" });
-            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Invalid login attemt", Text = "Inloggningen misslyckades" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Invalid login attempt", Text = "Inloggningen misslyckades" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "LOGIN_REQUIRE_CONF", Text = "Your account must be confirmed before you can login, pleas check your email and follow the instructions." });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOGIN_REQUIRE_CONF", Text = "Du måste bekräfta ditt konto innan du kan logga in, vänligen kontrollera din epost" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "FREJA_SERVICE_FAILURE", Text = "Sorry, the service is temporary unavailable" });
@@ -57,8 +57,8 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_INSTRUCTION", Text = "För att logga in öppnar du Bank ID appen på din telefon och skannar sedan QR koden nedan." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_SERVICE_FAILURE", Text = "Authentication failed" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_SERVICE_FAILURE", Text = "Autentiseringen misslyckades, försök igen" });
-            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Welcome. Please input your email below and then click on 'Register'. You will need your Bank ID or mobile Bank ID to finnish the registration." });
-            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Välkommen ! Börja med att ange din epostaddress, därefter klickar du på registreara. Du kommer behöva bankid eller mobilt bankid för att slutföra registreringen." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Welcome. Please input the requested information below and then click 'Register'. You will need your Bank ID to finnish the registration." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_CREATE_ACCOUNT", Text = "Välkommen ! Börja med att ange efterfrågad information och klicka sedan på registreara. Du kommer behöva Bank ID för att slutföra registreringen." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_USE_OTHER_DEVICE", Text = "Bank ID on another device" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BANKID_USE_OTHER_DEVICE", Text = "Bank ID på annan enhet" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "BANKID_USE_THIS_DEVICE", Text = "Bank ID on this device" });
@@ -228,6 +228,10 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "ADDEDIT", Text = "Lägg till / Ändra" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "COPYRIGHT", Text = "2021 Intwenty - All rights reserved" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "COPYRIGHT", Text = "2021 Intwenty - Alla rättighter reserverade" });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PRODUCT_LOGIN", Text = "Welcome ! Follow the instructions below to login" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PRODUCT_LOGIN", Text = "Välkommen ! Följ instruktionerna nedan för att logga in" });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PROFILE_SAVE_ERROR", Text = "An error occured when saving the profile" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PROFILE_SAVE_ERROR", Text = "Ett fel uppstod när profilen skulle sparas" });
 
             client.Open();
 

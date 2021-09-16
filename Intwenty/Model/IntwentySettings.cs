@@ -9,6 +9,12 @@ namespace Intwenty.Model
 
     public enum AccountTypes { Local, Facebook, Google, BankId, FrejaEId };
 
+    public enum UserNameGenerationStyles { Email, Input, GenerateFromName, GenerateRandom };
+
+    public enum InputUsageType { Hidden, Readonly, Editable, EditableRequired };
+
+    public enum BankIdUsageTypes { OtherDevice, OtherAndThisDevice };
+
     public enum MfaAuthTypes { Totp,Sms,Email,Fido2 };
 
     public enum LocalizationMethods { SiteLocalization, UserLocalization };
@@ -29,7 +35,24 @@ namespace Intwenty.Model
             FrejaTimeoutInMilliseconds = 90000;
             BankIdTimeoutInMilliseconds = 90000;
             BankIdQrSize = 7;
-            AccountEmergencyLoginQueryKey = "ISADMINEMERGENCYLOGIN";
+            BankIdUsage = BankIdUsageTypes.OtherAndThisDevice;
+            AccountsEmergencyLoginQueryKey = "ISADMINEMERGENCYLOGIN";
+            AccountsUserSelectableRoles = new List<IntwentyUserRegistrationRole>();
+            AccountsUserNameUsage = UserNameGenerationStyles.Email;
+            AccountsEmailUsage = new IntwentyAccountDataUsage() { AccountPage =  InputUsageType.Readonly, RegisterPage =  InputUsageType.EditableRequired };
+            AccountsPhoneUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable, RegisterPage = InputUsageType.Editable };
+            AccountsNameUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable };
+            AccountsAddressUsage = new IntwentyAccountDataUsage();
+            AccountsZipCodeUsage = new IntwentyAccountDataUsage();
+            AccountsCityUsage = new IntwentyAccountDataUsage();
+            AccountsCountyUsage = new IntwentyAccountDataUsage();
+            AccountsCountryUsage = new IntwentyAccountDataUsage();
+            AccountsAllowEmailNotificationsUsage = new IntwentyAccountDataUsage();
+            AccountsAllowSmsNotificationsUsage = new IntwentyAccountDataUsage();
+            AccountsAllowPublicProfileUsage = new IntwentyAccountDataUsage();
+            AccountsUserSelectableRoleUsage = new IntwentyAccountDataUsage();
+            AccountsLegalIdNumberUsage = new IntwentyAccountDataUsage();
+            AccountsCompanyNameUsage = new IntwentyAccountDataUsage();
         }
 
         public LogVerbosityTypes LogVerbosity { get; set; }
@@ -126,9 +149,11 @@ namespace Intwenty.Model
         #region Account
         public List<IntwentyAccount> AccountsAllowedList { get; set; }
         public bool AccountsRequireConfirmed { get; set; }
-        public bool AccountsUseEmailAsUserName { get; set; }
         public bool AccountsAllowRegistration { get; set; }
-        public bool AccountsRegistrationRequireName { get; set; }
+        /// <summary>
+        /// Comma separated roles that a user can select when register
+        /// </summary>
+        public List<IntwentyUserRegistrationRole> AccountsUserSelectableRoles { get; set; }
         /// <summary>
         /// Comma separated  roles to assign new users
         /// </summary>
@@ -140,11 +165,29 @@ namespace Intwenty.Model
         /// A group admin can invite users to the group
         /// </summary>
         public bool AccountsEnableUserGroups { get; set; }
+        public bool AccountsEnableProfilePicture { get; set; }
         public string AccountsFacebookAppId { get; set; }
         public string AccountsFacebookAppSecret { get; set; }
         public string AccountsGoogleClientId { get; set; }
         public string AccountsGoogleClientSecret { get; set; }
-        public string AccountEmergencyLoginQueryKey { get; set; }
+        public string AccountsEmergencyLoginQueryKey { get; set; }     
+        public UserNameGenerationStyles AccountsUserNameUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsEmailUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsPhoneUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsAddressUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsCityUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsZipCodeUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsCountyUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsCountryUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsUserSelectableRoleUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsAllowPublicProfileUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsAllowSmsNotificationsUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsAllowEmailNotificationsUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsNameUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsCultureUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsLegalIdNumberUsage { get; set; }
+        public IntwentyAccountDataUsage AccountsCompanyNameUsage { get; set; }
+
         #endregion
 
         #region Localization
@@ -267,16 +310,19 @@ namespace Intwenty.Model
         /// </summary>
         public int BankIdQrSize{ get; set; }
 
-        #endregion
+        public BankIdUsageTypes BankIdUsage { get; set; }
+    #endregion
 
 
-        /// <summary>
-        /// TEST DB CONNECTIONS
-        /// </summary>
-        public string TestDbConnectionSqlite { get; set; }
+    /// <summary>
+    /// TEST DB CONNECTIONS
+    /// </summary>
+    public string TestDbConnectionSqlite { get; set; }
         public string TestDbConnectionMariaDb { get; set; }
         public string TestDbConnectionSqlServer { get; set; }
         public string TestDbConnectionPostgres { get; set; }
+
+        
 
         public bool UseSeparateIAMDatabase
         {
@@ -528,5 +574,64 @@ namespace Intwenty.Model
 
         public AccountTypes AccountType { get; set; }
     }
+
+    public class IntwentyUserRegistrationRole
+    {
+        public string Title { get; set; }
+
+        public string RoleName { get; set; }
+    }
+
+    public class IntwentyAccountDataUsage
+    {
+        public IntwentyAccountDataUsage()
+        {
+            RegisterPage = InputUsageType.Hidden;
+            AccountPage = InputUsageType.Hidden;
+        }
+
+        public InputUsageType RegisterPage { get; set; }
+
+        public InputUsageType AccountPage { get; set; }
+
+        public bool IsRegisterPageVisible
+        {
+            get
+            {
+                return RegisterPage != InputUsageType.Hidden;
+            }
+
+        }
+
+        public bool IsAccountPageVisible
+        {
+            get
+            {
+                return AccountPage != InputUsageType.Hidden;
+            }
+
+        }
+
+        public bool IsRegisterPageEditable
+        {
+            get
+            {
+                return RegisterPage == InputUsageType.Editable || RegisterPage== InputUsageType.EditableRequired;
+            }
+
+        }
+
+        public bool IsAccountPageEditable
+        {
+            get
+            {
+                return AccountPage == InputUsageType.Editable || AccountPage == InputUsageType.EditableRequired;
+            }
+
+        }
+
+    }
+
+   
 
 }

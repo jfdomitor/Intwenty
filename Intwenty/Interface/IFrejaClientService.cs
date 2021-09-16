@@ -15,8 +15,8 @@ namespace Intwenty.Interface
         Uri GetQRCode(string authref);
         Task<RequestedAttributes> Authenticate(string authref);
         Task<RequestedAttributes> Authenticate(string userInfoType, string userInfo);
-        Task<bool> Sign(string userInfoType, string userInfo, Signature signature);
-        SignatureValidationResult Validate(Signature signature);
+        //Task<bool> Sign(string userInfoType, string userInfo, Signature signature);
+        //SignatureValidationResult Validate(Signature signature);
     }
 
 }

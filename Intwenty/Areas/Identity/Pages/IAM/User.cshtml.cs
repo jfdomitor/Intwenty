@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Intwenty.Areas.Identity.Data;
+using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
@@ -53,7 +54,31 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             {
                 user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
+                if (model.PhoneNumber != string.Empty && model.PhoneNumber != user.PhoneNumber)
+                {
+                    var t = model.PhoneNumber.GetCellPhone();
+                    if (t != string.Empty && t != "INVALID")
+                    {
+                        user.PhoneNumber = t;
+                        user.PhoneNumberConfirmed = true;
+                    }
+                }
+                if (model.Email != string.Empty && model.Email != user.Email)
+                {
+                    user.Email = model.Email;
+                    user.EmailConfirmed = true;
+                }
+                user.Address = model.Address;
+                user.AllowEmailNotifications = model.AllowEmailNotifications;
+                user.AllowPublicProfile = model.AllowPublicProfile;
+                user.AllowSmsNotifications = model.AllowSmsNotifications;
+                user.City = model.City;
+                user.CompanyName = model.CompanyName;
+                user.Country = model.Country;
+                user.LegalIdNumber = model.LegalIdNumber;
+                user.ZipCode = model.ZipCode;
                 await UserManager.UpdateAsync(user);
+               
                 return await OnGetLoad(user.Id);
             }
 

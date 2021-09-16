@@ -15,119 +15,125 @@ using System.Text;
 using Intwenty.Interface;
 using Intwenty.Services;
 using Intwenty.Helpers;
+using Intwenty.Areas.Identity.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Intwenty.Areas.Identity.Pages.Account.Manage
 {
     public partial class IndexModel : PageModel
     {
+        private readonly IIntwentyOrganizationManager _organizationManager;
         private readonly IntwentyUserManager _userManager;
         private readonly IntwentySignInManager _signInManager;
         private readonly IntwentySettings _settings;
         private readonly IIntwentyEventService _eventService;
+        private readonly IIntwentyDbLoggerService _dbloggerService;
 
-        public IndexModel(IntwentyUserManager usermanager, IntwentySignInManager signinmanager, IOptions<IntwentySettings> settings, IIntwentyEventService eventservice)
+        public IndexModel(IntwentyUserManager usermanager, 
+                          IntwentySignInManager signinmanager,
+                          IOptions<IntwentySettings> settings, 
+                          IIntwentyEventService eventservice, 
+                          IIntwentyDbLoggerService dblogger,
+                          IIntwentyOrganizationManager orgmanager)
         {
             _userManager = usermanager;
             _signInManager = signinmanager;
             _settings = settings.Value;
             _eventService = eventservice;
+            _dbloggerService = dblogger;
+            _organizationManager = orgmanager;
         }
 
-        public string Username { get; set; }
-
-        [TempData]
-        public string StatusMessage { get; set; }
-
-        [BindProperty]
-        public InputModel Input { get; set; }
-
-        public class InputModel
+        public void OnGet()
         {
-            [EmailAddress]
-            public string Email { get; set; }
-
-            [Phone]
-            public string PhoneNumber { get; set; }
-
-            public string FirstName { get; set; }
-
-            public string LastName { get; set; }
+            
         }
 
-        private void Load(IntwentyUser user)
+        public async Task<IActionResult> OnGetLoad()
         {
+            var user = await _userManager.GetUserAsync(User);
+            var model = new IntwentyUserAccountVm(user);
 
-            Username = user.UserName;
+            model.RequestedRole = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_REQUESTEDROLE");
 
-            Input = new InputModel
+            try
             {
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                FirstName = user.FirstName,
-                LastName = user.LastName
-            };
-        }
-
-        public async Task<IActionResult> OnGetAsync()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            Load(user);
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            var user = await _userManager.GetUserAsync(User);
+                var filepath = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_PROFILEPICPATH");
+                if (!string.IsNullOrEmpty(filepath))
+                {
+                    var filename = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_PROFILEPICNAME");
+                    var physfile = new FileInfo(Path.Combine(filepath, filename));
+                    if (physfile.Exists)
+                    {
+                        byte[] fileBytes = System.IO.File.ReadAllBytes(physfile.FullName);
+                        model.ProfilePictureBase64 = "data:image/png;base64, " + Convert.ToBase64String(fileBytes);
+                    }
+                }
+            }
+            catch { }
            
-            if (!ModelState.IsValid)
-            {
-                Load(user);
-                return Page();
-            }
+            return new JsonResult(model);
+        }
 
+        public async Task<IActionResult> OnPostUpdateUser([FromBody] IntwentyUserAccountVm model)
+        {
             var emailconf = false;
-            var doupdate = false;
-            if (Input.Email != user.Email && !string.IsNullOrEmpty(Input.Email))
+            try
             {
-                user.Email = Input.Email;
-                doupdate = true;
-                if (_settings.AccountsRequireConfirmed)
+                model.ResultCode = "";
+
+                var user = await _userManager.FindByNameAsync(model.UserName);
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                if (model.PhoneNumber != string.Empty && model.PhoneNumber != user.PhoneNumber)
                 {
-                    emailconf = true;
+                    var t = model.PhoneNumber.GetCellPhone();
+                    if (t != string.Empty && t != "INVALID")
+                    {
+                        user.PhoneNumber = t;
+                        user.PhoneNumberConfirmed = true;
+                        model.PhoneNumber = t;
+                    }
                 }
-            }
-
-            if (Input.PhoneNumber != user.PhoneNumber && !string.IsNullOrEmpty(Input.PhoneNumber))
-            {
-                var phone = Input.PhoneNumber.GetCellPhone();
-                if (phone == "INVALID")
+                if (model.Email != string.Empty && model.Email != user.Email)
                 {
-                    ModelState.AddModelError("Input.PhoneNumber", "Invalid phone number format.");
-                    Load(user);
-                    return Page();
+                    user.Email = model.Email;
+                    if (_settings.AccountsRequireConfirmed)
+                        emailconf = true;
+                       
                 }
-                user.PhoneNumber = phone;
-                doupdate = true;
-            }
 
-            if (Input.FirstName != user.FirstName)
-            {
-                user.FirstName = Input.FirstName;
-                doupdate = true;
-            }
+                var currentrole = await _userManager.GetUserSettingValueAsync(user, this._settings.ProductId + "_REQUESTEDROLE");
+                if (!string.IsNullOrEmpty(model.RequestedRole) && model.RequestedRole != currentrole && _settings.AccountsUserSelectableRoles != null)
+                {
+                    var org = await _organizationManager.FindByNameAsync(_settings.ProductOrganization);
+                    if (!IntwentyRoles.AdminRoles.Any(p => p == model.RequestedRole.ToUpper()) && org!= null)
+                    {
+                        var authlist = await _userManager.GetUserAuthorizationsAsync(user);
+                        var currentauth = authlist.Find(p => p.AuthorizationNormalizedName == currentrole.ToUpper() && _settings.AccountsUserSelectableRoles.Exists(x => x.RoleName == currentrole));
+                        if (currentauth != null)
+                            await _userManager.RemoveUserAuthorizationAsync(user, currentauth);
 
-            if (Input.LastName != user.LastName)
-            {
-                user.LastName = Input.LastName;
-                doupdate = true;
-            }
+                        await _userManager.AddUpdateUserRoleAuthorizationAsync(model.RequestedRole.ToUpper(), user.Id, org.Id, _settings.ProductId);
+                        await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_REQUESTEDROLE", model.RequestedRole.ToUpper());
+                    }
 
-            if (doupdate)
-            {
+                }
+
+                user.Address = model.Address;
+                user.AllowEmailNotifications = model.AllowEmailNotifications;
+                user.AllowPublicProfile = model.AllowPublicProfile;
+                user.AllowSmsNotifications = model.AllowSmsNotifications;
+                user.City = model.City;
+                user.CompanyName = model.CompanyName;
+                user.Country = model.Country;
+                user.LegalIdNumber = model.LegalIdNumber;
+                user.ZipCode = model.ZipCode;
+
                 var updateresult = await _userManager.UpdateAsync(user);
                 if (!updateresult.Succeeded)
                 {
-                    var userId = await _userManager.GetUserIdAsync(user);
                     throw new InvalidOperationException("Unexpected error occurred updating user.");
                 }
                 else
@@ -140,14 +146,47 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
                         await _eventService.EmailChanged(new EmailChangedData() { UserName = user.Email, ConfirmCallbackUrl = callbackUrl });
                     }
 
+                       
+                    return new JsonResult(model);
+
                 }
 
+            }
+            catch(Exception ex)
+            {
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Manage.OnPostUpdateUser: " + ex.Message);
 
             }
 
-            await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
-            return RedirectToPage();
+            model.ResultCode = "PROFILE_SAVE_ERROR";
+            return new JsonResult(model) { StatusCode = 500 };
+
+        }
+
+        public async Task<IActionResult> OnPostProfilePicture(IFormFile ProfilePicture)
+        {
+            //Get User
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return BadRequest();
+
+
+
+            //Add new file and document
+            var filename = user.Id + ".jpg";
+            var fileandpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\USERDOC", filename);
+            using (var stream = new FileStream(fileandpath, FileMode.Create))
+            {
+                await ProfilePicture.CopyToAsync(stream);
+            }
+
+            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_PROFILEPICSIZE", Convert.ToString(ProfilePicture.Length));
+            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_PROFILEPICPATH", Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\USERDOC"));
+            await _userManager.AddUpdateUserSettingAsync(user, this._settings.ProductId + "_PROFILEPICNAME", filename);
+
+
+
+            return new JsonResult("{}");
         }
     }
 }

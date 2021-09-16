@@ -281,174 +281,178 @@ namespace Intwenty.Services
             }
 
             return null;
-        } 
+        }
 
-        public async Task<bool> Sign(string userInfoType, string userInfo, Signature signature)
-        {
-            throw new NotImplementedException();
-            /*
-            // Variables
-            StringContent content = null;
-            FrejaStatusResponse status_response = null;
-            try
-            {
-                // Create a request
-                FrejaRequest request = new FrejaRequest
-                {
-                    userInfoType = userInfoType,
-                    userInfo = userInfo,
-                    minRegistrationLevel = "BASIC", // BASIC, EXTENDED or PLUS
-                    title = "Sign File",
-                    pushNotification = new PushNotification // Can not include swedish characters å,ä,ö
-                    {
-                        title = "Hello - Hallå",
-                        text = "Please sign this file - Signera denna fil"
-                    },
-                    expiry = (Int64)DateTime.UtcNow.AddMinutes(5).Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds,
-                    //expiry = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds(),
-                    dataToSignType = "SIMPLE_UTF8_TEXT",
-                    dataToSign = new DataToSign { text = Convert.ToBase64String(Encoding.UTF8.GetBytes(signature.data)) },
-                    signatureType = "SIMPLE",
-                    attributesToReturn = new List<AttributesToReturnItem>
-                    {
-                        //new AttributesToReturnItem
-                        //{
-                        //    attribute = "BASIC_USER_INFO",
-                        //},
-                        new AttributesToReturnItem
-                        {
-                            attribute = "EMAIL_ADDRESS",
-                        },
-                        //new AttributesToReturnItem
-                        //{
-                        //    attribute = "DATE_OF_BIRTH",
-                        //},
-                        //new AttributesToReturnItem
-                        //{
-                        //    attribute = "ADDRESSES",
-                        //},
-                        //new AttributesToReturnItem
-                        //{
-                        //    attribute = "SSN",
-                        //}
-                    }
-                };
+        /*
 
-                var json_options = new JsonSerializerOptions
-                {
-                    IgnoreNullValues = true,
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                };
+     public async Task<bool> Sign(string userInfoType, string userInfo, Signature signature)
+     {
 
-                // Convert request to json
-                string json = JsonSerializer.Serialize(request, json_options);
 
-                // Create string content
-                content = new StringContent("initSignRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
-                content.Headers.ContentType.MediaType = "application/json";
-                content.Headers.ContentType.CharSet = "utf-8";
+         // Variables
+         StringContent content = null;
+         FrejaStatusResponse status_response = null;
+         try
+         {
+             // Create a request
+             FrejaRequest request = new FrejaRequest
+             {
+                 userInfoType = userInfoType,
+                 userInfo = userInfo,
+                 minRegistrationLevel = "BASIC", // BASIC, EXTENDED or PLUS
+                 title = "Sign File",
+                 pushNotification = new PushNotification // Can not include swedish characters å,ä,ö
+                 {
+                     title = "Hello - Hallå",
+                     text = "Please sign this file - Signera denna fil"
+                 },
+                 expiry = (Int64)DateTime.UtcNow.AddMinutes(5).Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds,
+                 //expiry = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds(),
+                 dataToSignType = "SIMPLE_UTF8_TEXT",
+                 dataToSign = new DataToSign { text = Convert.ToBase64String(Encoding.UTF8.GetBytes(signature.data)) },
+                 signatureType = "SIMPLE",
+                 attributesToReturn = new List<AttributesToReturnItem>
+                 {
+                     //new AttributesToReturnItem
+                     //{
+                     //    attribute = "BASIC_USER_INFO",
+                     //},
+                     new AttributesToReturnItem
+                     {
+                         attribute = "EMAIL_ADDRESS",
+                     },
+                     //new AttributesToReturnItem
+                     //{
+                     //    attribute = "DATE_OF_BIRTH",
+                     //},
+                     //new AttributesToReturnItem
+                     //{
+                     //    attribute = "ADDRESSES",
+                     //},
+                     //new AttributesToReturnItem
+                     //{
+                     //    attribute = "SSN",
+                     //}
+                 }
+             };
 
-                // Get the response
-                HttpResponseMessage response = await client.PostAsync("/sign/1.0/initSignature", content);
+             var json_options = new JsonSerializerOptions
+             {
+                 IgnoreNullValues = true,
+                 WriteIndented = true,
+                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+             };
 
-                if (response.IsSuccessStatusCode == true)
-                {
-                    // Get string data
-                    json = await response.Content.ReadAsStringAsync();
+             // Convert request to json
+             string json = JsonSerializer.Serialize(request, json_options);
 
-                    // Add content
-                    content = new StringContent("getOneSignResultRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
-                    content.Headers.ContentType.MediaType = "application/json";
-                    content.Headers.ContentType.CharSet = "utf-8";
+             // Create string content
+             content = new StringContent("initSignRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
+             content.Headers.ContentType.MediaType = "application/json";
+             content.Headers.ContentType.CharSet = "utf-8";
 
-                    // Collect the signature
-                    Int32 timeout = this.settings.FrejaTimeoutInMilliseconds;
-                    while (true)
-                    {
-                        // Check for a timeout
-                        if (timeout <= 0)
-                        {
-                            // Cancel the order and return false
-                            content = new StringContent("cancelSignRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
-                            content.Headers.ContentType.MediaType = "application/json";
-                            content.Headers.ContentType.CharSet = "utf-8";
-                            response = await client.PostAsync("/sign/1.0/cancel", content);
-                            return false;
-                        }
+             // Get the response
+             HttpResponseMessage response = await client.PostAsync("/sign/1.0/initSignature", content);
 
-                        // Sleep for 2 seconds
-                        await Task.Delay(2000);
+             if (response.IsSuccessStatusCode == true)
+             {
+                 // Get string data
+                 json = await response.Content.ReadAsStringAsync();
 
-                        timeout -= 2000;
+                 // Add content
+                 content = new StringContent("getOneSignResultRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
+                 content.Headers.ContentType.MediaType = "application/json";
+                 content.Headers.ContentType.CharSet = "utf-8";
 
-                        // Collect a signature
-                        response = await client.PostAsync("/sign/1.0/getOneResult", content);
-                        if (response.IsSuccessStatusCode == true)
-                        {
-                            // Get string data
-                            string data = await response.Content.ReadAsStringAsync();
+                 // Collect the signature
+                 Int32 timeout = this.settings.FrejaTimeoutInMilliseconds;
+                 while (true)
+                 {
+                     // Check for a timeout
+                     if (timeout <= 0)
+                     {
+                         // Cancel the order and return false
+                         content = new StringContent("cancelSignRequest=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json)));
+                         content.Headers.ContentType.MediaType = "application/json";
+                         content.Headers.ContentType.CharSet = "utf-8";
+                         response = await client.PostAsync("/sign/1.0/cancel", content);
+                         return false;
+                     }
 
-                            // Convert data to a bankid response
-                            status_response = JsonSerializer.Deserialize<FrejaStatusResponse>(data);
+                     // Sleep for 2 seconds
+                     await Task.Delay(2000);
 
-                            if (status_response.status == "APPROVED")
-                            {
-                                // Break out from the loop
-                                break;
+                     timeout -= 2000;
 
-                            }
-                            else if (status_response.status == "STARTED" || status_response.status == "DELIVERED_TO_MOBILE" || status_response.status == "OPENED" || status_response.status == "OPENED")
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                // CANCELED, RP_CANCELED or EXPIRED
-                                return false;
-                            }
-                        }
-                        else
-                        {
+                     // Collect a signature
+                     response = await client.PostAsync("/sign/1.0/getOneResult", content);
+                     if (response.IsSuccessStatusCode == true)
+                     {
+                         // Get string data
+                         string data = await response.Content.ReadAsStringAsync();
 
-                            string data = await response.Content.ReadAsStringAsync();
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-               
-                    string data = await response.Content.ReadAsStringAsync();
-                    return false;
-                }
+                         // Convert data to a bankid response
+                         status_response = JsonSerializer.Deserialize<FrejaStatusResponse>(data);
 
-                // Update the signature
-                signature.algorithm = "SHA-256";
-                signature.padding = "Pkcs1";
-                signature.value = status_response.details;
-                signature.certificate = this.settings.FrejaJWSCertificate;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            finally
-            {
-                if (content != null)
-                {
-                    content.Dispose();
-                }
-            }
- 
-            return true;
+                         if (status_response.status == "APPROVED")
+                         {
+                             // Break out from the loop
+                             break;
+
+                         }
+                         else if (status_response.status == "STARTED" || status_response.status == "DELIVERED_TO_MOBILE" || status_response.status == "OPENED" || status_response.status == "OPENED")
+                         {
+                             continue;
+                         }
+                         else
+                         {
+                             // CANCELED, RP_CANCELED or EXPIRED
+                             return false;
+                         }
+                     }
+                     else
+                     {
+
+                         string data = await response.Content.ReadAsStringAsync();
+                         return false;
+                     }
+                 }
+             }
+             else
+             {
+
+                 string data = await response.Content.ReadAsStringAsync();
+                 return false;
+             }
+
+             // Update the signature
+             signature.algorithm = "SHA-256";
+             signature.padding = "Pkcs1";
+             signature.value = status_response.details;
+             signature.certificate = this.settings.FrejaJWSCertificate;
+         }
+         catch (Exception ex)
+         {
+             return false;
+         }
+         finally
+         {
+             if (content != null)
+             {
+                 content.Dispose();
+             }
+         }
+
+         return true;
+
+     } 
             */
-        } 
 
+        /*
         public SignatureValidationResult Validate(Signature signature)
         {
-            throw new NotImplementedException();
-            /*
+
+
             // Create the result to return
             SignatureValidationResult result = new SignatureValidationResult();
             result.signature_data = signature.data;
@@ -478,7 +482,7 @@ namespace Intwenty.Services
             }
             catch (Exception ex)
             {
-              
+
             }
 
             // Make sure that signature data conforms
@@ -489,9 +493,9 @@ namespace Intwenty.Services
 
 
             return result;
-            */
-        } 
 
+        } 
+        */
 
 
         public static HashAlgorithmName GetHashAlgorithmName(string signature_algorithm)

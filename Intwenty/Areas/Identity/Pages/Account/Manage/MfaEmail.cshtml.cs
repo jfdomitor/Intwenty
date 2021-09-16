@@ -77,14 +77,14 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
                 {
                     model.ResultCode = string.Empty;
                     await _userManager.SetTwoFactorEnabledAsync(user, true);
-                    await _userManager.AddUpdateUserSetting(user, "EMAILMFA", "TRUE");
+                    await _userManager.AddUpdateUserSettingAsync(user, "EMAILMFA", "TRUE");
                     return new JsonResult(model);
                 }
                 else
                 {
                     model.ResultCode = "ERROR_VERIFY_TOKEN";
                     await _userManager.SetTwoFactorEnabledAsync(user, false);
-                    await _userManager.AddUpdateUserSetting(user, "EMAILMFA", "FALSE");
+                    await _userManager.AddUpdateUserSettingAsync(user, "EMAILMFA", "FALSE");
                     return new JsonResult(model) { StatusCode = 501 };
                 }
             }

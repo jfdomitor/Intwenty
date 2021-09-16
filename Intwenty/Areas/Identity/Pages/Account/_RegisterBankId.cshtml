@@ -33,6 +33,10 @@
         @Localizer["BANKID_AUTH_FAILURE"]
     </div>
 
+    <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_NO_EMAIL')">
+        @Localizer["BANKID_NO_EMAIL"]
+    </div>
+
     <div class="alert alert-danger" v-if="(model.resultCode=='INVALID_LOGIN_ATTEMPT')">
         @Localizer["Invalid login attemt"]
     </div>
@@ -40,39 +44,304 @@
 
     <div v-if="model.resultCode=='INIT'">
 
-        @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization)
+        @if (Settings.Value.LocalizationMethod == LocalizationMethods.UserLocalization && Settings.Value.AccountsCultureUsage.IsRegisterPageEditable)
         {
-            <div class="form-group">
-                <label>@Localizer["Language"]</label>
-                <select v-model="model.language" class="form-control" id="lang" v-on:input="onUserInput(event)" data-required="True">
-                    @{
-                        foreach (var t in Settings.Value.LocalizationSupportedLanguages)
-                        {
-                            <option value="@t.Culture">@t.Name</option>
+            if (Settings.Value.AccountsCultureUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Language"] <span style="color: red"> *</span></label>
+                    <select v-model="model.culture" class="form-control" id="lang" v-on:input="onUserInput(event)" data-required="True">
+                        @{
+                            foreach (var t in Settings.Value.LocalizationSupportedLanguages)
+                            {
+                                <option value="@t.Culture">@t.Name</option>
+                            }
                         }
-                    }
-                </select>
-            </div>
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Language"]</label>
+                    <select v-model="model.culture" class="form-control" id="lang">
+                        @{
+                            foreach (var t in Settings.Value.LocalizationSupportedLanguages)
+                            {
+                                <option value="@t.Culture">@t.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
 
         }
 
-        @if (Settings.Value.AccountsUseEmailAsUserName)
+        @if (Settings.Value.AccountsLegalIdNumberUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsLegalIdNumberUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Legal ID number"] <span style="color: red"> *</span></label>
+                    <input type="number" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Legal ID number"]</label>
+                    <input type="number" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" autocomplete="nope" />
+                </div>
+            }
+        }
+
+        @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Email)
         {
             <div class="form-group">
-                <label>Email <span style="color: red"> *</span></label>
+                <label>@Localizer["Email"] <span style="color: red"> *</span></label>
                 <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
             </div>
         }
         else
         {
-            <div class="form-group">
-                <label>@Localizer["User Name"] <span style="color: red"> *</span></label>
-                <input type="email" v-model="model.userName" class="form-control" id="username" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+            @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Input)
+            {
+                <div class="form-group">
+                    <label>@Localizer["User Name"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.userName" class="form-control" id="username" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+
+            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Email"] <span style="color: red"> *</span></label>
+                    <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+
+            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.Editable)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Email"]</label>
+                    <input type="email" v-model="model.email" class="form-control" id="email"  autocomplete="nope" />
+                </div>
+            }
+
+        }
+
+        @if (Settings.Value.AccountsPhoneUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsPhoneUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Phone"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.phoneNumber" class="form-control" id="phonenumber" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Phone"]</label>
+                    <input type="text" v-model="model.phoneNumber" class="form-control" id="phonenumber" autocomplete="nope" />
+                </div>
+            }
+        }
+
+        @if (Settings.Value.AccountsCompanyNameUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsCompanyNameUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Company Name"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.companyName" class="form-control" id="companyname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Company Name"]</label>
+                    <input type="text" v-model="model.companyName" class="form-control" id="companyname" autocomplete="nope" />
+                </div>
+            }
+        }
+
+        @if (Settings.Value.AccountsUserSelectableRoleUsage.IsRegisterPageEditable && Settings.Value.AccountsUserSelectableRoles != null)
+        {
+            if (Settings.Value.AccountsUserSelectableRoleUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Requested Role"] <span style="color: red"> *</span></label>
+                    <select v-model="model.requestedRole" class="form-control" id="userselectedrole" v-on:input="onUserInput(event)" data-required="True">
+                        @{
+                            foreach (var t in Settings.Value.AccountsUserSelectableRoles)
+                            {
+                                <option value="@t.RoleName">@t.Title</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Requested Role"]</label>
+                    <select v-model="model.requestedRole" class="form-control" id="userselectedrole">
+                        @{
+                            foreach (var t in Settings.Value.AccountsUserSelectableRoles)
+                            {
+                                <option value="@t.RoleName">@t.Title</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+        }
+
+        @if (Settings.Value.AccountsNameUsage.IsRegisterPageEditable || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+        {
+            if (Settings.Value.AccountsNameUsage.RegisterPage == InputUsageType.EditableRequired || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+            {
+                <div class="form-group">
+                    <label>@Localizer["First Name"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.firstName" class="form-control" id="firstname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Last Name"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.lastName" class="form-control" id="lastname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["First Name"]</label>
+                    <input type="text" v-model="model.firstName" class="form-control" id="firstname" autocomplete="nope" />
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Last Name"]</label>
+                    <input type="text" v-model="model.lastName" class="form-control" id="lastname" autocomplete="nope" />
+                </div>
+            }
+        }
+
+
+        @if (Settings.Value.AccountsAddressUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsAddressUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+
+                <div class="form-group">
+                    <label>@Localizer["Address"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.address" class="form-control" id="address" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Address"]</label>
+                    <input type="text" v-model="model.address" class="form-control" id="address" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+        }
+
+        @if (Settings.Value.AccountsZipCodeUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsZipCodeUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Zipcode"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Zipcode"]</label>
+                    <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" autocomplete="nope" />
+                </div>
+            }
+
+        }
+
+        @if (Settings.Value.AccountsCityUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsCityUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["City"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.city" class="form-control" id="city" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["City"]</label>
+                    <input type="text" v-model="model.city" class="form-control" id="city" autocomplete="nope" />
+                </div>
+            }
+
+        }
+
+        @if (Settings.Value.AccountsCountyUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsCountyUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["County"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.county" class="form-control" id="county" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["County"]</label>
+                    <input type="text" v-model="model.county" class="form-control" id="county" autocomplete="nope" />
+                </div>
+            }
+
+        }
+
+        @if (Settings.Value.AccountsCountryUsage.IsRegisterPageEditable)
+        {
+            if (Settings.Value.AccountsCountryUsage.RegisterPage == InputUsageType.EditableRequired)
+            {
+                <div class="form-group">
+                    <label>@Localizer["Country"] <span style="color: red"> *</span></label>
+                    <input type="text" v-model="model.country" class="form-control" id="country" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>@Localizer["Country"]</label>
+                    <input type="text" v-model="model.country" class="form-control" id="country" autocomplete="nope" />
+                </div>
+            }
+
+        }
+
+        @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsRegisterPageEditable)
+        {
+            <div class="largecheckbox">
+                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" /><label>@Localizer["Allow Email Notifications"]</label>
             </div>
 
-            <div class="form-group">
-                <label>Email <span style="color: red"> *</span></label>
-                <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+        }
+
+        @if (Settings.Value.AccountsAllowSmsNotificationsUsage.IsRegisterPageEditable)
+        {
+            <div class="largecheckbox">
+                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
+            </div>
+
+        }
+
+        @if (Settings.Value.AccountsAllowPublicProfileUsage.IsRegisterPageEditable)
+        {
+            <div class="largecheckbox">
+                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" /><label>@Localizer["Allow Public Profile"]</label>
             </div>
 
         }
@@ -81,11 +350,14 @@
 
     </div>
 
-    <div v-if="model.resultCode=='BANKID_START_REG'">
-        <button class="btn btn-primary m-3" v-on:click="startBankId('BANKID_START_OTHER')">@Localizer["BANKID_USE_OTHER_DEVICE"]</button>
-
-        <button class="btn btn-secondary m-3" v-on:click="startBankId('BANKID_START_THIS')">@Localizer["BANKID_USE_THIS_DEVICE"]</button>
-    </div>
+    <!-- Iif the option BankidUsageType.OtherDevice is used, startBankId('BANKID_START_OTHER') will execute automaticly -->
+    @if (Settings.Value.BankIdUsage == BankIdUsageTypes.OtherAndThisDevice)
+    {
+        <div v-if="model.resultCode=='BANKID_START_REG'">
+            <button class="btn btn-primary m-3" v-on:click="startBankId('BANKID_START_OTHER')">@Localizer["BANKID_USE_OTHER_DEVICE"]</button>
+            <button class="btn btn-secondary m-3" v-on:click="startBankId('BANKID_START_THIS')">@Localizer["BANKID_USE_THIS_DEVICE"]</button>
+        </div>
+    }
 
     <div v-if="(model.resultCode=='BANKID_AUTH_QR')">
         <div class="alert alert-primary">
@@ -97,14 +369,14 @@
     </div>
 
     <div v-if="(model.resultCode=='BANKID_AUTH_BUTTON')">
-        <a class="btn btn-primary m-3" v-bind:href="model.authServiceUrl" v-on:click="AuthenticateBankId()">
+        <a class="btn btn-primary m-3" v-bind:href="model.authServiceUrl" v-on:click="authenticateBankId()">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" v-if="model.actionCode == 'WAIT_FOR_BANKID_AUTH'"></span>
             @Localizer["BANKID_OPEN_THIS_DEVICE"]
         </a>
     </div>
 
 
-  
+
 
 
 </div>

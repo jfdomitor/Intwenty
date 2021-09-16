@@ -37,3 +37,21 @@ body {
     border: solid 0px #DDD !important;
     padding: 10px;
 }
+
+.largecheckbox {
+    display: flex;
+    align-items: initial;
+    margin-bottom: 10px;
+}
+
+.largecheckbox input[type=checkbox] {
+    zoom: 1.5;
+    margin: 0px;
+    line-height: normal;
+    align-self: center;
+}
+
+.largecheckbox label {
+    font-weight: normal;
+    margin-left: 7px;
+}
