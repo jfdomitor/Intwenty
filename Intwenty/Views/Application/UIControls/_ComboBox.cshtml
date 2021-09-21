@@ -1,7 +1,7 @@
 ﻿@model IUIComplexBinding
 
 @{
-    var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"]);
+    var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"].Value);
     var usesearch = "FALSE";
     var multiselect = "FALSE";
     var allowcreate = "FALSE";

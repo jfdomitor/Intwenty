@@ -53,8 +53,9 @@ GO
 ALTER TABLE [dbo].[sysmodel_FunctionItem] DROP COLUMN [ActionUserInterfaceMetaCode]
 GO
 ALTER TABLE [dbo].[sysmodel_FunctionItem] ADD 
-[ActionMetaCode] [nvarchar] (300) COLLATE Finnish_Swedish_CI_AS NULL,
-[ActionMetaType] [nvarchar] (300) COLLATE Finnish_Swedish_CI_AS NULL
+[ActionMetaCode] [nvarchar] (300) NULL,
+[ActionMetaType] [nvarchar] (300) NULL
 GO
 ALTER TABLE [dbo].[sysmodel_UserInterfaceStructureItem] DROP COLUMN [DataViewMetaCode],[DataViewColumn1MetaCode],[DataViewColumn2MetaCode]
 GO
+ALTER TABLE [dbo].[sysmodel_ViewItem] ADD [FilePath] [nvarchar] (300) NULL

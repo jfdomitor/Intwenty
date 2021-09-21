@@ -110,7 +110,6 @@
             @if (Settings.Value.AccountsNameUsage.IsAccountPageVisible)
             {
                 <br />
-                <i><b>@Localizer["Name"]</b></i>
                 <br />
                 if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.Readonly)
                 {
@@ -155,7 +154,6 @@
             @if (Settings.Value.AccountsCompanyNameUsage.IsAccountPageVisible)
             {
                 <br />
-                <i><b>@Localizer["Company Name"]</b></i>
                 <br />
 
                 if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.Readonly)
@@ -185,7 +183,6 @@
             @if (Settings.Value.AccountsUserSelectableRoleUsage.IsAccountPageVisible && Settings.Value.AccountsUserSelectableRoles != null)
             {
                 <br />
-                <i><b>@Localizer["Requested Role"]</b></i>
                 <br />
 
                 if (Settings.Value.AccountsUserSelectableRoleUsage.AccountPage == InputUsageType.Readonly)
@@ -238,7 +235,6 @@
             @if (Settings.Value.AccountsAddressUsage.IsAccountPageVisible)
             {
                 <br />
-                <i><b>@Localizer["Address"]</b></i>
                 <br />
 
                 if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.Readonly)
@@ -401,8 +397,8 @@
             }
 
             @if (Settings.Value.AccountsAllowEmailNotificationsUsage.IsAccountPageVisible ||
-              Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible ||
-               Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
+                 Settings.Value.AccountsAllowSmsNotificationsUsage.IsAccountPageVisible ||
+                 Settings.Value.AccountsAllowPublicProfileUsage.IsAccountPageVisible)
             {
 
 

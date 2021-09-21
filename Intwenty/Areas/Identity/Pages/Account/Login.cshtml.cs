@@ -247,9 +247,16 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        await _dbloggerService.LogIdentityActivityAsync("INFO", string.Format("User {0} logged in with Freja e Id", attemptinguser.UserName), attemptinguser.UserName);
+                        attemptinguser.LastLoginProduct = _settings.Value.ProductId;
+                        attemptinguser.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                        attemptinguser.LastLoginMethod = "Freja e ID";
+                        await client.OpenAsync();
+                        await client.UpdateEntityAsync(attemptinguser);
+                        await client.CloseAsync();
                         model.ReturnUrl = Url.Content("~/");
                         model.ResultCode = "SUCCESS";
-                        await _dbloggerService.LogIdentityActivityAsync("INFO", string.Format("User {0} logged in with Freja e Id", attemptinguser.UserName), attemptinguser.UserName);
+                    
                         return new JsonResult(model);
 
                     }
@@ -326,8 +333,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     else if (authresult.IsAuthOk)
                     {
 
-                        var client = _userManager.GetIAMDataClient();
-
+                    
                         var attemptinguser = await _userManager.FindByLegalIdIdNumberAsync(authresult.CompletionData.User.PersonalNumber);
 
                         if (attemptinguser == null)
@@ -356,9 +362,18 @@ namespace Intwenty.Areas.Identity.Pages.Account
                         }
                         else
                         {
+                            await _dbloggerService.LogIdentityActivityAsync("INFO", string.Format("User {0} logged in with swedish Bank ID", attemptinguser.UserName), attemptinguser.UserName);
+                            attemptinguser.LastLoginProduct = _settings.Value.ProductId;
+                            attemptinguser.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            attemptinguser.LastLoginMethod = "Bank ID";
+                            var client = _userManager.GetIAMDataClient();
+                            await client.OpenAsync();
+                            await client.UpdateEntityAsync(attemptinguser);
+                            await client.CloseAsync();
+                        
                             model.ReturnUrl = Url.Content("~/");
                             model.ResultCode = "SUCCESS";
-                            await _dbloggerService.LogIdentityActivityAsync("INFO", string.Format("User {0} logged in with swedish Bank ID", attemptinguser.UserName), attemptinguser.UserName);
+                          
                             return new JsonResult(model);
 
                         }
@@ -413,14 +428,13 @@ namespace Intwenty.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 await _dbloggerService.LogIdentityActivityAsync("INFO", string.Format("User {0} logged in with password", model.UserName), model.UserName);
-                if (attemptinguser != null)
-                {
-                    attemptinguser.LastLoginProduct = _settings.Value.ProductId;
-                    attemptinguser.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    await client.OpenAsync();
-                    await client.UpdateEntityAsync(attemptinguser);
-                    await client.CloseAsync();
-                }
+                attemptinguser.LastLoginProduct = _settings.Value.ProductId;
+                attemptinguser.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                attemptinguser.LastLoginMethod = "Local account";
+                await client.OpenAsync();
+                await client.UpdateEntityAsync(attemptinguser);
+                await client.CloseAsync();
+                
 
                 model.ResultCode = "SUCCESS";
                 return new JsonResult(model);

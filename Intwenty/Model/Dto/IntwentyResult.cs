@@ -58,6 +58,11 @@ namespace Intwenty.Model.Dto
             get { return Messages.Count > 0; }
         }
 
+        public bool HasUserMessage
+        {
+            get { return Messages.Count > 0 && Messages.Exists(p=> p.Code== MessageCode.USERERROR && !string.IsNullOrEmpty(p.Message)); }
+        }
+
         public double Duration
         {
             get { return EndTime.Subtract(StartTime).TotalMilliseconds; }

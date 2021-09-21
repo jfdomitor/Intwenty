@@ -116,30 +116,32 @@ namespace Intwenty.Areas.Identity.Pages.Account
             if (mfastatus.HasSmsMFA) 
             {
                 result = await _signInManager.TwoFactorSignInAsync(_userManager.Options.Tokens.ChangePhoneNumberTokenProvider, Input.TwoFactorCode, true, Input.RememberMachine);
+                user.LastLoginMethod = "SMS MFA";
             }
             else if (mfastatus.HasEmailMFA)
             {
                 result = await _signInManager.TwoFactorSignInAsync(_userManager.Options.Tokens.ChangePhoneNumberTokenProvider, Input.TwoFactorCode, true, Input.RememberMachine);
+                user.LastLoginMethod = "Email MFA";
             }
             else 
             {
                 var authenticatorCode = Input.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
                 result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, Input.RememberMachine);
-
+                user.LastLoginMethod = "TOTP MFA";
             }
 
         
             if (result.Succeeded)
             {
-                if (user != null)
-                {
-                    user.LastLoginProduct = _settings.ProductId;
-                    user.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    var client = _userManager.GetIAMDataClient();
-                    await client.OpenAsync();
-                    await client.UpdateEntityAsync(user);
-                    await client.CloseAsync();
-                }
+               
+                user.LastLoginProduct = _settings.ProductId;
+                user.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                var client = _userManager.GetIAMDataClient();
+                await client.OpenAsync();
+                await client.UpdateEntityAsync(user);
+                await client.CloseAsync();
+                
 
                 return LocalRedirect(returnUrl);
             }

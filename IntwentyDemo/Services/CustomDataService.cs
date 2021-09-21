@@ -218,6 +218,9 @@ namespace IntwentyDemo.Services
                 }
                 else
                 {
+                    if (!dv.GetAsString().Contains("@") || !dv.GetAsString().Contains("."))
+                        return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} must contain @ and .", "Email"), state.Id, state.Version);
+
                     return new ModifyResult(true, MessageCode.RESULT, "Successfully validated", state.Id, state.Version);
                 }
             }

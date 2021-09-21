@@ -12,6 +12,8 @@ using Intwenty.Model;
 using System.Collections.Generic;
 using System.Linq;
 using Intwenty.Helpers;
+using System.Security;
+using Intwenty.Model.Exceptions;
 
 namespace Intwenty.Controllers
 {
@@ -281,17 +283,22 @@ namespace Intwenty.Controllers
                     {
                         var pub_save_res = DataRepository.Save(state, appmodel);
                         if (!pub_save_res.IsSuccess)
-                            throw new InvalidOperationException(pub_save_res.UserError);
+                        {
+                            if (pub_save_res.HasUserMessage)
+                                throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString(pub_save_res.UserError));
+                            else
+                                throw new InvalidOperationException(pub_save_res.SystemError);
+                        }
 
                         return new JsonResult(pub_save_res);
                     }
                     else
                     {
                         if (!User.Identity.IsAuthenticated)
-                            throw new InvalidOperationException("You must login to use this function");
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                         if (!await UserManager.HasAuthorization(User, viewmodel))
-                            throw new InvalidOperationException(string.Format("You are not authorized to modify data in this view"));
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this view"));
 
                     }
                     
@@ -299,25 +306,38 @@ namespace Intwenty.Controllers
                 else
                 {
                     if (!User.Identity.IsAuthenticated)
-                        throw new InvalidOperationException("You must login to use this function");
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                     if (!await UserManager.HasAuthorization(User, appmodel.Application))
-                        throw new InvalidOperationException(string.Format("You are not authorized to modify data in this application"));
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this application"));
 
                 }
 
 
                 var res = DataRepository.Save(state, appmodel);
                 if (!res.IsSuccess)
-                    throw new InvalidOperationException(res.UserError);
+                {
+                    if (res.HasUserMessage)
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString(res.UserError));
+                    else
+                        throw new InvalidOperationException(res.SystemError);
+                }
 
                 return new JsonResult(res);
 
             }
+            catch (IntwentyNotifyUserException ex)
+            {
+                var r = new OperationResult();
+                r.SetError(ex.Message, ex.Message);
+                var jres = new JsonResult(r);
+                jres.StatusCode = 500;
+                return jres;
+            }
             catch (Exception ex)
             {
                 var r = new OperationResult();
-                r.SetError(ex.Message, "An error occured when saving an application.");
+                r.SetError(ex.Message, ModelRepository.GetLocalizedString("An error occured when saving an application."));
                 var jres = new JsonResult(r);
                 jres.StatusCode = 500;
                 return jres;
@@ -364,14 +384,19 @@ namespace Intwenty.Controllers
                     {
                         var pub_del_res = DataRepository.SaveSubTableLine(state, appmodel, row);
                         if (!pub_del_res.IsSuccess)
-                            throw new InvalidOperationException(pub_del_res.UserError);
+                        {
+                            if (pub_del_res.HasUserMessage)
+                                throw new IntwentyNotifyUserException(pub_del_res.UserError);
+                            else
+                                throw new InvalidOperationException(pub_del_res.SystemError);
+                        }
 
                         return new JsonResult(pub_del_res);
                     }
                     else
                     {
                         if (!await UserManager.HasAuthorization(User, viewmodel))
-                            throw new InvalidOperationException(string.Format("You are not authorized to modify data in this view"));
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this view"));
 
                     }
 
@@ -379,20 +404,33 @@ namespace Intwenty.Controllers
                 else
                 {
                     if (!User.Identity.IsAuthenticated)
-                        throw new InvalidOperationException("You must login to use this function");
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                     if (!await UserManager.HasAuthorization(User, appmodel.Application))
-                        throw new InvalidOperationException(string.Format("You are not authorized to modify data in this application"));
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this application"));
 
                 }
 
 
                 var res = DataRepository.SaveSubTableLine(state, appmodel, row);
                 if (!res.IsSuccess)
-                    throw new InvalidOperationException(res.UserError);
+                {
+                    if (res.HasUserMessage)
+                        throw new IntwentyNotifyUserException(res.UserError);
+                    else
+                        throw new InvalidOperationException(res.SystemError);
+                }
 
                 return new JsonResult(res);
 
+            }
+            catch (IntwentyNotifyUserException ex)
+            {
+                var r = new OperationResult();
+                r.SetError(ex.Message, ex.Message);
+                var jres = new JsonResult(r);
+                jres.StatusCode = 500;
+                return jres;
             }
             catch (Exception ex)
             {
@@ -437,17 +475,22 @@ namespace Intwenty.Controllers
                     {
                         var pub_del_res = DataRepository.Delete(state, appmodel);
                         if (!pub_del_res.IsSuccess)
-                            throw new InvalidOperationException(pub_del_res.UserError);
+                        {
+                            if (pub_del_res.HasUserMessage)
+                                throw new IntwentyNotifyUserException(pub_del_res.UserError);
+                            else
+                                throw new InvalidOperationException(pub_del_res.SystemError);
+                        }
 
                         return new JsonResult(pub_del_res);
                     }
                     else
                     {
                         if (!User.Identity.IsAuthenticated)
-                            throw new InvalidOperationException("You must login to use this function");
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                         if (!await UserManager.HasAuthorization(User, viewmodel))
-                            throw new InvalidOperationException(string.Format("You are not authorized to delete data in this view"));
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this view"));
 
                     }
                     
@@ -455,19 +498,32 @@ namespace Intwenty.Controllers
                 else
                 {
                     if (!User.Identity.IsAuthenticated)
-                        throw new InvalidOperationException("You must login to use this function");
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                     if (!await UserManager.HasAuthorization(User, appmodel.Application))
-                        throw new InvalidOperationException(string.Format("You are not authorized to delete data in this application"));
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this application"));
 
                 }
 
                 var res = DataRepository.Delete(state, appmodel);
                 if (!res.IsSuccess)
-                    throw new InvalidOperationException(res.UserError);
+                {
+                    if (res.HasUserMessage)
+                        throw new IntwentyNotifyUserException(res.UserError);
+                    else
+                        throw new InvalidOperationException(res.SystemError);
+                }
 
                 return new JsonResult(res);
 
+            }
+            catch (IntwentyNotifyUserException ex)
+            {
+                var r = new OperationResult();
+                r.SetError(ex.Message, ex.Message);
+                var jres = new JsonResult(r);
+                jres.StatusCode = 500;
+                return jres;
             }
             catch (Exception ex)
             {
@@ -518,14 +574,19 @@ namespace Intwenty.Controllers
                     {
                         var pub_del_res = DataRepository.DeleteSubTableLine(state, appmodel, row);
                         if (!pub_del_res.IsSuccess)
-                            throw new InvalidOperationException(pub_del_res.UserError);
+                        {
+                            if (pub_del_res.HasUserMessage)
+                                throw new IntwentyNotifyUserException(pub_del_res.UserError);
+                            else
+                                throw new InvalidOperationException(pub_del_res.SystemError);
+                        }
 
                         return new JsonResult(pub_del_res);
                     }
                     else
                     {
                         if (!await UserManager.HasAuthorization(User, viewmodel))
-                            throw new InvalidOperationException(string.Format("You are not authorized to delete data in this view"));
+                            throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this view"));
 
                      }
                     
@@ -533,20 +594,33 @@ namespace Intwenty.Controllers
                 else
                 {
                     if (!User.Identity.IsAuthenticated)
-                        throw new InvalidOperationException("You must login to use this function");
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
                     if (!await UserManager.HasAuthorization(User, appmodel.Application))
-                        throw new InvalidOperationException(string.Format("You are not authorized to delete data in this application"));
+                        throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this application"));
 
                 }
 
 
                 var res = DataRepository.DeleteSubTableLine(state, appmodel, row);
                 if (!res.IsSuccess)
-                    throw new InvalidOperationException(res.UserError);
+                {
+                    if (res.HasUserMessage)
+                        throw new IntwentyNotifyUserException(res.UserError);
+                    else
+                        throw new InvalidOperationException(res.SystemError);
+                }
 
                 return new JsonResult(res);
 
+            }
+            catch (IntwentyNotifyUserException ex)
+            {
+                var r = new OperationResult();
+                r.SetError(ex.Message, ex.Message);
+                var jres = new JsonResult(r);
+                jres.StatusCode = 500;
+                return jres;
             }
             catch (Exception ex)
             {
