@@ -750,6 +750,7 @@ Vue.prototype.canSave = function () {
         }
     });
 
+    context.$forceUpdate();
 
     return result;
 };

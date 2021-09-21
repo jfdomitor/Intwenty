@@ -340,7 +340,7 @@ namespace Intwenty
             {
                 result = new ModifyResult() { Id = state.Id, Version = state.Version };
                 result.IsSuccess = false;
-                result.AddMessage(MessageCode.USERERROR, string.Format("Save Intwenty application failed"));
+                result.AddMessage(MessageCode.USERERROR, string.Format("Save application failed"));
                 result.AddMessage(MessageCode.SYSTEMERROR, ex.Message);
                 DbLogger.LogErrorAsync("IntwentyDataService.Save: " + ex.Message);
             }
@@ -447,7 +447,7 @@ namespace Intwenty
             {
                 result = new ModifyResult() { Id = row.Id, Version = state.Version };
                 result.IsSuccess = false;
-                result.AddMessage(MessageCode.USERERROR, string.Format("Save Intwenty sub table row failed"));
+                result.AddMessage(MessageCode.USERERROR, string.Format("Save table row failed"));
                 result.AddMessage(MessageCode.SYSTEMERROR, ex.Message);
                 DbLogger.LogErrorAsync("IntwentyDataService.SaveSubTableLine: " + ex.Message);
             }
