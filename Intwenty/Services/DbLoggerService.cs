@@ -97,15 +97,27 @@ namespace Intwenty.Services
             {
                 if (string.IsNullOrEmpty(verbosity))
                 {
+                    var sql = "";
+                    if (client.Database == DBMS.MSSqlServer)
+                        sql = string.Format("SELECT TOP {0} * FROM sysdata_EventLog ORDER BY Id DESC", Settings.LogFetchMaxRows);
+                    else
+                        sql = string.Format("SELECT * FROM sysdata_EventLog ORDER BY Id DESC LIMIT {0}", Settings.LogFetchMaxRows);
+                   
 
-                    var result = await client.GetEntitiesAsync<EventLog>("SELECT * FROM sysdata_EventLog ORDER BY Id DESC", false);
+                    var result = await client.GetEntitiesAsync<EventLog>(sql, false);
                     return result;
                 }
                 else
                 {
+                    var sql = "";
+                    if (client.Database == DBMS.MSSqlServer)
+                        sql = string.Format("SELECT TOP {0} * FROM sysdata_EventLog WHERE Verbosity=@Verbosity ORDER BY Id DESC", Settings.LogFetchMaxRows);
+                    else
+                        sql = string.Format("SELECT * FROM sysdata_EventLog WHERE Verbosity=@Verbosity ORDER BY Id DESC LIMIT {0}", Settings.LogFetchMaxRows);
+
                     var parameters = new List<IIntwentySqlParameter>();
                     parameters.Add(new IntwentySqlParameter("@Verbosity", verbosity));
-                    var result = await client.GetEntitiesAsync<EventLog>("SELECT * FROM sysdata_EventLog WHERE Verbosity=@Verbosity ORDER BY Id DESC", false, parameters.ToArray());
+                    var result = await client.GetEntitiesAsync<EventLog>(sql, false, parameters.ToArray());
                     return result;
                 }
             }

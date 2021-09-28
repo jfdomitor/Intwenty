@@ -30,6 +30,7 @@ namespace Intwenty.Model
 
         public IntwentySettings()
         {
+            LogFetchMaxRows = 500;
             LogVerbosity = LogVerbosityTypes.Error;
             StartUpRoutingMode = RoutingModeOptions.Explicit;
             FrejaTimeoutInMilliseconds = 90000;
@@ -56,6 +57,8 @@ namespace Intwenty.Model
         }
 
         public LogVerbosityTypes LogVerbosity { get; set; }
+
+        public int LogFetchMaxRows { get; set; }
 
         /// <summary>
         /// Database connections
