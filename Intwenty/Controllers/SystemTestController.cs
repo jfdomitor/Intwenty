@@ -24,7 +24,7 @@ namespace Intwenty.Controllers
 {
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    [Authorize(Policy = "IntwentyModelAuthorizationPolicy")]
+    [Authorize(Policy = "IntwentySystemAdminAuthorizationPolicy")]
     public class SystemTestController : Controller
     {
         private readonly IIntwentyDbLoggerService _dbloggerservice;
