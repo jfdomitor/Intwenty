@@ -13,7 +13,13 @@
     <br />
     <div class="card">
         <div class="card-header"><h2>Users</h2></div>
-        <div class="card-body">Add users and manage access.</div>
+        <div class="card-body">
+            Manage users.
+            @if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                <i>You have limited access to this function.</i>
+            }
+        </div>
     </div>
 
     <br />

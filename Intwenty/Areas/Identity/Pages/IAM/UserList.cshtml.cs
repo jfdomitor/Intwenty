@@ -16,13 +16,14 @@ using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
-    [Authorize(Policy = "IntwentyUserAdminAuthorizationPolicy")]
+    [Authorize(Roles = "SUPERADMIN,USERADMIN")]
     public class UserListModel : PageModel
     {
 
         private IIntwentyDbLoggerService DbLogger { get; }
         private IntwentySettings Settings { get; }
         private IntwentyUserManager UserManager { get; }
+
 
         public UserListModel(IIntwentyDbLoggerService logger, IOptions<IntwentySettings> settings, IntwentyUserManager usermanager)
         {
@@ -38,11 +39,8 @@ namespace Intwenty.Areas.Identity.Pages.IAM
 
         public async Task<JsonResult> OnGetLoad()
         {
-            var client = UserManager.GetIAMDataClient();
-            await client.OpenAsync();
-            var result = await client.GetEntitiesAsync<IntwentyUser>();
+            var result = await UserManager.GetUsersByAdminAccessAsync(User);
             var list = result.Select(p => new IntwentyUserVm(p));
-            await client.CloseAsync();
             return new JsonResult(list);
         }
 

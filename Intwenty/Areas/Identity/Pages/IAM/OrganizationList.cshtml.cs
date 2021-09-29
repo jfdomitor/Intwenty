@@ -13,7 +13,7 @@ using Intwenty.Areas.Identity.Data;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
-    [Authorize(Policy = "IntwentyUserAdminAuthorizationPolicy")]
+    [Authorize(Roles = "SUPERADMIN,USERADMIN")]
     public class OrganizationListModel : PageModel
     {
 
@@ -35,18 +35,35 @@ namespace Intwenty.Areas.Identity.Pages.IAM
 
         public async Task<IActionResult> OnGetLoad()
         {
-            var list = await OrganizationManager.GetAllAsync();
-            return new JsonResult(list.Select(p=> new IntwentyOrganizationVm(p)).ToList());
+            if (User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                var list = await OrganizationManager.GetAllAsync();
+                return new JsonResult(list.Select(p => new IntwentyOrganizationVm(p)).ToList());
+            }
+            else
+            {
+
+                var list = await OrganizationManager.GetByUserAsync(User.Identity.Name);
+                return new JsonResult(list.Select(p => new IntwentyOrganizationVm(p)).ToList());
+            }
+
+
         }
 
 
         public async Task<IActionResult> OnPostAddEntity([FromBody] IntwentyOrganization model)
         {
-             await OrganizationManager.CreateAsync(model);
-             return await OnGetLoad();
+            if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+                return await OnGetLoad();
+
+            await OrganizationManager.CreateAsync(model);
+            return await OnGetLoad();
         }
         public async Task<IActionResult> OnPostDeleteEntity([FromBody] IntwentyOrganization model)
         {
+            if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+                return await OnGetLoad();
+
             var user = await OrganizationManager.FindByIdAsync(model.Id);
             if (user != null)
                 await OrganizationManager.DeleteAsync(model);

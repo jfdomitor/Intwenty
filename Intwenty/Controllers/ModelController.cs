@@ -18,7 +18,7 @@ namespace Intwenty.Controllers
 {
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    [Authorize(Policy = "IntwentyModelAuthorizationPolicy")]
+    [Authorize(Policy = "IntwentySystemAdminAuthorizationPolicy")]
     public class ModelController : Controller
     {
         public IIntwentyDataService DataRepository { get; }

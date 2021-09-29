@@ -12,14 +12,17 @@ namespace Intwenty.Areas.Identity.Models
         public static readonly string RoleAPIUser = "APIUSER";
         public static readonly string RoleUser = "USER";
 
+      
+
         public static string[] AdminRoles
         {
             get 
             {
-                return new string[] { RoleSuperAdmin, RoleUserAdmin, RoleSystemAdmin };
+                return new string[] { RoleSuperAdmin, RoleSystemAdmin };
             }
 
         }
+
 
         public static string[] IAMRoles
         {

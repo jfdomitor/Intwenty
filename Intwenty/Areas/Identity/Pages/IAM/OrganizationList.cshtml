@@ -13,7 +13,13 @@
     <br />
     <div class="card">
         <div class="card-header"><h2>Organizations</h2></div>
-        <div class="card-body">Add and remove user organizations</div>
+        <div class="card-body">
+            Manage user organizations. 
+            @if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            { 
+                <i>You have limited access to this function.</i>
+            }
+        </div>
     </div>
 
     <br />
@@ -21,9 +27,12 @@
 
     <div>
 
+       @if (User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+       {
         <div class="btn btn-sm btn-secondary" v-on:click="addEntity">
             <span class="fa fa-plus"></span>
         </div>
+       }
     </div>
     <br />
     <br />
@@ -39,7 +48,12 @@
         </thead>
         <tbody v-for="item in list">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="deleteEntity(item)" title=" Delete"><i class="fa fa-trash"></i></div></td>
+                <td>
+                    @if (User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+                    {
+                        <div class="btn btn-sm btn-danger" v-on:click="deleteEntity(item)" title=" Delete"><i class="fa fa-trash"></i></div>
+                    }
+                </td>
                 <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'Organization/' + item.id" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{item.id}}</td>
                 <td>{{item.name}}</td>

@@ -69,7 +69,6 @@ namespace IntwentyDemo
 
 
                         //****** Required ******
-                        //Default is anonymus athorization, comment out this line and use policy.RequireRole to apply role base authorization
                         services.AddAuthorization(options =>
                         {
                             options.AddPolicy("IntwentyAppAuthorizationPolicy", policy =>
@@ -78,22 +77,12 @@ namespace IntwentyDemo
                                 policy.RequireRole(IntwentyRoles.UserRoles);
                             });
 
-                            options.AddPolicy("IntwentyModelAuthorizationPolicy", policy =>
+                            options.AddPolicy("IntwentySystemAdminAuthorizationPolicy", policy =>
                             {
-                                //Anonymus = policy.AddRequirements(new IntwentyAllowAnonymousAuthorization());
                                 policy.RequireRole(IntwentyRoles.AdminRoles);
 
                             });
 
-                            options.AddPolicy("IntwentyUserAdminAuthorizationPolicy", policy =>
-                            {
-                                //Anonymus = policy.AddRequirements(new IntwentyAllowAnonymousAuthorization());
-                                policy.RequireRole(IntwentyRoles.IAMRoles);
-
-
-                            });
-
-                          
                         });
 
                         //****** Required ******

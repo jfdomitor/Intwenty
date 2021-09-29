@@ -14,7 +14,7 @@ using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
-    [Authorize(Policy = "IntwentyUserAdminAuthorizationPolicy")]
+    [Authorize(Roles = "SUPERADMIN,USERADMIN")]
     public class UserModel : PageModel
     {
 
