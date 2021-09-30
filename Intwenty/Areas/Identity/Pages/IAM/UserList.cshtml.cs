@@ -56,12 +56,12 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             user.EmailConfirmed = true;
             user.Culture = Settings.LocalizationDefaultCulture;
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
             {
                 user.UserName = model.Email;
             }
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
             {
                 var p1 = user.FirstName;
                 if (p1.Length > 4)
@@ -73,7 +73,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
                 user.UserName = string.Format("{0}_{1}_{2}", p1, p2, DateTime.Now.Millisecond);
             }
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
             {
                 user.UserName = BaseModelItem.GetQuiteUniqueString();
             }

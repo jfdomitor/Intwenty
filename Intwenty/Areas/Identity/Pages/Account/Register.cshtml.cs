@@ -92,6 +92,10 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 if (!_settings.AccountsAllowRegistration)
                     return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "Sorry, user registration is closed !")) { StatusCode = 500 };
 
+                if (string.IsNullOrEmpty(model.Email))
+                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "Email address missing when register a user")) { StatusCode = 500 };
+                
+
                 model.Message = "";
                 model.ReturnUrl = Url.Content("~/");
 
@@ -114,12 +118,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 user.AllowPublicProfile =model.AllowPublicProfile;
 
 
-                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+                if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
                 {
                     user.UserName = model.Email;
                 }
 
-                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+                if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
                 {
                     var p1 = user.FirstName;
                     if (p1.Length > 4)
@@ -131,7 +135,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     user.UserName = string.Format("{0}_{1}_{2}", p1, p2, DateTime.Now.Millisecond);
                 }
 
-                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+                if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
                 {
                     user.UserName = BaseModelItem.GetQuiteUniqueString();
                 }
@@ -241,7 +245,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 if (!_settings.UseBankIdLogin)
                     throw new InvalidOperationException("Bank ID is not active in settings");
 
-                if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email && string.IsNullOrEmpty(model.Email))
+                if (string.IsNullOrEmpty(model.Email))
                 {
                     model.ResultCode = "BANKID_NO_EMAIL";
                     return new JsonResult(model) { StatusCode = 500 };
@@ -387,12 +391,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
                             user.AllowPublicProfile = model.AllowPublicProfile;
 
 
-                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+                            if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
                             {
                                 user.UserName = model.Email;
                             }
 
-                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+                            if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
                             {
                                 var p1 = user.FirstName;
                                 if (p1.Length > 4)
@@ -404,7 +408,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                 user.UserName = string.Format("{0}_{1}_{2}",p1,p2,DateTime.Now.Millisecond);
                             }
 
-                            if (_settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+                            if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
                             {
                                 user.UserName = BaseModelItem.GetQuiteUniqueString();
                             }
@@ -443,7 +447,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                                 var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = user.Id, code = code }, protocol: Request.Scheme);
-                                await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.Email, ConfirmCallbackUrl = callbackUrl });
+                                await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.UserName, Email = model.Email, ConfirmCallbackUrl = callbackUrl });
                                 await _signInManager.SignInBankId(user, authref);
 
                                 model.ReturnUrl = Url.Content("~/");

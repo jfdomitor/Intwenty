@@ -95,7 +95,7 @@
             }
         }
 
-        @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+        @if (Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
         {
             <div class="form-group">
                 <label>@Localizer["Email"] <span style="color: red"> *</span></label>
@@ -104,7 +104,7 @@
         }
         else
         {
-            @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Input)
+            @if (Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.Input)
             {
                 <div class="form-group">
                     <label>@Localizer["User Name"] <span style="color: red"> *</span></label>
@@ -112,21 +112,10 @@
                 </div>
             }
 
-            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.EditableRequired)
-            {
-                <div class="form-group">
-                    <label>@Localizer["Email"] <span style="color: red"> *</span></label>
-                    <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
-                </div>
-            }
-
-            @if (Settings.Value.AccountsEmailUsage.RegisterPage == InputUsageType.Editable)
-            {
-                <div class="form-group">
-                    <label>@Localizer["Email"]</label>
-                    <input type="email" v-model="model.email" class="form-control" id="email"  autocomplete="nope" />
-                </div>
-            }
+            <div class="form-group">
+                <label>@Localizer["Email"] <span style="color: red"> *</span></label>
+                <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+            </div>
 
         }
 
@@ -198,9 +187,9 @@
             }
         }
 
-        @if (Settings.Value.AccountsNameUsage.IsRegisterPageEditable || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+        @if (Settings.Value.AccountsNameUsage.IsRegisterPageEditable || Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
         {
-            if (Settings.Value.AccountsNameUsage.RegisterPage == InputUsageType.EditableRequired || Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+            if (Settings.Value.AccountsNameUsage.RegisterPage == InputUsageType.EditableRequired || Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
             {
                 <div class="form-group">
                     <label>@Localizer["First Name"] <span style="color: red"> *</span></label>

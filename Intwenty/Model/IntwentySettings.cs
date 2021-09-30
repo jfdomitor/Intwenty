@@ -39,7 +39,7 @@ namespace Intwenty.Model
             BankIdUsage = BankIdUsageTypes.OtherAndThisDevice;
             AccountsEmergencyLoginQueryKey = "ISADMINEMERGENCYLOGIN";
             AccountsUserSelectableRoles = new List<IntwentyUserRegistrationRole>();
-            AccountsUserNameUsage = UserNameGenerationStyles.Email;
+            AccountsUserNameGeneration = UserNameGenerationStyles.Email;
             AccountsEmailUsage = new IntwentyAccountDataUsage() { AccountPage =  InputUsageType.Readonly, RegisterPage =  InputUsageType.EditableRequired };
             AccountsPhoneUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable, RegisterPage = InputUsageType.Editable };
             AccountsNameUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable };
@@ -174,7 +174,7 @@ namespace Intwenty.Model
         public string AccountsGoogleClientId { get; set; }
         public string AccountsGoogleClientSecret { get; set; }
         public string AccountsEmergencyLoginQueryKey { get; set; }     
-        public UserNameGenerationStyles AccountsUserNameUsage { get; set; }
+        public UserNameGenerationStyles AccountsUserNameGeneration { get; set; }
         public IntwentyAccountDataUsage AccountsEmailUsage { get; set; }
         public IntwentyAccountDataUsage AccountsPhoneUsage { get; set; }
         public IntwentyAccountDataUsage AccountsAddressUsage { get; set; }
