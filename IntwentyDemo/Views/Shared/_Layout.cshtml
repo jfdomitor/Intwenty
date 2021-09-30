@@ -25,7 +25,7 @@
 <body class="@(ishomepath ? "landingpage" : "")">
 
 
-    <div class="container">
+    <div class="container" id="main_menu_container">
         @if (ishomepath)
         {
             <partial name="_CookieConsentPartial" />
@@ -67,13 +67,21 @@
                 </ul>
                 <partial name="_LoginPartial" />
             </div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
+                </li>
+            </ul>
+           
+            
         </nav>
+
     </div>
 
 
 
 
-    <div class="container body-content">
+    <div class="container body-content" id="main_content_container">
 
 
         @RenderBody()
@@ -91,6 +99,8 @@
     </div>
 
 
+
+
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/alasql/alasql.min.js"></script>
     <script src="~/lib/xlsx/xlsx.core.min.js"></script>
@@ -102,6 +112,31 @@
     <script src="~/js/intwenty.js" asp-append-version="true"></script>
     <script src="~/lib/Croppie/croppie.js"></script>
 
+    <script>
+        $(function () {
+
+            $("#expand_ui_btn").on("click", function expandUI()
+            {
+                var menucontainer = $("#main_menu_container");
+                var contentcontainer = $("#main_content_container");
+                if (menucontainer.hasClass("container-fluid")) {
+                    menucontainer.removeClass("container-fluid");
+                    menucontainer.addClass("container");
+                }else {
+                    menucontainer.removeClass("container");
+                    menucontainer.addClass("container-fluid");
+                }
+
+                if (contentcontainer.hasClass("container-fluid")) {
+                    contentcontainer.removeClass("container-fluid");
+                    contentcontainer.addClass("container");
+                }else {
+                    contentcontainer.removeClass("container");
+                    contentcontainer.addClass("container-fluid");
+                }
+            });
+        }); 
+    </script>
 
     @RenderSection("Scripts", required: false)
 
