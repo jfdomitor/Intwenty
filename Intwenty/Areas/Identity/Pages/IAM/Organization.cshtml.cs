@@ -83,6 +83,43 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             return new JsonResult(t);
         }
 
+        public async Task<JsonResult> OnPostFindUsers([FromBody] ClientSearchBoxQuery model)
+        {
+            var retlist = new List<ValueDomainVm>();
+
+            if (model==null)
+                return new JsonResult(retlist);
+
+            model.User = new UserInfo(User);
+          
+            var domaindata = await UserManager.GetUsersByAdminAccessAsync(User);
+            if (domaindata != null)
+            {
+                if (model.Query.ToUpper() == "ALL")
+                {
+                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).ToList();
+                }
+                else if (model.Query.ToUpper() == "PRELOAD")
+                {
+                    var result = new List<ValueDomainVm>();
+                    for (int i = 0; i < domaindata.Count; i++)
+                    {
+                        var p = domaindata[i];
+                        if (i < 50)
+                            result.Add(new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName });
+                        else
+                            break;
+                    }
+                    retlist = result;
+                }
+                else
+                {
+                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).Where(p => p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
+                }
+            }
+            return new JsonResult(retlist);
+        }
+
         /*
          * We don't allow update of organizations, since it might destroy user access
         public async Task<IActionResult> OnPostUpdateEntity([FromBody] IntwentyOrganizationVm model)

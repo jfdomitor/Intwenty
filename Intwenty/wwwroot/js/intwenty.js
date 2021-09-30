@@ -201,7 +201,7 @@ Vue.component("searchbox", {
         var vm = this;
         var element = $(this.$el);
 
-
+        var jsmethod = $(element).data('jsmethod');
         var domainname = $(element).data('domain');
         var usearch = $(element).data('usesearch');
         var mselect = $(element).data('multiselect');
@@ -216,6 +216,9 @@ Vue.component("searchbox", {
             maxitems = 10;
             plugs = ['remove_button'];
         }
+
+        if (!jsmethod)
+            jsmethod = 'getDomain';
 
         element.selectize({
             plugins: plugs
@@ -236,9 +239,9 @@ Vue.component("searchbox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root.getDomain)
+                if (vm.$root[jsmethod])
                 {
-                    vm.$root.getDomain(domainname, query, function (response) {
+                    vm.$root[jsmethod](domainname, query, function (response) {
                         callback(response);
                         if (vm.idfield) {
                             var persisteditems = vm.idfield.split(",");
@@ -248,18 +251,7 @@ Vue.component("searchbox", {
                         }
                     });
                 }
-                else
-                {
-                    $.get('/Application/API/GetDomain/' + domainname + '/' + query, function (response) {
-                        callback(response);
-                        if (vm.idfield) {
-                            var persisteditems = vm.idfield.split(",");
-                            for (var i = 0; i < persisteditems.length; i++) {
-                                element[0].selectize.addItem(persisteditems[i], true);
-                            }
-                        }
-                    });
-                }
+                
           
             }
 
@@ -336,6 +328,9 @@ Vue.component("combobox", {
         var element = $(this.$el);
 
         var domainname = $(element).data('domain');
+        var jsmethod = $(element).data('jsmethod');
+        if (!jsmethod)
+            jsmethod = 'getDomain';
 
         element.selectize({
             delimiter: ','
@@ -350,9 +345,9 @@ Vue.component("combobox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root.getDomain)
+                if (vm.$root[jsmethod])
                 {
-                    vm.$root.getDomain(domainname, 'ALL', function (response) {
+                    vm.$root[jsmethod](domainname, 'ALL', function (response) {
                         callback(response);
                         if (vm.idfield) {
                             var persisteditems = vm.idfield.split(",");
@@ -362,18 +357,7 @@ Vue.component("combobox", {
                         }
                     });
                 }
-                else
-                {
-                    $.get('/Application/API/GetDomain/' + domainname + '/ALL', function (response) {
-                        callback(response);
-                        if (vm.idfield) {
-                            var persisteditems = vm.idfield.split(",");
-                            for (var i = 0; i < persisteditems.length; i++) {
-                                element[0].selectize.addItem(persisteditems[i], true);
-                            }
-                        }
-                    });
-                }
+               
 
               
             }
@@ -453,18 +437,17 @@ Vue.component("radiolist", {
         var vm = this;
         var element = $(this.$el);
 
+        vm.jsmethod = $(element).data('jsmethod');
         vm.domainname = $(element).data('domain');
         vm.orientation = $(element).data('orientation');
         vm.controlid = $(element).attr('id');
 
+        if (!vm.jsmethod)
+            vm.jsmethod = 'getDomain';
+
         if (vm.domainname) {
-            if (vm.$root.getDomain) {
-                vm.$root.getDomain(vm.domainname, 'ALL', function (response) {
-                    vm.domvalues = response;
-                });
-            }
-            else {
-                $.get('/Application/API/GetDomain/' + vm.domainname + '/ALL', function (response) {
+            if (vm.$root[vm.jsmethod]) {
+                vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
                 });
             }
@@ -550,22 +533,21 @@ Vue.component("checklist", {
         var vm = this;
         var element = $(this.$el);
 
+        vm.jsmethod = $(element).data('jsmethod');
         vm.domainname = $(element).data('domain');
         vm.orientation = $(element).data('orientation');
         vm.controlid = $(element).attr('id');
 
+        if (!vm.jsmethod)
+            vm.jsmethod = 'getDomain';
+
         if (vm.domainname)
         { 
-            if (vm.$root.getDomain) {
-                vm.$root.getDomain(vm.domainname, 'ALL', function (response) {
+            if (vm.$root[vm.jsmethod]) {
+                vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
                 });
-            }
-            else {
-                $.get('/Application/API/GetDomain/' + vm.domainname + '/ALL', function (response) {
-                    vm.domvalues = response;
-                });
-            }
+            } 
         }
     },
     methods:

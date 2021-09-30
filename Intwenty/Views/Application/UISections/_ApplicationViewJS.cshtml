@@ -508,15 +508,23 @@
                 },
                 getDomain: function (domainname, query, donefunc)
                 {
+                     //USED BY THE SEARCHBOX UICONTROL
                     var context = this;
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetDomainPath/" + domainname + "/" + query;
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetDomainPath";
+                    var senddata = { "id": context.instanceId, "version": context.version, "applicationId": context.appId, "applicationViewId": context.applicationViewId, "requestInfo": "", "domainName": domainname, "query": query };
                     if (context.requestInfo != "")
-                        endpointurl += "/" + context.requestInfo;
+                        senddata.requestInfo=context.requestInfo;
 
-                    $.get(endpointurl, function (response)
-                    {
-                        donefunc(response);
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(senddata),
+                        success: function (response) {
+                            donefunc(response);
+                        }
                     });
+
 
                 },
                 isFirstPage: function (dbtablename)

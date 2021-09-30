@@ -159,13 +159,18 @@ namespace Intwenty.Controllers
            
         }
 
-        [HttpGet("/Application/API/GetDomain/{domainname}/{query}/{requestinfo?}")]
-        public virtual List<ValueDomainVm> GetDomain(string domainname, string query, string requestinfo)
+        [HttpPost("/Application/API/GetDomain")]
+        public virtual List<ValueDomainVm> GetDomain([FromBody] ClientSearchBoxQuery model)
         {
-            if (string.IsNullOrEmpty(domainname))
+            if (model==null)
                 return new List<ValueDomainVm>();
 
-            if (!domainname.Contains("."))
+            model.User = new UserInfo(User);
+
+            if (string.IsNullOrEmpty(model.DomainName))
+                return new List<ValueDomainVm>();
+
+            if (!model.DomainName.Contains("."))
                 return new List<ValueDomainVm>();
 
             ClientOperation state = null;
@@ -174,10 +179,10 @@ namespace Intwenty.Controllers
             else
                 state = new ClientOperation();
 
-            if (!string.IsNullOrEmpty(requestinfo))
-                state.Properties = requestinfo.B64UrlDecode();
+            if (!string.IsNullOrEmpty(model.RequestInfo))
+                state.Properties = model.RequestInfo.B64UrlDecode();
 
-            var arr = domainname.Split(".");
+            var arr = model.DomainName.Split(".");
             var dtype = arr[0];
             var dname = arr[1];
 
@@ -197,11 +202,11 @@ namespace Intwenty.Controllers
 
             if (domaindata != null)
             {
-                if (query.ToUpper() == "ALL")
+                if (model.Query.ToUpper() == "ALL")
                 {
                     retlist = domaindata.Select(p => new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display=p.LocalizedTitle }).ToList();
                 }
-                else if (query.ToUpper() == "PRELOAD")
+                else if (model.Query.ToUpper() == "PRELOAD")
                 {
                     var result = new List<ValueDomainVm>();
                     for (int i = 0; i < domaindata.Count; i++)
@@ -216,7 +221,7 @@ namespace Intwenty.Controllers
                 }
                 else
                 {
-                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display = p.LocalizedTitle }).Where(p=> p.Display.ToLower().Contains(query.ToLower())).ToList();
+                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display = p.LocalizedTitle }).Where(p=> p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
                 }
             }
 

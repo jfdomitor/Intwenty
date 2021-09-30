@@ -147,11 +147,21 @@
 
                     <div class="form-group">
                         <label class="control-label">Select User<span style="color: red"> *</span></label>
+                        <searchbox id="selusr" name="selusr" type="text"  class="form-control form-control-sm"  
+                                   v-bind:idfield.sync="member.userId" 
+                                   data-domain="SELECTABLEUSERS"
+                                   data-usesearch="TRUE"
+                                   data-multiselect="FALSE"
+                                   data-allowcreate="FALSE"
+                                   data-jsmethod="getUsers" />
+
+                         <!--
                         <select v-model="member.userId" class="form-control form-control-sm">
                             <option v-for="item in users" v-bind:value="item.id">{{item.userName}}</option>
                         </select>
+                         -->
                     </div>
-
+                       
                 </div>
                 <div class="modal-footer">
                     <button id="addMemberModal_okBtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok</button>
@@ -309,7 +319,7 @@
 
                     var context = this;
                     context.resultCode = "";
-                    
+
                     context.product = {};
 
 
@@ -365,14 +375,36 @@
                             },
                             success: function (response) {
                                 context.model = response;
-                            },
-                            error: function (response) {
-                                //raiseErrorModal(response.responseJSON);
                             }
                         });
                      }
 
                     raiseYesNoModal("Remove from Organization ?", "The product will be removed from the organization, continue ?", yesfunc);
+                },
+                getUsers: function (domainname, query, donefunc)
+                {
+                    //THIS IS USED BY THE SEARCHBOX WHEN ADDING USERS
+                    var baseurl = '@Url.Content("~/Identity/IAM/")';
+                    var endpointurl = baseurl + "Organization/@Model.Id?handler=FindUsers";
+                    var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                    var senddata = { "domanName": domainname, "query": query  };
+
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(senddata),
+                        headers: {
+                            RequestVerificationToken: antiforgerytoken
+                        },
+                        success: function (response) {
+                            donefunc(response);
+                        }
+                    });
+
+
+
                 }
 
 
