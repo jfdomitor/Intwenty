@@ -116,7 +116,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 user.AllowSmsNotifications = model.AllowSmsNotifications;
                 user.AllowEmailNotifications = model.AllowEmailNotifications;
                 user.AllowPublicProfile =model.AllowPublicProfile;
-
+                user.LastLoginProduct = _settings.ProductTitle;
+                user.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                user.LastLoginMethod = "Local account";
 
                 if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
                 {
@@ -389,6 +391,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
                             user.AllowSmsNotifications = model.AllowSmsNotifications;
                             user.AllowEmailNotifications = model.AllowEmailNotifications;
                             user.AllowPublicProfile = model.AllowPublicProfile;
+                            user.LastLoginProduct = _settings.ProductTitle;
+                            user.LastLogin = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            user.LastLoginMethod = "Bank ID";
 
 
                             if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
