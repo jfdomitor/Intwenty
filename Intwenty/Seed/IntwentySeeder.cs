@@ -42,6 +42,12 @@ namespace Intwenty.Seed
     
             var temp = new List<TranslationItem>();
 
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "REG_SERVICE_FAILURE", Text = "An unexpected error occured, the account could not be created." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "REG_SERVICE_FAILURE", Text = "Ett fel uppstod, kontot kunde inte skapas." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "NO_EMAIL", Text = "You must type a valid email address." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "NO_EMAIL", Text = "Du måste ange en giltig epostadress." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "EMAIL_NOT_UNIQUE", Text = "An account is already associated with this email address." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "EMAIL_NOT_UNIQUE", Text = "Det finns redan ett konto med den angivna epostadressen." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "LOCKED_OUT_ACCOUNT", Text = "This account has been locked out, please try again later." });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOCKED_OUT_ACCOUNT", Text = "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "API Key Updated", Text = "API nyckeln uppdaterades" });

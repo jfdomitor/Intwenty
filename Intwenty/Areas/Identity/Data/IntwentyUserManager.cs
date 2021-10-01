@@ -977,6 +977,46 @@ namespace Intwenty.Areas.Identity.Data
             return user;
         }
 
+        /// <summary>
+        /// Check if an email exists in the database
+        /// </summary>
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return false;
+            try
+            {
+                var client = GetIAMDataClient();
+                await client.OpenAsync();
+                var users = await GetUsersAsync();
+                await client.CloseAsync();
+                return users.Exists(p => !string.IsNullOrEmpty(p.Email) && p.Email.Trim().ToUpper() == email.Trim().ToUpper());
+            }
+            catch { }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a phonenumber exists in the database
+        /// </summary>
+        public async Task<bool> PhoneNumberExistsAsync(string phonenumber)
+        {
+            if (string.IsNullOrEmpty(phonenumber))
+                return false;
+            try
+            {
+                var client = GetIAMDataClient();
+                await client.OpenAsync();
+                var users = await GetUsersAsync();
+                await client.CloseAsync();
+                return users.Exists(p => !string.IsNullOrEmpty(p.PhoneNumber) && p.PhoneNumber.Trim().ToUpper() == phonenumber.Trim().ToUpper());
+            }
+            catch { }
+
+            return false;
+        }
+
         private async Task<List<IntwentyUserSetting>> GetAllUserSettings()
         {
             List<IntwentyUserSetting> res = null;

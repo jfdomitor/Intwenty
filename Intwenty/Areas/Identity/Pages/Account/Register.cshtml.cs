@@ -89,12 +89,39 @@ namespace Intwenty.Areas.Identity.Pages.Account
         {
             try
             {
+
+                
+                if (model == null)
+                {
+                    throw new InvalidOperationException("RegisterVm was null");
+                }
+
+                if (!_settings.UseLocalLogins)
+                {
+                    throw new InvalidOperationException("The system is not configured for local accounts");
+                }
+
                 if (!_settings.AccountsAllowRegistration)
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "Sorry, user registration is closed !")) { StatusCode = 500 };
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostLocalRegistration: Account registration is closed");
+                    model.ResultCode = "USER_REG_CLOSED";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
 
                 if (string.IsNullOrEmpty(model.Email))
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "Email address missing when register a user")) { StatusCode = 500 };
-                
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostLocalRegistration: An account could not be created (no email)");
+                    model.ResultCode = "NO_EMAIL";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
+
+                var emailexists = await _userManager.EmailExistsAsync(model.Email);
+                if (emailexists)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostLocalRegistration: An account could not be created (email alreday exists) " + model.Email);
+                    model.ResultCode = "EMAIL_NOT_UNIQUE";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
 
                 model.Message = "";
                 model.ReturnUrl = Url.Content("~/");
@@ -181,14 +208,13 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     await _eventservice.NewUserCreated(new NewUserCreatedData() { UserName = model.UserName, Email=model.Email, ConfirmCallbackUrl = callbackUrl });
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-
+                    return new JsonResult(model);
                 }
                 else
                 {
                     if (result.Errors != null && result.Errors.Count() > 0)
                     {
-                        var errors = result.Errors.ToList();
-                        return new JsonResult(new OperationResult(false, MessageCode.USERERROR, errors[0].Description)) { StatusCode = 500 };
+                        throw new InvalidOperationException(result.Errors.ToList()[0].Description);
                     } 
                     else 
                     {
@@ -199,11 +225,11 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
             catch(Exception ex)
             {
-                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Register.OnPostLocalRegistration: " + ex.Message);
-                return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "An unexpected error occured, contact support")) { StatusCode = 500 };
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostLocalRegistration: " + ex.Message);
             }
 
-            return new JsonResult(model);
+            model.ResultCode = "REG_SERVICE_FAILURE";
+            return new JsonResult(model) { StatusCode = 500 };
 
         }
 
@@ -212,12 +238,50 @@ namespace Intwenty.Areas.Identity.Pages.Account
         {
             try
             {
+                if (model == null)
+                {
+                    throw new InvalidOperationException("RegisterVm was null");
+                }
+
                 if (!_settings.UseBankIdLogin)
-                    throw new InvalidOperationException("Bank ID is not active in settings");
+                {
+                    throw new InvalidOperationException("The system is not configured for bank id");
+                }
+
+                if (!_settings.AccountsAllowRegistration)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostInitBankId: Account registration is closed");
+                    model.ResultCode = "USER_REG_CLOSED";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
+
 
                 if (model.ActionCode != "BANKID_INIT_REG")
-                    throw new InvalidOperationException("Invalid action");
+                {
+                    throw new InvalidOperationException("The client suplied an invalid action for this function.");
+                }
 
+                if (!_settings.AccountsAllowRegistration)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostInitBankId: Account registration is closed");
+                    model.ResultCode = "USER_REG_CLOSED";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
+
+                if (string.IsNullOrEmpty(model.Email))
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostInitBankId: An account could not be created (no email)");
+                    model.ResultCode = "NO_EMAIL";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
+
+                var emailexists = await _userManager.EmailExistsAsync(model.Email);
+                if (emailexists)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostInitBankId: An account could not be created (email alreday exists) " + model.Email);
+                    model.ResultCode = "EMAIL_NOT_UNIQUE";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
 
                 model.AccountType = AccountTypes.BankId;
                 model.Message = "";
@@ -232,8 +296,8 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Register.OnPostInitBankId: " + ex.Message);
             }
 
-            model.ResultCode = "ERROR_BANKID_INIT_REG";
-            return new JsonResult(model) { StatusCode = 401 };
+            model.ResultCode = "REG_SERVICE_FAILURE";
+            return new JsonResult(model) { StatusCode = 500 };
 
          
 
@@ -243,15 +307,39 @@ namespace Intwenty.Areas.Identity.Pages.Account
         {
             try
             {
+                if (model == null)
+                {
+                    throw new InvalidOperationException("RegisterVm was null");
+                }
 
                 if (!_settings.UseBankIdLogin)
-                    throw new InvalidOperationException("Bank ID is not active in settings");
+                {
+                    throw new InvalidOperationException("The system is not configured for bank id");
+                }
+
+                if (!_settings.AccountsAllowRegistration)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostStartBankId: Account registration is closed");
+                    model.ResultCode = "USER_REG_CLOSED";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
 
                 if (string.IsNullOrEmpty(model.Email))
                 {
-                    model.ResultCode = "BANKID_NO_EMAIL";
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostStartBankId: An account could not be created (no email)");
+                    model.ResultCode = "NO_EMAIL";
                     return new JsonResult(model) { StatusCode = 500 };
                 }
+
+                var emailexists = await _userManager.EmailExistsAsync(model.Email);
+                if (emailexists)
+                {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostStartBankId: An account could not be created (email alreday exists) " + model.Email);
+                    model.ResultCode = "EMAIL_NOT_UNIQUE";
+                    return new JsonResult(model) { StatusCode = 500 };
+                }
+
+
 
                 if (model.ActionCode == "BANKID_START_OTHER")
                 {
@@ -270,6 +358,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostStartBankId: _bankidClient.InitAuthentication did not return an order reference");
                         model.ResultCode = "BANKID_SERVICE_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
@@ -287,6 +376,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostStartBankId: _bankidClient.InitAuthentication did not return an order reference");
                         model.ResultCode = "BANKID_SERVICE_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
@@ -303,7 +393,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
 
 
-            model.ResultCode = "BANKID_SERVICE_FAILURE";
+            model.ResultCode = "REG_SERVICE_FAILURE";
             return new JsonResult(model) { StatusCode = 500 };
         }
 
@@ -313,8 +403,15 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
             try
             {
+                if (model == null)
+                {
+                    throw new InvalidOperationException("RegisterVm was null");
+                }
+
                 if (!_settings.UseBankIdLogin)
-                    throw new InvalidOperationException("Bank ID is not active in settings");
+                {
+                    throw new InvalidOperationException("The system is not configured for bank id");
+                }
 
                 model.ResultCode = "SUCCESS";
 
@@ -324,6 +421,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
                 if (string.IsNullOrEmpty(authref))
                 {
+                    _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostAuthenticateBankId: no AuthServiceOrderRef in tempdata.");
                     model.ResultCode = "BANKID_NO_AUTHREF";
                     return new JsonResult(model) { StatusCode = 503 };
                 }
@@ -332,37 +430,42 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 var request = new BankIDCollectRequest() { OrderRef = authref };
 
 
-                //TODO: Handle wrong, code, time out
                 var authresult = await _bankidClient.Authenticate(request);
                 if (authresult != null)
                 {
                     if (authresult.IsAuthIntwentyTimeOut)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_INTWENTY_TIMEOUT_FAILURE");
                         model.ResultCode = "BANKID_INTWENTY_TIMEOUT_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
                     else if (authresult.IsAuthTimeOut)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_TIMEOUT_FAILURE");
                         model.ResultCode = "BANKID_TIMEOUT_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
                     else if (authresult.IsAuthCanceled)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_CANCEL_FAILURE");
                         model.ResultCode = "BANKID_CANCEL_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
                     else if (authresult.IsAuthUserCanceled)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_USERCANCEL_FAILURE");
                         model.ResultCode = "BANKID_USERCANCEL_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
                     else if (authresult.IsAuthFailure)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_AUTH_FAILURE");
                         model.ResultCode = "BANKID_AUTH_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
                     else if (!authresult.IsAuthOk)
                     {
+                        _dbloggerService.LogIdentityActivityAsync("INFO", "Register.OnPostAuthenticateBankId: BANKID_SERVICE_FAILURE");
                         model.ResultCode = "BANKID_SERVICE_FAILURE";
                         return new JsonResult(model) { StatusCode = 401 };
                     }
@@ -464,7 +567,14 @@ namespace Intwenty.Areas.Identity.Pages.Account
                             }
                             else
                             {
-                                throw new InvalidOperationException("Unexpected error registering user");
+                                if (result.Errors != null && result.Errors.Count() > 0)
+                                {
+                                    throw new InvalidOperationException(result.Errors.ToList()[0].Description);
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException("Unexpected error registering user");
+                                }
                             }
                         }
                         else
@@ -473,19 +583,19 @@ namespace Intwenty.Areas.Identity.Pages.Account
                             if (result.IsNotAllowed)
                             {
                                 model.ResultCode = "INVALID_LOGIN_ATTEMPT";
-                                return new JsonResult(model) { StatusCode = 401 };
+                                return new JsonResult(model) { StatusCode = 500 };
                             }
                             else if (result.RequiresTwoFactor)
                             {
                                 model.ResultCode = "REQUIREMFA";
                                 model.RedirectUrl = "./LoginWith2fa";
-                                return new JsonResult(model) { StatusCode = 401 };
+                                return new JsonResult(model) { StatusCode = 500 };
                             }
                             else if (result.IsLockedOut)
                             {
                                 model.ResultCode = "LOCKEDOUT";
                                 model.RedirectUrl = "./Lockout";
-                                return new JsonResult(model) { StatusCode = 401 };
+                                return new JsonResult(model) { StatusCode = 500 };
                             }
                             else
                             {
@@ -502,10 +612,10 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
             catch (Exception ex)
             {
-                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Register.OnPostAuthenticateBankId: " + ex.Message);
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Register.OnPostAuthenticateBankId: " + ex.Message);
             }
 
-            model.ResultCode = "BANKID_SERVICE_FAILURE";
+            model.ResultCode = "REG_SERVICE_FAILURE";
             return new JsonResult(model) { StatusCode = 500 };
 
 

@@ -193,7 +193,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
             catch (Exception ex)
             {
-                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on Login.OnPostStartBankId: " + ex.Message);
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Login.OnPostStartBankId: " + ex.Message);
             }
 
 
@@ -270,7 +270,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
             catch (Exception ex)
             {
-                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on login.OnGetFrejaLogin: " + ex.Message);
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Login.OnPostAuthenticateFreja: " + ex.Message);
             }
 
             model.ResultCode = "UNEXPECTED_ERROR";
@@ -383,7 +383,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
             }
             catch (Exception ex)
             {
-                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Error on login.OnPostAuthenticateBankId: " + ex.Message);
+                await _dbloggerService.LogIdentityActivityAsync("ERROR", "Login.OnPostAuthenticateBankId: " + ex.Message);
             }
 
             model.ResultCode = "BANKID_SERVICE_FAILURE";

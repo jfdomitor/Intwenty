@@ -12,6 +12,13 @@
         @Localizer["BANKID_SERVICE_FAILURE"]
     </div>
 
+    <div class="alert alert-danger" v-if="(model.resultCode=='REG_SERVICE_FAILURE')">
+        @Localizer["REG_SERVICE_FAILURE"]
+    </div>
+
+    <div class="alert alert-danger" v-if="(model.resultCode=='USER_REG_CLOSED')">
+        @Localizer["Sorry, registration is closed"]
+    </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_INTWENTY_TIMEOUT_FAILURE')">
         @Localizer["BANKID_INTWENTY_TIMEOUT_FAILURE"]
@@ -33,12 +40,12 @@
         @Localizer["BANKID_AUTH_FAILURE"]
     </div>
 
-    <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_NO_EMAIL')">
-        @Localizer["BANKID_NO_EMAIL"]
+    <div class="alert alert-danger" v-if="(model.resultCode=='NO_EMAIL')">
+        @Localizer["NO_EMAIL"]
     </div>
 
-    <div class="alert alert-danger" v-if="(model.resultCode=='INVALID_LOGIN_ATTEMPT')">
-        @Localizer["Invalid login attemt"]
+    <div class="alert alert-danger" v-if="(model.resultCode=='EMAIL_NOT_UNIQUE')">
+        @Localizer["EMAIL_NOT_UNIQUE"]
     </div>
 
 
