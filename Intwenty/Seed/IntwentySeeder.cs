@@ -336,6 +336,24 @@ namespace Intwenty.Seed
                     role.AuthorizationType = "ROLE";
                     await RoleManager.CreateAsync(role);
                 }
+
+                if (Settings.AccountsUserSelectableRoles != null)
+                {
+                    foreach (var t in Settings.AccountsUserSelectableRoles)
+                    {
+                        var check = await RoleManager.FindByNameAsync(t.RoleName);
+                        if (check == null)
+                        {
+                            var role = new IntwentyProductAuthorizationItem();
+                            role.ProductId = this.Settings.ProductId;
+                            role.Name = t.RoleName.ToUpper();
+                            role.AuthorizationType = "ROLE";
+                            await RoleManager.CreateAsync(role);
+                        }
+
+                    }
+
+                }
             });
 
             t.GetAwaiter().GetResult();

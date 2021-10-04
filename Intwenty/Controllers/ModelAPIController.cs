@@ -2172,7 +2172,7 @@ namespace Intwenty.Controllers
             sb.AppendLine("//Applications");
             sb.AppendLine("var applications = new List<ApplicationItem>();");
             foreach (var m in t.Applications)
-                sb.AppendLine($"applications.Add(new ApplicationItem() {{ Id = {m.Id}, Description = \"{m.Description}\", SystemMetaCode = \"{m.SystemMetaCode}\", MetaCode = \"{m.MetaCode}\", Title = \"{m.Title}\", TitleLocalizationKey = \"{m.TitleLocalizationKey}\", DbName = \"{m.DbName}\", DataMode = {m.DataMode}, UseVersioning = {m.UseVersioning}, TenantIsolationLevel = {m.TenantIsolationLevel}, TenantIsolationMethod = {m.TenantIsolationMethod} }});");
+                sb.AppendLine($"applications.Add(new ApplicationItem() {{ Id = {m.Id}, Description = \"{m.Description}\", SystemMetaCode = \"{m.SystemMetaCode}\", MetaCode = \"{m.MetaCode}\", Title = \"{m.Title}\", TitleLocalizationKey = \"{m.TitleLocalizationKey}\", DbName = \"{m.DbName}\", DataMode = {m.DataMode}, UseVersioning = {m.UseVersioning.ToString().ToLower()}, TenantIsolationLevel = {m.TenantIsolationLevel}, TenantIsolationMethod = {m.TenantIsolationMethod} }});");
 
 
             sb.AppendLine("");
@@ -2194,7 +2194,7 @@ namespace Intwenty.Controllers
                 sb.AppendLine("");
                 sb.AppendLine("//Views");
                 foreach (var v in t.ViewItems.Where(p => p.AppMetaCode == m.MetaCode && p.SystemMetaCode == m.SystemMetaCode))
-                    sb.AppendLine($"views.Add(new ViewItem() {{ SystemMetaCode = \"{v.SystemMetaCode}\", AppMetaCode = \"{v.AppMetaCode}\", MetaCode = \"{v.MetaCode}\", MetaType = \"{v.MetaType}\", Title = \"{v.Title}\", TitleLocalizationKey = \"{v.TitleLocalizationKey}\", Path = \"{v.Path}\", IsPrimary = {v.IsPrimary}, IsPublic = {v.IsPublic} }});");
+                    sb.AppendLine($"views.Add(new ViewItem() {{ SystemMetaCode = \"{v.SystemMetaCode}\", AppMetaCode = \"{v.AppMetaCode}\", MetaCode = \"{v.MetaCode}\", MetaType = \"{v.MetaType}\", Title = \"{v.Title}\", TitleLocalizationKey = \"{v.TitleLocalizationKey}\", Path = \"{v.Path}\", IsPrimary = {v.IsPrimary.ToString().ToLower()}, IsPublic = {v.IsPublic.ToString().ToLower()} }});");
 
                 sb.AppendLine("");
                 sb.AppendLine("//Userinterface");
@@ -2204,12 +2204,12 @@ namespace Intwenty.Controllers
                 sb.AppendLine("");
                 sb.AppendLine("//UI Components");
                 foreach (var uistruct in t.UserInterfaceStructureItems.Where(p => p.AppMetaCode == m.MetaCode && p.SystemMetaCode == m.SystemMetaCode).OrderBy(o => o.UserInterfaceMetaCode))
-                    sb.AppendLine($"userinterfacestructure.Add(new UserInterfaceStructureItem() {{ SystemMetaCode = \"{uistruct.SystemMetaCode}\",AppMetaCode = \"{uistruct.AppMetaCode}\", UserInterfaceMetaCode = \"{uistruct.UserInterfaceMetaCode}\", MetaType = \"{uistruct.MetaType}\", MetaCode = \"{uistruct.MetaCode}\", Title = \"{uistruct.Title}\", TitleLocalizationKey=\"{uistruct.TitleLocalizationKey}\" ParentMetaCode = \"{uistruct.ParentMetaCode}\", RowOrder = {uistruct.RowOrder}, ColumnOrder = {uistruct.ColumnOrder}, Properties = \"{uistruct.Properties}\" }});");
+                    sb.AppendLine($"userinterfacestructure.Add(new UserInterfaceStructureItem() {{ SystemMetaCode = \"{uistruct.SystemMetaCode}\",AppMetaCode = \"{uistruct.AppMetaCode}\", UserInterfaceMetaCode = \"{uistruct.UserInterfaceMetaCode}\", MetaType = \"{uistruct.MetaType}\", MetaCode = \"{uistruct.MetaCode}\", DataColumn1MetaCode = \"{uistruct.DataColumn1MetaCode}\", Title = \"{uistruct.Title}\", TitleLocalizationKey=\"{uistruct.TitleLocalizationKey}\", ParentMetaCode = \"{uistruct.ParentMetaCode}\", RowOrder = {uistruct.RowOrder}, ColumnOrder = {uistruct.ColumnOrder}, Properties = \"{uistruct.Properties}\" }});");
 
                 sb.AppendLine("");
                 sb.AppendLine("//Functions");
                 foreach (var func in t.FunctionItems.Where(p => p.AppMetaCode == m.MetaCode && p.SystemMetaCode == m.SystemMetaCode).OrderBy(o => o.OwnerMetaCode))
-                    sb.AppendLine($"functions.Add(new FunctionItem() {{ SystemMetaCode = \"{func.SystemMetaCode}\",AppMetaCode = \"{func.AppMetaCode}\", OwnerMetaCode = \"{func.OwnerMetaCode}\", OwnerMetaType = \"{func.OwnerMetaType}\", MetaType = \"{func.MetaType}\", MetaCode = \"{func.MetaCode}\", ActionPath = \"{func.ActionPath}\", ActionMetaCode = \"{func.ActionMetaCode}\", ActionMetaType = \"{func.ActionMetaType}\", IsModalAction = {func.IsModalAction}, Title = \"{func.Title}\" }});");
+                    sb.AppendLine($"functions.Add(new FunctionItem() {{ SystemMetaCode = \"{func.SystemMetaCode}\",AppMetaCode = \"{func.AppMetaCode}\", OwnerMetaCode = \"{func.OwnerMetaCode}\", OwnerMetaType = \"{func.OwnerMetaType}\", MetaType = \"{func.MetaType}\", MetaCode = \"{func.MetaCode}\", ActionPath = \"{func.ActionPath}\", ActionMetaCode = \"{func.ActionMetaCode}\", ActionMetaType = \"{func.ActionMetaType}\", IsModalAction = {func.IsModalAction.ToString().ToLower()}, Title = \"{func.Title}\" }});");
 
 
 
