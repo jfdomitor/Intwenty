@@ -42,6 +42,8 @@ namespace Intwenty.Seed
     
             var temp = new List<TranslationItem>();
 
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "Try Again", Text = "Try Again." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Try Again", Text = "Försök igen." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "REG_SERVICE_FAILURE", Text = "An unexpected error occured, the account could not be created." });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "REG_SERVICE_FAILURE", Text = "Ett fel uppstod, kontot kunde inte skapas." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "NO_EMAIL", Text = "You must type a valid email address." });

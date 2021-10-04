@@ -113,28 +113,15 @@
     <script src="~/lib/Croppie/croppie.js"></script>
 
     <script>
-        $(function () {
+        $(function ()
+        {
 
             $("#expand_ui_btn").on("click", function expandUI()
             {
-                var menucontainer = $("#main_menu_container");
-                var contentcontainer = $("#main_content_container");
-                if (menucontainer.hasClass("container-fluid")) {
-                    menucontainer.removeClass("container-fluid");
-                    menucontainer.addClass("container");
-                }else {
-                    menucontainer.removeClass("container");
-                    menucontainer.addClass("container-fluid");
-                }
-
-                if (contentcontainer.hasClass("container-fluid")) {
-                    contentcontainer.removeClass("container-fluid");
-                    contentcontainer.addClass("container");
-                }else {
-                    contentcontainer.removeClass("container");
-                    contentcontainer.addClass("container-fluid");
-                }
+                handleIntwentyViewMode(true);
             });
+
+            handleIntwentyViewMode(false);
         }); 
     </script>
 

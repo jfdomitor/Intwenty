@@ -10,10 +10,16 @@
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_SERVICE_FAILURE' || model.resultCode=='UNEXPECTED_ERROR')">
         @Localizer["BANKID_SERVICE_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='REG_SERVICE_FAILURE')">
         @Localizer["REG_SERVICE_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='USER_REG_CLOSED')">
@@ -22,30 +28,51 @@
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_INTWENTY_TIMEOUT_FAILURE')">
         @Localizer["BANKID_INTWENTY_TIMEOUT_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_TIMEOUT_FAILURE')">
         @Localizer["BANKID_TIMEOUT_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_CANCEL_FAILURE')">
         @Localizer["BANKID_CANCEL_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_USERCANCEL_FAILURE')">
         @Localizer["BANKID_USERCANCEL_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_AUTH_FAILURE')">
         @Localizer["BANKID_AUTH_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='NO_EMAIL')">
         @Localizer["NO_EMAIL"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='EMAIL_NOT_UNIQUE')">
         @Localizer["EMAIL_NOT_UNIQUE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Register" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-plus"></i> @Localizer["Try again"]</a>
     </div>
 
 
