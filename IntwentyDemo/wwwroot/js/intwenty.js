@@ -822,7 +822,10 @@ Vue.prototype.isRequiredNotValid = function (uiid) {
     return $("#" + uiid).hasClass("requiredNotValid");
 };
 
-
+Vue.prototype.canShowUIControl = function (uiid, tablename, columnname)
+{
+    return true;
+};
 
 Vue.prototype.onUserInput = function (event) {
     if (!event)

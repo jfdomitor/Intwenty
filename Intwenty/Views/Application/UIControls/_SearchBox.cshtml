@@ -20,9 +20,13 @@
         allowcreate = "TRUE";
     }
 
+    var canShowUIControl = "";
+    if (Settings.Value.UIControlsEnableVueIf)
+    {
+        canShowUIControl = "v-if=\"canShowUIControl('" + Model.UIId + "', '" + Model.DataTableDbName + "', '" + Model.DataColumnDbName + "')\"";
+    }
 }
-
-<div class="form-group">
+<div @if (Settings.Value.UIControlsEnableVueIf) { @Html.Raw(canShowUIControl); } class="form-group">
     <label class="control-label">
         @Model.LocalizedTitle  @{ if (Model.Mandatory)
             { <span style="color: red"> *</span> }}
@@ -36,7 +40,7 @@
                @if (!string.IsNullOrEmpty(Model.DataColumn2DbName)) { <text> v-bind:textfield.sync="@Model.VueModelBinding2" </text> }
                data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeSearchBox"
                data-title="@Model.Title"
-               @if (!string.IsNullOrEmpty(Model.JavaScriptObjectName)) {<text>data-contextobject="@Model.JavaScriptObjectName"</text> } else {<text>data-contextobject="@Model.DataTableDbName"</text>}
+               @if (!string.IsNullOrEmpty(Model.JavaScriptObjectName)) { <text> data-contextobject="@Model.JavaScriptObjectName" </text>  } else { <text> data-contextobject="@Model.DataTableDbName" </text> }
                data-dbtable="@Model.DataTableDbName"
                data-dbfield="@Model.DataColumnDbName"
                @if (!string.IsNullOrEmpty(Model.DataColumn2DbName)) { <text> data-dbfield2="@Model.DataColumn2DbName" </text> }
@@ -46,7 +50,10 @@
                data-multiselect="@multiselect"
                data-allowcreate="@allowcreate" />
 
-    <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@requiredmsg</span>
+     @if (Settings.Value.UIControlsEnableRequiredText)
+     {
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@Html.Raw(requiredmsg)</span>
+     }
 </div>
 
 

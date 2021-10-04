@@ -1,9 +1,13 @@
 ﻿@model IUIBinding
 @{
     var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"].Value);
-   
+    var canShowUIControl = "";
+    if (Settings.Value.UIControlsEnableVueIf)
+    {
+        canShowUIControl = "v-if=\"canShowUIControl('" + Model.UIId + "', '" + Model.DataTableDbName + "', '" + Model.DataColumnDbName + "')\"";
+    }
 }
-<div class="form-group">
+<div @if (Settings.Value.UIControlsEnableVueIf) { @Html.Raw(canShowUIControl); } class="form-group">
     <input type="checkbox"
            id="@Model.UIId"
            name="@Model.UIId"
@@ -13,5 +17,8 @@
            data-dbtable="@Model.DataTableDbName"
            data-dbfield="@Model.DataColumnDbName"
            data-required="@Model.Mandatory" /> @Model.LocalizedTitle
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@requiredmsg</span>
-    </div>
+    @if (Settings.Value.UIControlsEnableRequiredText)
+    {
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@Html.Raw(requiredmsg)</span>
+    }
+  </div>

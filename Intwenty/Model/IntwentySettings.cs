@@ -239,11 +239,9 @@ namespace Intwenty.Model
         public string StorageContainerName { get; set; }
         #endregion
 
-
         #region API
         public bool APIEnable { get; set; }
         #endregion
-
 
         #region FrejaId
 
@@ -314,13 +312,19 @@ namespace Intwenty.Model
         public int BankIdQrSize{ get; set; }
 
         public BankIdUsageTypes BankIdUsage { get; set; }
-    #endregion
+        #endregion
 
 
-    /// <summary>
-    /// TEST DB CONNECTIONS
-    /// </summary>
-    public string TestDbConnectionSqlite { get; set; }
+        #region UIControls
+        public bool UIControlsEnableVueIf { get; set; }
+        public bool UIControlsEnableRequiredText { get; set; }
+
+        #endregion
+
+        /// <summary>
+        /// TEST DB CONNECTIONS
+        /// </summary>
+        public string TestDbConnectionSqlite { get; set; }
         public string TestDbConnectionMariaDb { get; set; }
         public string TestDbConnectionSqlServer { get; set; }
         public string TestDbConnectionPostgres { get; set; }
