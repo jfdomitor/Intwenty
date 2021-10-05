@@ -1808,6 +1808,15 @@ namespace Intwenty
                             res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has a list interface with no column definitions.", view.Title, a.Application.Title));
                         }
 
+                        foreach (var uistruct in ui.UIStructure)
+                        {
+                            if (uistruct.IsMetaTypeTableTextColumn && string.IsNullOrEmpty(uistruct.DataColumn1DbName))
+                            {
+                                res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The column {0} in view {1} ha no specified database column.", uistruct.Title, view.Title));
+                            }
+
+                        }
+
                         
 
                         foreach (var uifunc in ui.Functions)

@@ -56,6 +56,10 @@ namespace Intwenty.Model.Dto
 
         public int PageSize { get; set; }
 
+        public string SortColumns { get; set; }
+
+        public string SortDirection { get; set; }
+
         public List<FilterValue> FilterValues { get; set; }
 
         public string ForeignKeyColumnName { get; set; }
@@ -63,6 +67,8 @@ namespace Intwenty.Model.Dto
         public int ForeignKeyId { get; set; }
 
         public int ParentId { get; set; }
+
+     
 
         public bool HasFilter
         {
@@ -97,6 +103,8 @@ namespace Intwenty.Model.Dto
             ActionMode = ActionModeOptions.AllTables;
             FilterValues = new List<FilterValue>();
             ForeignKeyColumnName = "ParentId";
+            SortColumns = "Id";
+            SortDirection = "ASC";
         }
 
         public ClientOperation(ClaimsPrincipal user)
@@ -107,6 +115,7 @@ namespace Intwenty.Model.Dto
             PageSize = 20;
             FilterValues = new List<FilterValue>();
             ForeignKeyColumnName = "ParentId";
+            SortDirection = "ASC";
         }
 
       

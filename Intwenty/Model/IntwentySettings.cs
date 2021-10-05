@@ -318,7 +318,7 @@ namespace Intwenty.Model
         #region UIControls
         public bool UIControlsEnableVueIf { get; set; }
         public bool UIControlsEnableRequiredText { get; set; }
-
+        public bool UIControlsEnableVueListSorting { get; set; }
         #endregion
 
         /// <summary>

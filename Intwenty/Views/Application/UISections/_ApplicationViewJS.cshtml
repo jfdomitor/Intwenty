@@ -1,7 +1,7 @@
 ﻿@model ViewModel
 
 @{
-
+    
     var aftersaveactionpath = string.Empty;
     var aftersaveaction = string.Empty;
     var maintableconfig = Model.GetMainTableUIConfiguration();
@@ -40,8 +40,8 @@
                 ,aftersaveaction: '@aftersaveaction'
                 ,modelSaved: false
                 ,idgen: -1
-                ,model_settings: { showFilter: false, currentSort: "", currentSortDir: "" }
-                ,model_pageInfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: @maintableconfig.PageSize , pageNumber: 0, filterValues: [],skipPaging:@maintableconfig.SkipPaging, properties:"", parentId:0, foreignKeyId:0,foreignKeyName:"" }
+                ,model_settings: { showFilter: false }
+                ,model_pageInfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: @maintableconfig.PageSize , pageNumber: 0, filterValues: [],skipPaging:@maintableconfig.SkipPaging, properties:"", parentId:0, foreignKeyId:0,foreignKeyName:"", sortColumns:"Id", sortDirection:"ASC" }
                  @foreach (var s in subtableconfig)
                  {
                      var table = s.TableName;
@@ -49,8 +49,8 @@
                      var table_pageinfo = s.TableName + "_pageInfo";
                      <text>
                      ,@table:{}
-                     ,@table_settings: { showFilter: false, currentSort: "", currentSortDir: "" }
-                     ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "" }
+                     ,@table_settings: { showFilter: false }
+            ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
                      </text>
                  }
             },
@@ -555,17 +555,27 @@
                 },
                 sortBycolumn: function (s, dbtablename)
                 {
+                    var context = this;
                     var objname = "";
                     if (dbtablename)
-                        objname = dbtablename + "_settings";
+                    {
+                        objname = dbtablename + "_pageInfo";
+                    }
                     else
-                        objname = "model_settings";
+                    {
+                        objname = "model_pageInfo";
+                    }
 
                     //if s == current sort, reverse
-                    if (s === this[objname].currentSort) {
-                        this[objname].currentSortDir = this[objname].currentSortDir === 'asc' ? 'desc' : 'asc';
+                    if (s === this[objname].sortColumns)
+                    {
+                        this[objname].sortDirection = this[objname].sortDirection === 'ASC' ? 'DESC' : 'ASC';
                     }
-                    this[objname].currentSort = s;
+
+                    this[objname].sortColumns = s;
+                    @if (!Settings.Value.UIControlsEnableVueListSorting){
+                        <text>context.getPage();</text>
+                    }
                 },
                 nextPage: function (dbtablename)
                 {
@@ -642,33 +652,58 @@
             },
             computed: {
 
-                sortedAppTable: function () {
-                    return this.applist.sort((a, b) => {
-                        let modifier = 1;
-                        if (this.model_settings.currentSortDir === 'desc') modifier = -1;
-                        if (a[this.model_settings.currentSort] < b[this.model_settings.currentSort]) return -1 * modifier;
-                        if (a[this.model_settings.currentSort] > b[this.model_settings.currentSort]) return 1 * modifier;
-                        return 0;
-                    });
-                }
-                @foreach (var s in subtableconfig)
+                @if (Settings.Value.UIControlsEnableVueListSorting)
                 {
-                    <text>
-                    ,sorted_@s.TableName: function()
-                    {
-                        var dbtablename = "@s.TableName";
-                        var lineobjectname = "@s.TableName" + "_settings";
-                        return this.model[dbtablename].sort((a, b) => {
-                            let modifier = 1;
-                            if (this.model_settings.currentSortDir === 'desc') modifier = -1;
-                            if (a[this[lineobjectname].currentSort] < b[this[lineobjectname].currentSort]) return -1 * modifier;
-                            if (a[this[lineobjectname].currentSort] > b[this[lineobjectname].currentSort]) return 1 * modifier;
-                            return 0;
-                        });
-                    }
-                    </text>
+                        <text>
+                        sortedAppTable: function() {
+                                return this.applist.sort((a, b) => {
+                                    let modifier = 1;
+                                    if (this.model_pageInfo.sortDirection === 'DESC') modifier = -1;
+                                    if (a[this.model_pageInfo.sortColumns] < b[this.model_pageInfo.sortColumns]) return -1 * modifier;
+                                    if (a[this.model_pageInfo.sortColumns] > b[this.model_pageInfo.sortColumns]) return 1 * modifier;
+                                    return 0;
+                                });
+                         }
+                        </text>
+
+                        @foreach (var s in subtableconfig)
+                        {
+                            <text>
+                            ,sorted_@s.TableName: function()
+                            {
+                                var dbtablename = "@s.TableName";
+                                var lineobjectname = "@s.TableName" + "_pageInfo";
+                                return this.model[dbtablename].sort((a, b) => {
+                                    let modifier = 1;
+                                    if (this[lineobjectname].sortDirection === 'DESC') modifier = -1;
+                                    if (a[this[lineobjectname].sortColumns] < b[this[lineobjectname].sortColumns]) return -1 * modifier;
+                                    if (a[this[lineobjectname].sortColumns] > b[this[lineobjectname].sortColumns]) return 1 * modifier;
+                                    return 0;
+                                });
+                            }
+                            </text>
+                        }
                 }
-            },
+                else
+                {
+                     <text>
+                        sortedAppTable: function ()
+                        {
+                            return this.applist;
+                        }
+                     </text>
+                     @foreach (var s in subtableconfig)
+                    {
+                        <text>
+                        ,sorted_@s.TableName: function()
+                        {
+                            var dbtablename = "@s.TableName";
+                            return this.model[dbtablename];
+                        }
+                        </text>
+                    }
+                }
+             },
             mounted: function ()
             {
                 var context = this;

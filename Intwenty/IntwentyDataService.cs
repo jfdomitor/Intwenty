@@ -1712,7 +1712,17 @@ namespace Intwenty
                     }
                 }
 
-                sql_list_stmt.Append("ORDER BY t1.Id ");
+                if (Settings.UIControlsEnableVueListSorting || string.IsNullOrEmpty(args.SortColumns))
+                {
+                    sql_list_stmt.Append("ORDER BY t1.Id ");
+                }
+                else
+                {
+                    if (args.SortDirection.ToLower().Contains("desc"))
+                        sql_list_stmt.Append(string.Format("ORDER BY t1.{0} {1} ", args.SortColumns, " DESC"));
+                    else
+                        sql_list_stmt.Append(string.Format("ORDER BY t1.{0} ", args.SortColumns));
+                }
 
                 if (!args.SkipPaging)
                 {
