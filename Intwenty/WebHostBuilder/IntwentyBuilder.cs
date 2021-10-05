@@ -477,7 +477,7 @@ namespace Intwenty.WebHostBuilder
                 {
                     seederservice.SeedLocalization();
                 }
-                if (settings.StartUpSeedProductAndOrganization)
+                if (settings.StartUpSeedProductAndOrganization || settings.StartUpSeedDemoUserAccounts)
                 {
                     seederservice.SeedProductAndOrganization();
                 }

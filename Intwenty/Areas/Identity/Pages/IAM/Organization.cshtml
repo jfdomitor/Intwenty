@@ -14,7 +14,11 @@
     <div class="card">
         <div class="card-header"><h2>Organization</h2></div>
         <div class="card-body">
-            Manage the organization <b>{{model.name}}</b>
+            Manage the organization <b>{{model.name}}.</b>
+            @if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                <i>You have limited access to this function.</i>
+            }
             <br />
             <br />
             <ul class="nav">
@@ -22,7 +26,7 @@
                     <a asp-area="Identity" asp-page="/IAM/OrganizationList" role="button" class="btn btn-sm btn-outline-secondary"><span class="far fa-hand-point-left" style="font-size:large"></span> Back to list</a>
                 </li>
                 <li class="nav-item">
-                    <button class="btn btn-sm btn-outline-primary" type="button" v-on:click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button>
+                    <!-- button class="btn btn-sm btn-outline-primary" type="button" v-on:click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button    -->
                 </li>
             </ul>
         </div>
@@ -58,7 +62,7 @@
 
     <div class="form-group">
         <label class="control-label">Name<span style="color: red"> *</span></label>
-        <input id="tb_email" type="text" class="form-control form-control-sm" v-model="model.name" />
+        <input id="tb_email" type="text" class="form-control form-control-sm" v-model="model.name" disabled />
     </div>
 
     <br />
@@ -91,39 +95,42 @@
         </tbody>
     </table>
 
-    <hr />
-    <br />
+    @if (User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+    {
+        <hr />
+        <br />
 
-    <div style="margin-left:10px">
-        <ul class="nav">
-            <li class="nav-item">
-                <button class="btn btn-sm btn-secondary" v-on:click="addProduct" style="margin-right:10px"><span class="fa fa-plus"></span></button>
-            </li>
-            <li class="nav-item">
-                <h5>Products</h5>
-            </li>
-        </ul>
-    </div>
-    <br />
-    <table class="table table">
-        <thead>
-            <tr>
+        <div style="margin-left:10px">
+            <ul class="nav">
+                <li class="nav-item">
+                    <button class="btn btn-sm btn-secondary" v-on:click="addProduct" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+                </li>
+                <li class="nav-item">
+                    <h5>Products</h5>
+                </li>
+            </ul>
+        </div>
+        <br />
+        <table class="table table">
+            <thead>
+                <tr>
 
-                <th style="width:5%"></th>
-                <th style="width:5%"></th>
-                <th style="width:30%">Id</th>
-                <th style="width:30%">Name</th>
-            </tr>
-        </thead>
-        <tbody v-for="item in model.products">
-            <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeProduct(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
-                <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'/Identity/IAM/OrganizationProduct/@Model.Id/' + item.productId" title="Product Setup"><i class="fas fa-cogs"></i></a></td>
-                <td>{{item.id}}</td>
-                <td>{{item.productName}}</td>
-            </tr>
-        </tbody>
-    </table>
+                    <th style="width:5%"></th>
+                    <th style="width:5%"></th>
+                    <th style="width:30%">Id</th>
+                    <th style="width:30%">Name</th>
+                </tr>
+            </thead>
+            <tbody v-for="item in model.products">
+                <tr>
+                    <td><div class="btn btn-sm btn-danger" v-on:click="removeProduct(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                    <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'/Identity/IAM/OrganizationProduct/@Model.Id/' + item.productId" title="Product Setup"><i class="fas fa-cogs"></i></a></td>
+                    <td>{{item.id}}</td>
+                    <td>{{item.productName}}</td>
+                </tr>
+            </tbody>
+        </table>
+    }
 
     <hr />
 
@@ -140,11 +147,21 @@
 
                     <div class="form-group">
                         <label class="control-label">Select User<span style="color: red"> *</span></label>
+                        <searchbox id="selusr" name="selusr" type="text"  class="form-control form-control-sm"  
+                                   v-bind:idfield.sync="member.userId" 
+                                   data-domain="SELECTABLEUSERS"
+                                   data-usesearch="TRUE"
+                                   data-multiselect="FALSE"
+                                   data-allowcreate="FALSE"
+                                   data-jsmethod="getUsers" />
+
+                         <!--
                         <select v-model="member.userId" class="form-control form-control-sm">
                             <option v-for="item in users" v-bind:value="item.id">{{item.userName}}</option>
                         </select>
+                         -->
                     </div>
-
+                       
                 </div>
                 <div class="modal-footer">
                     <button id="addMemberModal_okBtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok</button>
@@ -232,9 +249,8 @@
                 addMember: function ()
                 {
 
-                    var context = this;
+                   var context = this;
                     context.resultCode = "";
-                    context.updateEntity();
 
                     context.member = {organizationId:@Model.Id};
 
@@ -303,7 +319,6 @@
 
                     var context = this;
                     context.resultCode = "";
-                    context.updateEntity();
 
                     context.product = {};
 
@@ -360,14 +375,36 @@
                             },
                             success: function (response) {
                                 context.model = response;
-                            },
-                            error: function (response) {
-                                //raiseErrorModal(response.responseJSON);
                             }
                         });
                      }
 
                     raiseYesNoModal("Remove from Organization ?", "The product will be removed from the organization, continue ?", yesfunc);
+                },
+                getUsers: function (domainname, query, donefunc)
+                {
+                    //THIS IS USED BY THE SEARCHBOX WHEN ADDING USERS
+                    var baseurl = '@Url.Content("~/Identity/IAM/")';
+                    var endpointurl = baseurl + "Organization/@Model.Id?handler=FindUsers";
+                    var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                    var senddata = { "domanName": domainname, "query": query  };
+
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(senddata),
+                        headers: {
+                            RequestVerificationToken: antiforgerytoken
+                        },
+                        success: function (response) {
+                            donefunc(response);
+                        }
+                    });
+
+
+
                 }
 
 

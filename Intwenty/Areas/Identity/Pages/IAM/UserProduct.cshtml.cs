@@ -13,7 +13,7 @@ using Intwenty.Areas.Identity.Data;
 
 namespace Intwenty.Areas.Identity.Pages
 {
-    [Authorize(Policy = "IntwentyUserAdminAuthorizationPolicy")]
+    [Authorize(Roles = "SUPERADMIN,USERADMIN")]
     public class UserProductModel : PageModel
     {
 
@@ -60,21 +60,42 @@ namespace Intwenty.Areas.Identity.Pages
         public async Task<JsonResult> OnGetLoadAuthItems(string userid, int organizationid, string productid)
         {
             var t = await ProductManager.GetAthorizationItemsAsync(productid);
-            var authitems = new 
-            { 
-                 roleItems= t.Where(p => p.AuthorizationType == "ROLE")
-                ,systemItems = t.Where(p => p.AuthorizationType == "SYSTEM")
-                ,applicationItems = t.Where(p => p.AuthorizationType == "APPLICATION")
-                ,viewItems = t.Where(p => p.AuthorizationType == "UIVIEW")
-            };
+            if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                 var authitems = new 
+                { 
+                     roleItems= t.Where(p => p.AuthorizationType == "ROLE" && p.NormalizedName != IntwentyRoles.RoleSuperAdmin)
+                    ,systemItems = t.Where(p => p.AuthorizationType == "SYSTEM")
+                    ,applicationItems = t.Where(p => p.AuthorizationType == "APPLICATION")
+                    ,viewItems = t.Where(p => p.AuthorizationType == "UIVIEW")
+                };
 
-            return new JsonResult(authitems);
+                return new JsonResult(authitems);
+            }
+            else
+            {
+
+                var authitems = new 
+                { 
+                     roleItems= t.Where(p => p.AuthorizationType == "ROLE")
+                    ,systemItems = t.Where(p => p.AuthorizationType == "SYSTEM")
+                    ,applicationItems = t.Where(p => p.AuthorizationType == "APPLICATION")
+                    ,viewItems = t.Where(p => p.AuthorizationType == "UIVIEW")
+                };
+
+                return new JsonResult(authitems);
+            }
         }
 
         public async Task<IActionResult> OnPostAddRoleAuthorization([FromBody] IntwentyAuthorizationVm model)
         {
             var allauths = await ProductManager.GetAthorizationItemsAsync(model.ProductId);
             var authitem = allauths.Find(p => p.Id == model.AuthorizationId);
+            if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin) && authitem.NormalizedName == IntwentyRoles.RoleSuperAdmin)
+            {
+                return await OnGetLoad(model.UserId, model.OrganizationId, model.ProductId);
+            }
+
             await UserManager.AddUpdateUserRoleAuthorizationAsync(authitem.NormalizedName, model.UserId, model.OrganizationId, model.ProductId);
             return await OnGetLoad(model.UserId, model.OrganizationId, model.ProductId);
 

@@ -25,6 +25,7 @@ namespace Intwenty.Areas.Identity.Data
         Task<IntwentyOrganization> FindByIdAsync(int id);
         Task<IntwentyOrganization> FindByNameAsync(string name);
         Task<List<IntwentyOrganization>> GetAllAsync();
+        Task<List<IntwentyOrganization>> GetByUserAsync(string userid);
         Task<List<IntwentyOrganizationMember>> GetMembersAsync(int organizationid);
         Task<IdentityResult> AddMemberAsync(IntwentyOrganizationMember member);
         Task<IdentityResult> RemoveMemberAsync(IntwentyOrganizationMember member);
@@ -135,6 +136,21 @@ namespace Intwenty.Areas.Identity.Data
             var orgs = await client.GetEntitiesAsync<IntwentyOrganization>();
             await client.CloseAsync();
             return orgs;
+        }
+
+        public async Task<List<IntwentyOrganization>> GetByUserAsync(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+                return new List<IntwentyOrganization>();
+
+            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            await client.OpenAsync();
+            var orgs = await client.GetEntitiesAsync<IntwentyOrganization>();
+            var members = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
+            await client.CloseAsync();
+
+
+            return orgs.Where(p => members.Exists(x => x.UserName.ToUpper() == username.ToUpper() && x.OrganizationId == p.Id)).ToList();
         }
 
         public async Task<List<IntwentyOrganizationMember>> GetMembersAsync(int organizationid)

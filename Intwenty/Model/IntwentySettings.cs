@@ -30,6 +30,7 @@ namespace Intwenty.Model
 
         public IntwentySettings()
         {
+            LogFetchMaxRows = 500;
             LogVerbosity = LogVerbosityTypes.Error;
             StartUpRoutingMode = RoutingModeOptions.Explicit;
             FrejaTimeoutInMilliseconds = 90000;
@@ -38,7 +39,7 @@ namespace Intwenty.Model
             BankIdUsage = BankIdUsageTypes.OtherAndThisDevice;
             AccountsEmergencyLoginQueryKey = "ISADMINEMERGENCYLOGIN";
             AccountsUserSelectableRoles = new List<IntwentyUserRegistrationRole>();
-            AccountsUserNameUsage = UserNameGenerationStyles.Email;
+            AccountsUserNameGeneration = UserNameGenerationStyles.Email;
             AccountsEmailUsage = new IntwentyAccountDataUsage() { AccountPage =  InputUsageType.Readonly, RegisterPage =  InputUsageType.EditableRequired };
             AccountsPhoneUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable, RegisterPage = InputUsageType.Editable };
             AccountsNameUsage = new IntwentyAccountDataUsage() { AccountPage = InputUsageType.Editable };
@@ -56,6 +57,8 @@ namespace Intwenty.Model
         }
 
         public LogVerbosityTypes LogVerbosity { get; set; }
+
+        public int LogFetchMaxRows { get; set; }
 
         /// <summary>
         /// Database connections
@@ -171,7 +174,7 @@ namespace Intwenty.Model
         public string AccountsGoogleClientId { get; set; }
         public string AccountsGoogleClientSecret { get; set; }
         public string AccountsEmergencyLoginQueryKey { get; set; }     
-        public UserNameGenerationStyles AccountsUserNameUsage { get; set; }
+        public UserNameGenerationStyles AccountsUserNameGeneration { get; set; }
         public IntwentyAccountDataUsage AccountsEmailUsage { get; set; }
         public IntwentyAccountDataUsage AccountsPhoneUsage { get; set; }
         public IntwentyAccountDataUsage AccountsAddressUsage { get; set; }
@@ -236,11 +239,9 @@ namespace Intwenty.Model
         public string StorageContainerName { get; set; }
         #endregion
 
-
         #region API
         public bool APIEnable { get; set; }
         #endregion
-
 
         #region FrejaId
 
@@ -311,13 +312,19 @@ namespace Intwenty.Model
         public int BankIdQrSize{ get; set; }
 
         public BankIdUsageTypes BankIdUsage { get; set; }
-    #endregion
+        #endregion
 
 
-    /// <summary>
-    /// TEST DB CONNECTIONS
-    /// </summary>
-    public string TestDbConnectionSqlite { get; set; }
+        #region UIControls
+        public bool UIControlsEnableVueIf { get; set; }
+        public bool UIControlsEnableRequiredText { get; set; }
+        public bool UIControlsEnableVueListSorting { get; set; }
+        #endregion
+
+        /// <summary>
+        /// TEST DB CONNECTIONS
+        /// </summary>
+        public string TestDbConnectionSqlite { get; set; }
         public string TestDbConnectionMariaDb { get; set; }
         public string TestDbConnectionSqlServer { get; set; }
         public string TestDbConnectionPostgres { get; set; }

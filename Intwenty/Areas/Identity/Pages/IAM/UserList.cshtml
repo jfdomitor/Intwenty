@@ -13,7 +13,13 @@
     <br />
     <div class="card">
         <div class="card-header"><h2>Users</h2></div>
-        <div class="card-body">Add users and manage access.</div>
+        <div class="card-body">
+            Manage users.
+            @if (!User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                <i>You have limited access to this function.</i>
+            }
+        </div>
     </div>
 
     <br />
@@ -32,10 +38,12 @@
             <tr>
                 <th style="width:5%"></th>
                 <th style="width:5%"></th>
-                <th style="width:20%">User Name</th>
-                <th style="width:15%">IsBlocked</th>
-                <th style="width:15%">MFA Active</th>
-                <th style="width:25%">Last login</th>
+                <th style="width:15%">User Name</th>
+                <th style="width:10%">IsBlocked</th>
+                <th style="width:10%">MFA Active</th>
+                <th style="width:15%">Last login</th>
+                <th style="width:15%">Last login product</th>
+                <th style="width:15%">Last login method</th>
                 <th style="width:5%">Block</th>
                 <th style="width:5%">Reset MFA</th>
 
@@ -49,6 +57,8 @@
                 <td>{{entry.isBlocked}}</td>
                 <td>{{entry.mfaActive}}</td>
                 <td>{{entry.lastLogin}}</td>
+                <td>{{entry.lastLoginProduct}}</td>
+                <td>{{entry.lastLoginMethod}}</td>
                 <td v-if="!entry.isBlocked"><div class="btn btn-sm btn-secondary" v-on:click="blockUser(entry)" title="Block"><i class="fas fa-lock"></i></div></td>
                 <td v-if="entry.isBlocked"><div class="btn btn-sm btn-secondary" v-on:click="unblockUser(entry)" title="Unblock"><i class="fas fa-lock-open"></i></div></td>
                 <td v-if="entry.mfaActive"><div class="btn btn-sm btn-secondary" v-on:click="resetMFA(entry)" title="Reset MFA"><i class="fas fa-key"></i></div></td>
@@ -68,7 +78,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Input)
+                    @if (Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.Input)
                     {
                         <div class="form-group">
                             <label class="control-label">User Name<span style="color: red"> *</span></label>

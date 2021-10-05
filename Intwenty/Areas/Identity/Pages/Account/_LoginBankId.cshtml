@@ -8,31 +8,52 @@
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_SERVICE_FAILURE' || model.resultCode=='UNEXPECTED_ERROR')">
         @Localizer["BANKID_SERVICE_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_INTWENTY_TIMEOUT_FAILURE')">
         @Localizer["BANKID_INTWENTY_TIMEOUT_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_TIMEOUT_FAILURE')">
         @Localizer["BANKID_TIMEOUT_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_CANCEL_FAILURE')">
         @Localizer["BANKID_CANCEL_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_USERCANCEL_FAILURE')">
         @Localizer["BANKID_USERCANCEL_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
 
     <div class="alert alert-danger" v-if="(model.resultCode=='BANKID_AUTH_FAILURE')">
         @Localizer["BANKID_AUTH_FAILURE"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <div class="alert alert-danger" v-if="(model.resultCode=='INVALID_LOGIN_ATTEMPT')">
         @Localizer["Invalid login attemt"]
+        <br />
+        <br />
+        <a href="~/Identity/Account/Login" role="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-user-ninja"></i> @Localizer["Try again"]</a>
     </div>
 
     <!-- Iif the option BankidUsageType.OtherDevice is used, startBankId('BANKID_START_OTHER') will execute automaticly -->

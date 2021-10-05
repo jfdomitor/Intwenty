@@ -1,4 +1,85 @@
-﻿
+﻿function handleIntwentyViewMode(istoogle) {
+    var menucontainer = $("#main_menu_container");
+    var contentcontainer = $("#main_content_container");
+    if (!menucontainer)
+        return;
+    if (!contentcontainer)
+        return;
+
+    if (istoogle) {
+
+        if (menucontainer.hasClass("container-fluid")) {
+            menucontainer.removeClass("container-fluid");
+            menucontainer.addClass("container");
+            setCookie('IntwentyViewMode', 'container', 365);
+
+        } else {
+            menucontainer.removeClass("container");
+            menucontainer.addClass("container-fluid");
+            setCookie('IntwentyViewMode', 'container-fluid', 365);
+        }
+
+        if (contentcontainer.hasClass("container-fluid")) {
+            contentcontainer.removeClass("container-fluid");
+            contentcontainer.addClass("container");
+        } else {
+            contentcontainer.removeClass("container");
+            contentcontainer.addClass("container-fluid");
+        }
+    }
+    else {
+        var cookieval = getCookie('IntwentyViewMode');
+        if (!cookieval)
+            return;
+        if (cookieval == '')
+            return;
+
+        if (menucontainer.hasClass("container-fluid") && cookieval == 'container') {
+            menucontainer.removeClass("container-fluid");
+            menucontainer.addClass("container");
+        }
+
+        if (menucontainer.hasClass("container") && cookieval == 'container-fluid') {
+            menucontainer.removeClass("container");
+            menucontainer.addClass("container-fluid");
+        }
+
+        if (contentcontainer.hasClass("container-fluid") && cookieval == 'container') {
+            contentcontainer.removeClass("container-fluid");
+            contentcontainer.addClass("container");
+        }
+
+        if (contentcontainer.hasClass("container") && cookieval == 'container-fluid') {
+            contentcontainer.removeClass("container");
+            contentcontainer.addClass("container-fluid");
+        }
+    }
+};
+
+function setCookie(cname, cvalue, exdays)
+{
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname)
+{
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
 
 function raiseInformationModal(headertext, bodytext, close_callback) {
     $('#msg_dlg_modal_hdr').text(headertext);
@@ -201,7 +282,7 @@ Vue.component("searchbox", {
         var vm = this;
         var element = $(this.$el);
 
-
+        var jsmethod = $(element).data('jsmethod');
         var domainname = $(element).data('domain');
         var usearch = $(element).data('usesearch');
         var mselect = $(element).data('multiselect');
@@ -216,6 +297,9 @@ Vue.component("searchbox", {
             maxitems = 10;
             plugs = ['remove_button'];
         }
+
+        if (!jsmethod)
+            jsmethod = 'getDomain';
 
         element.selectize({
             plugins: plugs
@@ -236,9 +320,9 @@ Vue.component("searchbox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root.getDomain)
+                if (vm.$root[jsmethod])
                 {
-                    vm.$root.getDomain(domainname, query, function (response) {
+                    vm.$root[jsmethod](domainname, query, function (response) {
                         callback(response);
                         if (vm.idfield) {
                             var persisteditems = vm.idfield.split(",");
@@ -248,18 +332,7 @@ Vue.component("searchbox", {
                         }
                     });
                 }
-                else
-                {
-                    $.get('/Application/API/GetDomain/' + domainname + '/' + query, function (response) {
-                        callback(response);
-                        if (vm.idfield) {
-                            var persisteditems = vm.idfield.split(",");
-                            for (var i = 0; i < persisteditems.length; i++) {
-                                element[0].selectize.addItem(persisteditems[i], true);
-                            }
-                        }
-                    });
-                }
+                
           
             }
 
@@ -336,6 +409,9 @@ Vue.component("combobox", {
         var element = $(this.$el);
 
         var domainname = $(element).data('domain');
+        var jsmethod = $(element).data('jsmethod');
+        if (!jsmethod)
+            jsmethod = 'getDomain';
 
         element.selectize({
             delimiter: ','
@@ -350,9 +426,9 @@ Vue.component("combobox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root.getDomain)
+                if (vm.$root[jsmethod])
                 {
-                    vm.$root.getDomain(domainname, 'ALL', function (response) {
+                    vm.$root[jsmethod](domainname, 'ALL', function (response) {
                         callback(response);
                         if (vm.idfield) {
                             var persisteditems = vm.idfield.split(",");
@@ -362,18 +438,7 @@ Vue.component("combobox", {
                         }
                     });
                 }
-                else
-                {
-                    $.get('/Application/API/GetDomain/' + domainname + '/ALL', function (response) {
-                        callback(response);
-                        if (vm.idfield) {
-                            var persisteditems = vm.idfield.split(",");
-                            for (var i = 0; i < persisteditems.length; i++) {
-                                element[0].selectize.addItem(persisteditems[i], true);
-                            }
-                        }
-                    });
-                }
+               
 
               
             }
@@ -453,18 +518,17 @@ Vue.component("radiolist", {
         var vm = this;
         var element = $(this.$el);
 
+        vm.jsmethod = $(element).data('jsmethod');
         vm.domainname = $(element).data('domain');
         vm.orientation = $(element).data('orientation');
         vm.controlid = $(element).attr('id');
 
+        if (!vm.jsmethod)
+            vm.jsmethod = 'getDomain';
+
         if (vm.domainname) {
-            if (vm.$root.getDomain) {
-                vm.$root.getDomain(vm.domainname, 'ALL', function (response) {
-                    vm.domvalues = response;
-                });
-            }
-            else {
-                $.get('/Application/API/GetDomain/' + vm.domainname + '/ALL', function (response) {
+            if (vm.$root[vm.jsmethod]) {
+                vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
                 });
             }
@@ -550,22 +614,21 @@ Vue.component("checklist", {
         var vm = this;
         var element = $(this.$el);
 
+        vm.jsmethod = $(element).data('jsmethod');
         vm.domainname = $(element).data('domain');
         vm.orientation = $(element).data('orientation');
         vm.controlid = $(element).attr('id');
 
+        if (!vm.jsmethod)
+            vm.jsmethod = 'getDomain';
+
         if (vm.domainname)
         { 
-            if (vm.$root.getDomain) {
-                vm.$root.getDomain(vm.domainname, 'ALL', function (response) {
+            if (vm.$root[vm.jsmethod]) {
+                vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
                 });
-            }
-            else {
-                $.get('/Application/API/GetDomain/' + vm.domainname + '/ALL', function (response) {
-                    vm.domvalues = response;
-                });
-            }
+            } 
         }
     },
     methods:
@@ -759,7 +822,10 @@ Vue.prototype.isRequiredNotValid = function (uiid) {
     return $("#" + uiid).hasClass("requiredNotValid");
 };
 
-
+Vue.prototype.canShowUIControl = function (uiid, tablename, columnname)
+{
+    return true;
+};
 
 Vue.prototype.onUserInput = function (event) {
     if (!event)

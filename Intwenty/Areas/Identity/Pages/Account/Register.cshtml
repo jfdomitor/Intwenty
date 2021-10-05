@@ -44,6 +44,7 @@
                 <partial name="_RegisterExternal" model="Model" />
             }
         }
+
     </div>
 
 </div>
@@ -126,7 +127,7 @@
                             }
                         },
                         error: function (response) {
-                             raiseErrorModal(response.responseJSON);
+                            context.model = response.responseJSON;
                         }
                     });
                 },
@@ -186,7 +187,7 @@
                          },
                         error: function (response)
                         {
-                            raiseErrorModal(response.responseJSON);
+                            context.model = response.responseJSON;
                         }
                     });
                 },

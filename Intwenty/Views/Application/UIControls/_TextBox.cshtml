@@ -1,9 +1,13 @@
 ﻿@model IUIBinding
 @{
     var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"].Value);
-
+    var canShowUIControl = "";
+    if (Settings.Value.UIControlsEnableVueIf)
+    {
+        canShowUIControl = "v-if=\"canShowUIControl('" + Model.UIId + "', '" + Model.DataTableDbName + "', '" + Model.DataColumnDbName + "')\"";
+    }
 }
-<div class="form-group">
+<div @if (Settings.Value.UIControlsEnableVueIf) { @Html.Raw(canShowUIControl); } class="form-group">
     <label class="control-label">
         @Model.LocalizedTitle @{ if (Model.Mandatory)
             { <span style="color: red"> *</span> }}
@@ -21,9 +25,12 @@
                data-title="@Model.LocalizedTitle"
                data-dbtable="@Model.DataTableDbName"
                data-dbfield="@Model.DataColumnDbName"
-               data-required="@Model.Mandatory" 
+               data-required="@Model.Mandatory"
                maxlength="300" />
-            <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@requiredmsg</span>
+        @if (Settings.Value.UIControlsEnableRequiredText)
+        {
+            <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@Html.Raw(requiredmsg)</span>
+        }
     }
     else
     {

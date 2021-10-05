@@ -27,7 +27,7 @@
 
     <form v-on:submit.prevent="localLogin">
         <div class="form-group">
-            @if (Settings.Value.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+            @if (Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
             {
                 <label>@Localizer["Email"] @demouser</label>
             }

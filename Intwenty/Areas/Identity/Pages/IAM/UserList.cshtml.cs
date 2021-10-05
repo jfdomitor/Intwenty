@@ -16,13 +16,14 @@ using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
-    [Authorize(Policy = "IntwentyUserAdminAuthorizationPolicy")]
+    [Authorize(Roles = "SUPERADMIN,USERADMIN")]
     public class UserListModel : PageModel
     {
 
         private IIntwentyDbLoggerService DbLogger { get; }
         private IntwentySettings Settings { get; }
         private IntwentyUserManager UserManager { get; }
+
 
         public UserListModel(IIntwentyDbLoggerService logger, IOptions<IntwentySettings> settings, IntwentyUserManager usermanager)
         {
@@ -38,11 +39,8 @@ namespace Intwenty.Areas.Identity.Pages.IAM
 
         public async Task<JsonResult> OnGetLoad()
         {
-            var client = UserManager.GetIAMDataClient();
-            await client.OpenAsync();
-            var result = await client.GetEntitiesAsync<IntwentyUser>();
+            var result = await UserManager.GetUsersByAdminAccessAsync(User);
             var list = result.Select(p => new IntwentyUserVm(p));
-            await client.CloseAsync();
             return new JsonResult(list);
         }
 
@@ -58,12 +56,12 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             user.EmailConfirmed = true;
             user.Culture = Settings.LocalizationDefaultCulture;
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.Email)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
             {
                 user.UserName = model.Email;
             }
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateFromName)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateFromName)
             {
                 var p1 = user.FirstName;
                 if (p1.Length > 4)
@@ -75,7 +73,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
                 user.UserName = string.Format("{0}_{1}_{2}", p1, p2, DateTime.Now.Millisecond);
             }
 
-            if (Settings.AccountsUserNameUsage == UserNameGenerationStyles.GenerateRandom)
+            if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
             {
                 user.UserName = BaseModelItem.GetQuiteUniqueString();
             }

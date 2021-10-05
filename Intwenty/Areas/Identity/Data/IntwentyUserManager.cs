@@ -752,6 +752,69 @@ namespace Intwenty.Areas.Identity.Data
             return t;
         }
 
+        public async Task<List<IntwentyUser>> GetUsersByAdminAccessAsync(ClaimsPrincipal claimprincipal)
+        {
+            var result = new List<IntwentyUser>();
+
+            if (claimprincipal==null)
+                return new List<IntwentyUser>();
+
+            if (!claimprincipal.Identity.IsAuthenticated)
+                return new List<IntwentyUser>();
+
+            if (claimprincipal.IsInRole(IntwentyRoles.RoleSuperAdmin))
+            {
+                var t = await ((IntwentyUserStore)Store).GetUsersAsync();
+                return t;
+            }
+
+            if (claimprincipal.IsInRole(IntwentyRoles.RoleUserAdmin))
+            {
+                var users = await ((IntwentyUserStore)Store).GetUsersAsync();
+
+                var client = GetIAMDataClient();
+                await client.OpenAsync();
+                var members = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
+                var authorizations = await client.GetEntitiesAsync<IntwentyAuthorization>();
+                await client.CloseAsync();
+
+                var myorgs = members.Where(x => x.UserName == claimprincipal.Identity.Name).Select(p => p.OrganizationId).ToList();
+
+                foreach (var u in users)
+                {
+                    var valid = false;
+
+                    //Has no org memberships (The user was just added)
+                    if (!members.Any(p => p.UserId == u.Id))
+                    {
+                        valid = true;
+                    }
+                    else
+                    {
+                        //Has membership in the useradmins org
+                        if (members.Exists(p => p.UserId == u.Id && myorgs.Exists(x => x == p.OrganizationId)))
+                            valid = true;
+                    }
+
+                    if (valid)
+                    {
+                        if (authorizations.Exists(p => p.AuthorizationType == "ROLE" && p.UserId == u.Id && p.AuthorizationNormalizedName == IntwentyRoles.RoleSuperAdmin))
+                            valid = false;
+                       
+                    }
+
+                    if (valid)
+                        result.Add(u);
+
+                }
+
+                return result;
+            }
+
+            return new List<IntwentyUser>();
+
+        }
+
         public override async Task<IdentityResult> DeleteAsync(IntwentyUser user)
         {
            
@@ -912,6 +975,46 @@ namespace Intwenty.Areas.Identity.Data
             var user = users.Find(p => p.LegalIdNumber == idnumber);
             await client.CloseAsync();
             return user;
+        }
+
+        /// <summary>
+        /// Check if an email exists in the database
+        /// </summary>
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return false;
+            try
+            {
+                var client = GetIAMDataClient();
+                await client.OpenAsync();
+                var users = await GetUsersAsync();
+                await client.CloseAsync();
+                return users.Exists(p => !string.IsNullOrEmpty(p.Email) && p.Email.Trim().ToUpper() == email.Trim().ToUpper());
+            }
+            catch { }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a phonenumber exists in the database
+        /// </summary>
+        public async Task<bool> PhoneNumberExistsAsync(string phonenumber)
+        {
+            if (string.IsNullOrEmpty(phonenumber))
+                return false;
+            try
+            {
+                var client = GetIAMDataClient();
+                await client.OpenAsync();
+                var users = await GetUsersAsync();
+                await client.CloseAsync();
+                return users.Exists(p => !string.IsNullOrEmpty(p.PhoneNumber) && p.PhoneNumber.Trim().ToUpper() == phonenumber.Trim().ToUpper());
+            }
+            catch { }
+
+            return false;
         }
 
         private async Task<List<IntwentyUserSetting>> GetAllUserSettings()

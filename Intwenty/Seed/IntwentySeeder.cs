@@ -42,6 +42,14 @@ namespace Intwenty.Seed
     
             var temp = new List<TranslationItem>();
 
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "Try Again", Text = "Try Again." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "Try Again", Text = "Försök igen." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "REG_SERVICE_FAILURE", Text = "An unexpected error occured, the account could not be created." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "REG_SERVICE_FAILURE", Text = "Ett fel uppstod, kontot kunde inte skapas." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "NO_EMAIL", Text = "You must type a valid email address." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "NO_EMAIL", Text = "Du måste ange en giltig epostadress." });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "EMAIL_NOT_UNIQUE", Text = "An account is already associated with this email address." });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "EMAIL_NOT_UNIQUE", Text = "Det finns redan ett konto med den angivna epostadressen." });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "LOCKED_OUT_ACCOUNT", Text = "This account has been locked out, please try again later." });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "LOCKED_OUT_ACCOUNT", Text = "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "API Key Updated", Text = "API nyckeln uppdaterades" });
@@ -278,6 +286,74 @@ namespace Intwenty.Seed
                 {
                     await OrganizationManager.AddProductAsync(new IntwentyOrganizationProduct() { OrganizationId = org.Id, ProductId = product.Id, ProductName = product.ProductName });
                 }
+
+                var admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleSuperAdmin);
+                if (admrole == null)
+                {
+                    var role = new IntwentyProductAuthorizationItem();
+                    role.ProductId = product.Id;
+                    role.Name = IntwentyRoles.RoleSuperAdmin;
+                    role.AuthorizationType = "ROLE";
+                    await RoleManager.CreateAsync(role);
+                }
+
+                admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleUserAdmin);
+                if (admrole == null)
+                {
+                    var role = new IntwentyProductAuthorizationItem();
+                    role.ProductId = product.Id;
+                    role.Name = IntwentyRoles.RoleUserAdmin;
+                    role.AuthorizationType = "ROLE";
+                    await RoleManager.CreateAsync(role);
+                }
+
+                admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleSystemAdmin);
+                if (admrole == null)
+                {
+                    var role = new IntwentyProductAuthorizationItem();
+                    role.ProductId = product.Id;
+                    role.Name = IntwentyRoles.RoleSystemAdmin;
+                    role.AuthorizationType = "ROLE";
+                    await RoleManager.CreateAsync(role);
+                }
+
+                var userrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleUser);
+                if (userrole == null)
+                {
+                    var role = new IntwentyProductAuthorizationItem();
+                    role.ProductId = product.Id;
+                    role.Name = IntwentyRoles.RoleUser;
+                    role.AuthorizationType = "ROLE";
+                    await RoleManager.CreateAsync(role);
+                }
+
+                userrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleAPIUser);
+                if (userrole == null)
+                {
+                    var role = new IntwentyProductAuthorizationItem();
+                    role.ProductId = product.Id;
+                    role.Name = IntwentyRoles.RoleAPIUser;
+                    role.AuthorizationType = "ROLE";
+                    await RoleManager.CreateAsync(role);
+                }
+
+                if (Settings.AccountsUserSelectableRoles != null)
+                {
+                    foreach (var t in Settings.AccountsUserSelectableRoles)
+                    {
+                        var check = await RoleManager.FindByNameAsync(t.RoleName);
+                        if (check == null)
+                        {
+                            var role = new IntwentyProductAuthorizationItem();
+                            role.ProductId = this.Settings.ProductId;
+                            role.Name = t.RoleName.ToUpper();
+                            role.AuthorizationType = "ROLE";
+                            await RoleManager.CreateAsync(role);
+                        }
+
+                    }
+
+                }
             });
 
             t.GetAwaiter().GetResult();
@@ -339,82 +415,19 @@ namespace Intwenty.Seed
 
             var t = Task.Run(async () =>
             {
+
+
                 //ENSURE WE HAVE A PRODUCT AND ORG
                 IntwentyProduct product = await ProductManager.FindByIdAsync(Settings.ProductId);
-                if (product == null)
-                {
-                    product = new IntwentyProduct();
-                    product.Id = Settings.ProductId;
-                    product.ProductName = Settings.ProductTitle;
-                    await ProductManager.CreateAsync(product);
-                }
-
                 IntwentyOrganization org = await OrganizationManager.FindByNameAsync(Settings.ProductOrganization);
-                if (org == null)
-                {
-                    org = new IntwentyOrganization();
-                    org.Name = Settings.ProductOrganization;
-                    await OrganizationManager.CreateAsync(org);
-                }
 
-                var all_products = await OrganizationManager.GetProductsAsync(org.Id);
-                var thisproduct = all_products.Find(p => p.ProductId == product.Id);
-                if (thisproduct == null)
+                if (product == null || org == null)
                 {
-                    await OrganizationManager.AddProductAsync(new IntwentyOrganizationProduct() { OrganizationId = org.Id, ProductId = product.Id, ProductName = product.ProductName });
+                    throw new InvalidOperationException("Can't seed demo users when missing product and organization information in the database");
                 }
 
 
-
-                var admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleSuperAdmin);
-                if (admrole == null)
-                {
-                    var role = new IntwentyProductAuthorizationItem();
-                    role.ProductId = product.Id;
-                    role.Name = IntwentyRoles.RoleSuperAdmin;
-                    role.AuthorizationType = "ROLE";
-                    await RoleManager.CreateAsync(role);
-                }
-
-                admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleUserAdmin);
-                if (admrole == null)
-                {
-                    var role = new IntwentyProductAuthorizationItem();
-                    role.ProductId = product.Id;
-                    role.Name = IntwentyRoles.RoleUserAdmin;
-                    role.AuthorizationType = "ROLE";
-                    await RoleManager.CreateAsync(role);
-                }
-
-                admrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleSystemAdmin);
-                if (admrole == null)
-                {
-                    var role = new IntwentyProductAuthorizationItem();
-                    role.ProductId = product.Id;
-                    role.Name = IntwentyRoles.RoleSystemAdmin;
-                    role.AuthorizationType = "ROLE";
-                    await RoleManager.CreateAsync(role);
-                }
-
-                var userrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleUser);
-                if (userrole == null)
-                {
-                    var role = new IntwentyProductAuthorizationItem();
-                    role.ProductId = product.Id;
-                    role.Name = IntwentyRoles.RoleUser;
-                    role.AuthorizationType = "ROLE";
-                    await RoleManager.CreateAsync(role);
-                }
-
-                userrole = await RoleManager.FindByNameAsync(IntwentyRoles.RoleAPIUser);
-                if (userrole == null)
-                {
-                    var role = new IntwentyProductAuthorizationItem();
-                    role.ProductId = product.Id;
-                    role.Name = IntwentyRoles.RoleAPIUser;
-                    role.AuthorizationType = "ROLE";
-                    await RoleManager.CreateAsync(role);
-                }
+             
 
                 if (!string.IsNullOrEmpty(Settings.DemoAdminUser) && !string.IsNullOrEmpty(Settings.DemoAdminPassword))
                 {
