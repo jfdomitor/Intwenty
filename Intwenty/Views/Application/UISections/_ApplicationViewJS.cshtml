@@ -129,16 +129,7 @@
                 {
                     var context = this;
 
-                    var addLocalLine = function ()
-                    {
-                        context.idgen--;
-                        context.model[dbtablename].Id = 0;
-                        context[dbtablename].LocalId = context.idgen;
-                        context[dbtablename].ApplicationId = context.applicationId;
-                        context.model[dbtablename].push(context[dbtablename]);
-                    };
-
-
+                
                     var saveFunc = function ()
                     {
 
