@@ -72,12 +72,37 @@
                     <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
                 </li>
             </ul>
-           
-            
+
+
         </nav>
 
     </div>
 
+    @if (ishomepath)
+    {
+
+       
+
+        <div class="container-fluid">
+            <div style="margin-top:300px;margin-left:100px; padding:10px;">
+                <p style="color: white; font-size: 50px; text-align: left; margin-top: 10px">Intwenty</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> An open source metadata driven app engine built on .net core and vue.js</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Built for dataintensive bussiness applications</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Create applications with no code or low code</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Supports MS Sql Server, Maria Db, My Sql, Postgres or SQLite</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Takes care of regular tasks such as authentication, user admin etc</p>
+                <p style="color: white; font-size: 35px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Available on <a href="https://www.nuget.org/packages/Intwenty/">nuget</a> and <a href="https://github.com/Domitor/Intwenty">github</a> (please star us)</p>
+                <br />
+                <br />
+                <p style="color: white; font-size: 40px; text-align: left; margin-top: 5px"><i class="fa fa-check-circle"></i> Login <a href="https://intwenty.dev/Identity/Account/Login">here</a> to run a demo</p>
+            </div>
+
+        </div>
+
+       
+
+
+    }
 
 
 
@@ -96,6 +121,7 @@
             <br />
             <partial name="_CookieConsentPartial" />
         }
+
     </div>
 
 
@@ -113,16 +139,14 @@
     <script src="~/lib/Croppie/croppie.js"></script>
 
     <script>
-        $(function ()
-        {
+        $(function () {
 
-            $("#expand_ui_btn").on("click", function expandUI()
-            {
+            $("#expand_ui_btn").on("click", function expandUI() {
                 handleIntwentyViewMode(true);
             });
 
             handleIntwentyViewMode(false);
-        }); 
+        });
     </script>
 
     @RenderSection("Scripts", required: false)
