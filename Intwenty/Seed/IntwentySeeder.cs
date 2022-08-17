@@ -234,8 +234,8 @@ namespace Intwenty.Seed
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "BACKTOLIST", Text = "Tillbaka" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "ADDEDIT", Text = "Add / Edit" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "ADDEDIT", Text = "Lägg till / Ändra" });
-            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "COPYRIGHT", Text = "2021 Intwenty - All rights reserved" });
-            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "COPYRIGHT", Text = "2021 Intwenty - Alla rättighter reserverade" });
+            temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "COPYRIGHT", Text = "2023 Intwenty - All rights reserved" });
+            temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "COPYRIGHT", Text = "2023 Intwenty - Alla rättighter reserverade" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PRODUCT_LOGIN", Text = "Welcome ! Follow the instructions below to login" });
             temp.Add(new TranslationItem() { Culture = "sv-SE", TransKey = "PRODUCT_LOGIN", Text = "Välkommen ! Följ instruktionerna nedan för att logga in" });
             temp.Add(new TranslationItem() { Culture = "en-US", TransKey = "PROFILE_SAVE_ERROR", Text = "An error occured when saving the profile" });
