@@ -34,7 +34,7 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 3. Keep dependencies to a minimum.
 
 # Backend Dependencies
-- asp.net core 3.1
+- Net6
 - Microsoft.AspNetCore.Mvc 2.2.0
 - Intwenty.DataClient
 - Swashbuckle.AspNetCore 5.6.3
