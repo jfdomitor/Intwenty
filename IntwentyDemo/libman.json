@@ -31,12 +31,13 @@
       ]
     },
     {
-      "library": "selectize.js@0.13.3",
-      "destination": "wwwroot/lib/selectize.js/"
-    },
-    {
       "library": "croppie@2.6.5",
       "destination": "wwwroot/lib/croppie/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "selectize.js@0.13.6",
+      "destination": "wwwroot/lib/selectize.js/"
     }
   ]
 }
