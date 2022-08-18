@@ -88,8 +88,9 @@ namespace IntwentyDemo
                         //****** Required ******
                         //Remove AddRazorRuntimeCompilation() in production
                         services.AddRazorPages().AddViewLocalization().AddRazorRuntimeCompilation();
+                      
 
-                        
+
                     })
                     .Configure((buildercontext, app) =>
                     {

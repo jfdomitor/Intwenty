@@ -25,7 +25,6 @@
 
 <body class="@(ishomepath ? "landingpage" : "")">
 
-
     <div class="container" id="main_menu_container">
         @if (ishomepath)
         {
@@ -34,46 +33,47 @@
         }
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/">Intwenty</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarText">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">Intwenty</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarText">
 
-                <ul class="nav navbar-nav mr-auto">
+                    <ul class="nav navbar-nav mr-auto">
 
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        @await Html.PartialAsync("_IntwentyAppMenu")
-
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
+                        @if (User.Identity.IsAuthenticated)
                         {
-                            @await Html.PartialAsync("_IntwentyAdminMenu")
+                            @await Html.PartialAsync("_IntwentyAppMenu")
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
+                            {
+                                @await Html.PartialAsync("_IntwentyAdminMenu")
+                            }
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("USERADMIN"))
+                            {
+                                //IF NOT CENTRALIZED IAM DB, ALLOW USERADMIN TO IAM
+                                @await Html.PartialAsync("_IntwentyIdentityAccessMenu")
+                            }
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN") || User.IsInRole("APIUSER"))
+                            {
+                                @await Html.PartialAsync("_IntwentyAPIMenu")
+                            }
                         }
 
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("USERADMIN"))
-                        {
-                            //IF NOT CENTRALIZED IAM DB, ALLOW USERADMIN TO IAM
-                            @await Html.PartialAsync("_IntwentyIdentityAccessMenu")
-                        }
-
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN") || User.IsInRole("APIUSER"))
-                        {
-                            @await Html.PartialAsync("_IntwentyAPIMenu")
-                        }
-                    }
 
 
-
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
+                    </li>
                 </ul>
-                <partial name="_LoginPartial" />
-            </div>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
-                </li>
-            </ul>
-           
+           </div>
             
         </nav>
 
