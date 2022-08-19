@@ -108,12 +108,17 @@ function raiseErrorModal(operationresult) {
 };
 
 function raiseYesNoModal(headertxt, bodytext, yes_callback) {
+    //var modalElement = document.getElementById('yesno_dlg_modal');
+    //var modal = new bootstrap.Modal(modalElement);
     $('#yesno_dlg_modal_hdr').text(headertxt);
     $('#yesno_dlg_modal_text').text(bodytext);
     $('#yesno_dlg_modal_yesbtn').off('click', yes_callback);
     $('#yesno_dlg_modal_yesbtn').off().on('click', yes_callback);
-    $('#yesno_dlg_modal').modal();
 
+    //$('#yesno_dlg_modal_nobtn').off('click', function () { modal.hide() });
+    //$('#yesno_dlg_modal_nobtn').off().on('click', function () { modal.hide() });
+    $('#yesno_dlg_modal').show();
+    //modal.show();
 };
 
 function hasRequiredValues(datalist, requiredlist) {

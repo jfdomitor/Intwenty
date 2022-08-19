@@ -17,22 +17,19 @@
     </div>
 </div>
 
-
-<div class="modal" id="yesno_dlg_modal" role="dialog">
+<div class="modal fade" id="yesno_dlg_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 id="yesno_dlg_modal_hdr" class="modal-title">Information</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p id="yesno_dlg_modal_text"></p>
             </div>
             <div class="modal-footer">
-                <button id="yesno_dlg_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Yes</button>
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">No</button>
+                <button id="yesno_dlg_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Yes</button>
+                <button id="yesno_dlg_modal_nobtn" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
             </div>
         </div>
     </div>
