@@ -88,7 +88,7 @@ function raiseInformationModal(headertext, bodytext, close_callback) {
         $('#msg_dlg_modal_closebtn').off('click', close_callback);
         $('#msg_dlg_modal_closebtn').off().on('click', close_callback);
     }
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
@@ -96,29 +96,23 @@ function raiseInformationModal(headertext, bodytext, close_callback) {
 function raiseValidationErrorModal(message) {
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(message);
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
 function raiseErrorModal(operationresult) {
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(operationresult.userError);
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
 function raiseYesNoModal(headertxt, bodytext, yes_callback) {
-    //var modalElement = document.getElementById('yesno_dlg_modal');
-    //var modal = new bootstrap.Modal(modalElement);
     $('#yesno_dlg_modal_hdr').text(headertxt);
     $('#yesno_dlg_modal_text').text(bodytext);
     $('#yesno_dlg_modal_yesbtn').off('click', yes_callback);
     $('#yesno_dlg_modal_yesbtn').off().on('click', yes_callback);
-
-    //$('#yesno_dlg_modal_nobtn').off('click', function () { modal.hide() });
-    //$('#yesno_dlg_modal_nobtn').off().on('click', function () { modal.hide() });
-    $('#yesno_dlg_modal').show();
-    //modal.show();
+    $('#yesno_dlg_modal').modal('show');
 };
 
 function hasRequiredValues(datalist, requiredlist) {

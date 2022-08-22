@@ -292,7 +292,7 @@
                     context.model.editdlg.groupDlgLabel = "Email";
                     context.model.editdlg.groupDlgValue = "";
                     this.$forceUpdate();
-                    $('#editgroup_dlg_modal').modal();
+                    $('#editgroup_dlg_modal').modal('show');
 
                 },
                 renameGroup: function (group) {
@@ -304,7 +304,7 @@
                     context.model.editdlg.groupDlgLabel = '@Localizer["New Groupname"]';
                     context.model.editdlg.groupDlgValue = "";
                     this.$forceUpdate();
-                    $('#editgroup_dlg_modal').modal();
+                    $('#editgroup_dlg_modal').modal('show');
                 },
                 leaveGroup: function (group) {
 
@@ -357,7 +357,7 @@
 
                     if (context.model.memberdlg)
                     {
-                        $('#groupmembers_dlg_modal').modal();
+                        $('#groupmembers_dlg_modal').modal('show');
                     }
 
                 },

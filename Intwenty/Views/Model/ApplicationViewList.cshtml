@@ -405,7 +405,7 @@
                     context.initializePropertyUI(context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_edit_function_modal").modal();
+                    $("#create_edit_function_modal").modal('show');
 
 
                 },
@@ -442,7 +442,7 @@
                     context.initializePropertyUI(context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_edit_function_modal").modal();
+                    $("#create_edit_function_modal").modal('show');
 
 
                 },
@@ -526,7 +526,7 @@
 
                     $('#create_ui_modal_yesbtn').off('click', yesfunc);
                     $('#create_ui_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_ui_modal").modal();
+                    $("#create_ui_modal").modal('show');
 
                 },
                 openCreateViewDlg: function ()
@@ -570,7 +570,7 @@
                     context.initializePropertyUI(context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_app_view_modal").modal();
+                    $("#create_app_view_modal").modal('show');
 
 
                 },
@@ -630,7 +630,7 @@
                     context.initializePropertyUI(context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_app_view_modal").modal();
+                    $("#create_app_view_modal").modal('show');
 
 
                 },
@@ -713,7 +713,7 @@
                         $('#delete_ui_modal_one').off().on('click', deleteone);
                         $('#delete_ui_modal_all').off('click', deleteall);
                         $('#delete_ui_modal_all').off().on('click', deleteall);
-                        $("#delete_ui_modal").modal();
+                        $("#delete_ui_modal").modal('show');
                     } else {
 
                         raiseYesNoModal("Delete UI ?", "This will delete the userinterface and can not be undone, continue ?", deleteone);

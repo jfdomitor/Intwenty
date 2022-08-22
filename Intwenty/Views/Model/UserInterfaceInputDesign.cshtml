@@ -454,13 +454,13 @@
                     this.active_setting_input.dataTableDbName = this.userInterfaceTable.dbName;
                     this.initializePropertyUI(this.active_setting_input);
                     this.$forceUpdate();
-                    $("#ui_setting_modal").modal();
+                    $("#ui_setting_modal").modal('show');
                 },
                 openViewSettings() {
                     this.active_setting_input = this.model;
                     this.initializePropertyUI(this.active_setting_input);
                     this.$forceUpdate();
-                    $("#ui_setting_modal").modal();
+                    $("#ui_setting_modal").modal('show');
                 },
                 addLayoutRow: function (sect)
                 {

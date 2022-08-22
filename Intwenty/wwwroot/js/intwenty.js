@@ -56,16 +56,14 @@
     }
 };
 
-function setCookie(cname, cvalue, exdays)
-{
+function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-function getCookie(cname)
-{
+function getCookie(cname) {
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
@@ -88,7 +86,7 @@ function raiseInformationModal(headertext, bodytext, close_callback) {
         $('#msg_dlg_modal_closebtn').off('click', close_callback);
         $('#msg_dlg_modal_closebtn').off().on('click', close_callback);
     }
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
@@ -96,14 +94,14 @@ function raiseInformationModal(headertext, bodytext, close_callback) {
 function raiseValidationErrorModal(message) {
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(message);
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
 function raiseErrorModal(operationresult) {
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(operationresult.userError);
-    $('#msg_dlg_modal').modal();
+    $('#msg_dlg_modal').modal('show');
 
 };
 
@@ -112,8 +110,7 @@ function raiseYesNoModal(headertxt, bodytext, yes_callback) {
     $('#yesno_dlg_modal_text').text(bodytext);
     $('#yesno_dlg_modal_yesbtn').off('click', yes_callback);
     $('#yesno_dlg_modal_yesbtn').off().on('click', yes_callback);
-    $('#yesno_dlg_modal').modal();
-
+    $('#yesno_dlg_modal').modal('show');
 };
 
 function hasRequiredValues(datalist, requiredlist) {
@@ -266,8 +263,7 @@ Vue.prototype.initializePropertyUI = function (modelitem) {
 
 };
 
-Vue.prototype.propertyChanged = function ()
-{
+Vue.prototype.propertyChanged = function () {
     this.$forceUpdate();
 };
 
@@ -320,8 +316,7 @@ Vue.component("searchbox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root[jsmethod])
-                {
+                if (vm.$root[jsmethod]) {
                     vm.$root[jsmethod](domainname, query, function (response) {
                         callback(response);
                         if (vm.idfield) {
@@ -332,8 +327,8 @@ Vue.component("searchbox", {
                         }
                     });
                 }
-                
-          
+
+
             }
 
         }).on('change', function () {
@@ -360,9 +355,8 @@ Vue.component("searchbox", {
 
         vm.selectizeinstance = element[0].selectize;
     },
-    updated: function ()
-    {
-       
+    updated: function () {
+
     },
     watch:
     {
@@ -385,9 +379,8 @@ Vue.component("searchbox", {
 
 
         },
-        textfield: function (newval, oldval)
-        {
-          
+        textfield: function (newval, oldval) {
+
         }
 
 
@@ -426,8 +419,7 @@ Vue.component("combobox", {
 
                 if (!domainname) return callback();
 
-                if (vm.$root[jsmethod])
-                {
+                if (vm.$root[jsmethod]) {
                     vm.$root[jsmethod](domainname, 'ALL', function (response) {
                         callback(response);
                         if (vm.idfield) {
@@ -438,9 +430,9 @@ Vue.component("combobox", {
                         }
                     });
                 }
-               
 
-              
+
+
             }
 
         }).on('change', function () {
@@ -469,16 +461,14 @@ Vue.component("combobox", {
 
 
     },
-    updated: function ()
-    {
-       
+    updated: function () {
+
     },
     watch:
     {
 
-        idfield: function (newval, oldval)
-        {
-       
+        idfield: function (newval, oldval) {
+
             if (this.selectizeinstance) {
                 this.selectizeinstance.clear(true);
 
@@ -491,8 +481,7 @@ Vue.component("combobox", {
                 }
             }
         },
-        textfield: function (newval, oldval)
-        {
+        textfield: function (newval, oldval) {
         }
     },
     destroyed: function () {
@@ -536,8 +525,7 @@ Vue.component("radiolist", {
     },
     methods:
     {
-        radiochanged: function (event)
-        {
+        radiochanged: function (event) {
             if (!event)
                 return;
             if (!event.srcElement)
@@ -546,10 +534,8 @@ Vue.component("radiolist", {
                 return;
 
             var domainvalue = null;
-            for (var i = 0; i < this.domvalues.length; i++)
-            {
-                if (this.domvalues[i].code == event.srcElement.value)
-                {
+            for (var i = 0; i < this.domvalues.length; i++) {
+                if (this.domvalues[i].code == event.srcElement.value) {
                     domainvalue = this.domvalues[i];
                     break;
                 }
@@ -563,27 +549,22 @@ Vue.component("radiolist", {
 
         }
     }
-    ,updated: function ()
-    {
-       
+    , updated: function () {
+
     },
     watch:
     {
 
-        idfield: function (newval, oldval)
-        {
-            if (newval)
-            {
+        idfield: function (newval, oldval) {
+            if (newval) {
                 $("input[name=" + this.controlid + "][value=" + newval + "]").prop('checked', true);
             }
-          
+
         },
-        textfield: function (newval, oldval)
-        {
+        textfield: function (newval, oldval) {
         }
     },
-    destroyed: function ()
-    {
+    destroyed: function () {
     },
     computed:
     {
@@ -607,7 +588,7 @@ Vue.component("checklist", {
                </div>`,
     props: ['idfield', 'textfield'],
     data: function () {
-        return { domvalues: [], controlid: "", selecteditems:[], orientation:"HORIZONTAL", domainname:"" };
+        return { domvalues: [], controlid: "", selecteditems: [], orientation: "HORIZONTAL", domainname: "" };
 
     },
     mounted: function () {
@@ -622,22 +603,20 @@ Vue.component("checklist", {
         if (!vm.jsmethod)
             vm.jsmethod = 'getDomain';
 
-        if (vm.domainname)
-        { 
+        if (vm.domainname) {
             if (vm.$root[vm.jsmethod]) {
                 vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
                 });
-            } 
+            }
         }
     },
     methods:
     {
-        checkchanged: function (event)
-        {
+        checkchanged: function (event) {
             var ischecked = $(event.srcElement).is(':checked');
             var domainvalue = $(event.srcElement).data('domainvalue');
-           
+
 
             if (!ischecked) {
                 for (var i = 0; i < this.selecteditems.length; i++) {
@@ -649,17 +628,14 @@ Vue.component("checklist", {
             else {
 
                 var itemtoadd = null;
-                for (var i = 0; i < this.domvalues.length; i++)
-                {
-                    if (this.domvalues[i].code == domainvalue)
-                    {
+                for (var i = 0; i < this.domvalues.length; i++) {
+                    if (this.domvalues[i].code == domainvalue) {
                         itemtoadd = this.domvalues[i];
                         break;
                     }
                 }
 
-                if (itemtoadd)
-                { 
+                if (itemtoadd) {
                     var exists = false;
                     for (var i = 0; i < this.selecteditems.length; i++) {
                         if (this.selecteditems[i].code == domainvalue) {
@@ -696,22 +672,17 @@ Vue.component("checklist", {
     watch:
     {
 
-        idfield: function (newval, oldval)
-        {
+        idfield: function (newval, oldval) {
             var element = $(this.$el);
             var controlid = $(element).attr('id');
 
-            this.selecteditems=[];
+            this.selecteditems = [];
 
-            if (newval)
-            {
+            if (newval) {
                 var persisteditems = newval.split(",");
-                for (var i = 0; i < persisteditems.length; i++)
-                {
-                    for (var x = 0; x < this.domvalues.length; x++)
-                    {
-                        if (this.domvalues[x].code == persisteditems[i])
-                        {
+                for (var i = 0; i < persisteditems.length; i++) {
+                    for (var x = 0; x < this.domvalues.length; x++) {
+                        if (this.domvalues[x].code == persisteditems[i]) {
                             this.selecteditems.push(this.domvalues[x]);
                             $("#" + controlid + "_" + this.domvalues[x].code).prop('checked', true);
                         }
@@ -736,7 +707,7 @@ Vue.component("checklist", {
         checkBoxClass: function () {
             return {
                 'form-check form-check-inline': this.orientation === 'HORIZONTAL'
-                ,'form-check': this.orientation === 'VERTICAL'
+                , 'form-check': this.orientation === 'VERTICAL'
             }
         }
     }
@@ -822,8 +793,7 @@ Vue.prototype.isRequiredNotValid = function (uiid) {
     return $("#" + uiid).hasClass("requiredNotValid");
 };
 
-Vue.prototype.canShowUIControl = function (uiid, tablename, columnname)
-{
+Vue.prototype.canShowUIControl = function (uiid, tablename, columnname) {
     return true;
 };
 

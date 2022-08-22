@@ -99,7 +99,7 @@
                          context.model[context.appMainTable] = item;
                         $('#addEditModalSaveBtn_' + uimetacode).off('click', savefunc);
                         $('#addEditModalSaveBtn_' + uimetacode).off().on('clicRuntimeRequestInfok', savefunc);
-                        $('#addEditModal_' + uimetacode).modal();
+                        $('#addEditModal_' + uimetacode).modal('show');
 
                     }
                     else
@@ -117,7 +117,7 @@
                         {
                             $('#addEditModalSaveBtn_' + uimetacode).off('click', savefunc);
                             $('#addEditModalSaveBtn_' + uimetacode).off().on('click', savefunc);
-                            $('#addEditModal_' + uimetacode).modal();
+                            $('#addEditModal_' + uimetacode).modal('show');
 
                         });
                     }
@@ -236,14 +236,14 @@
                         context[dbtablename] = item;
                         $('#addEditModalSaveBtn_' + uimetacode).off('click', saveFunc);
                         $('#addEditModalSaveBtn_' + uimetacode).off().on('click', saveFunc);
-                        $('#addEditModal_' + uimetacode).modal();
+                        $('#addEditModal_' + uimetacode).modal('show');
 
                     }
                     else {
                         context[dbtablename] = {};
                         $('#addEditModalSaveBtn_' + uimetacode).off('click', saveFunc);
                         $('#addEditModalSaveBtn_' + uimetacode).off().on('click', saveFunc);
-                        $('#addEditModal_' + uimetacode).modal();
+                        $('#addEditModal_' + uimetacode).modal('show');
                     }
 
 
