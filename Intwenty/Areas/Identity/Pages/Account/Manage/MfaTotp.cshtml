@@ -11,11 +11,11 @@
 <div id="app">
     <div class="alert alert-danger" v-if="errorVerifyCode">
         @Localizer["MFATOTPUNVERIFIED"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class="alert alert-success" v-if="step==2">
         @Localizer["Thank you. Two-factor authentication is now set up"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
 
     <div v-if="step==1">

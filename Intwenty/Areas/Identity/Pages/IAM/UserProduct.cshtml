@@ -18,7 +18,7 @@
     <br />
     <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
         <strong>Changes have been saved !</strong><br />
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -167,7 +167,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Authorize {{authorization.authorizationItemTypeName}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -202,8 +202,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="addAuthorizationModal_okBtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal" :disabled="authorization.authorizationId==0">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="addAuthorizationModal_okBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="authorization.authorizationId==0">Ok</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>

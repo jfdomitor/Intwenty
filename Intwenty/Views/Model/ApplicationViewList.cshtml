@@ -107,7 +107,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="yesno_dlg_modal_hdr" class="modal-title">Application View</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -175,8 +175,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button id="create_app_view_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal" :disabled="(model.title=='' || model.path=='')">Save</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="create_app_view_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="(model.title=='' || model.path=='')">Save</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
@@ -187,7 +187,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="yesno_dlg_modal_hdr" class="modal-title">Create UI</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -223,8 +223,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button id="create_ui_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal" :disabled="!canCreateUI()">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="create_ui_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="!canCreateUI()">Ok</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
@@ -235,7 +235,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="yesno_dlg_modal_hdr" class="modal-title">{{functionsettings.dlgHeader}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -283,8 +283,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button id="create_edit_function_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="create_edit_function_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Ok</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
                     </div>
@@ -295,7 +295,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 id="yesno_dlg_modal_hdr" class="modal-title">Delete UI ?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -303,9 +303,9 @@
                     <p>This userinterface is used in more than one view. Would you like to delete it just for this view or from all views ?</p>
                 </div>
                 <div class="modal-footer">
-                    <button id="delete_ui_modal_one" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Only this</button>
-                    <button id="delete_ui_modal_all" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">All</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="delete_ui_modal_one" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Only this</button>
+                    <button id="delete_ui_modal_all" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">All</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>

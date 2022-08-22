@@ -14,15 +14,15 @@
 
     <div class="alert alert-danger" v-if="model.resultCode=='MISSING_USERNAME_OR_PWD'">
         @Localizer["You must type a user name and a password"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class="alert alert-danger" v-if="model.resultCode=='INVALID_LOGIN_ATTEMPT'">
         @Localizer["Invalid login attemt"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class="alert alert-danger" v-if="model.resultCode=='REQUIRECONFIRMATION'">
         @Localizer["LOGIN_REQUIRE_CONF"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
 
     <form v-on:submit.prevent="localLogin">
