@@ -412,8 +412,10 @@ namespace Intwenty.WebHostBuilder
 
                 endpoints.MapRazorPages();
                 endpoints.MapHub<Intwenty.PushData.ServerToClientPush>("/serverhub");
-                endpoints.MapBlazorHub();
-
+                if (settings.AllowBlazor)
+                {
+                    endpoints.MapBlazorHub();
+                }
                 /* Handle all responses
                 endpoints.MapGet("/{**slug}", async context =>
                 {

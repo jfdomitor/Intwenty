@@ -88,8 +88,10 @@ namespace IntwentyDemo
                         //****** Required ******
                         //Remove AddRazorRuntimeCompilation() in production
                         services.AddRazorPages().AddViewLocalization().AddRazorRuntimeCompilation();
-                        services.AddServerSideBlazor();
-
+                        if (settings.AllowBlazor)
+                        {
+                            services.AddServerSideBlazor().AddCircuitOptions(option => option.DetailedErrors = true);
+                        }
 
                     })
                     .Configure((buildercontext, app) =>

@@ -1,11 +1,12 @@
 ﻿@using System.Net.Http
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.JSInterop
-@using Intwenty.DataClient;
+@using Intwenty.DataClient
 @using Intwenty.Model
 @using Intwenty.Entity
-@using Microsoft.Extensions.Options;
+@using Microsoft.Extensions.Options
 @inject IOptions<IntwentySettings> Settings
+@inject IJSRuntime JSRuntime
 
 <h3>Blazor Component in NET6</h3>
 <br />
@@ -32,11 +33,27 @@
         }
     </tbody>
 </table>
+<br />
+<br />
+<label class="control-label">
+    Binding Test
+</label>
+<input id="blazorTb"
+       @bind="InputValue"
+       name="blazorTb"
+       type="text"
+       class="form-control form-control-sm"
+       maxlength="300" />
+<br />
+<button @onclick="Test2" class="btn btn-dark">Process bound value:@InputValue</button>
 
 @code {
 
+
     [Parameter]
     public string Data { get; set; } = string.Empty;
+
+    static string InputValue { get; set; } = string.Empty;
 
     public List<ApplicationItem> apps = new List<ApplicationItem>();
 
@@ -47,5 +64,17 @@
         apps=client.GetEntities<ApplicationItem>();
         client.Close();
     }
- }   
+
+    private async Task Test2()
+    {
+        InputValue = "Ramones";
+        await JSRuntime.InvokeVoidAsync("raiseYesNoModal", "Test Header", InputValue);
+    }
+
+    [JSInvokable]
+    static async Task Test3()
+    {
+        InputValue = "Called from JS";
+    }
+}   
 

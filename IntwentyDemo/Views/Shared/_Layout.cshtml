@@ -104,7 +104,10 @@
     </div>
 
 
-
+    @if (Settings.Value.AllowBlazor)
+    {
+        <script src="~/_framework/blazor.server.js"></script>
+    }
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/alasql/alasql.min.js"></script>
     <script src="~/lib/xlsx/xlsx.core.min.js"></script>
@@ -116,10 +119,7 @@
     <script src="~/lib/selectize.js/js/standalone/selectize.min.js"></script>
     <script src="~/js/intwenty.js" asp-append-version="true"></script>
     <script src="~/lib/Croppie/croppie.js"></script>
-    @if (Settings.Value.AllowBlazor)
-    {
-        <script src="~/_framework/blazor.server.js"></script>
-    }
+   
     <script>
         $(function ()
         {
