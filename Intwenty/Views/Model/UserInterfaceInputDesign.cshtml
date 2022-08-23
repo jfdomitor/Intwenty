@@ -112,7 +112,7 @@
                                         <div class="form-inline">
                                             <span class="fa fa-trash" v-on:click="removeSection(sect)" style="margin:10px; cursor:pointer" title="Delete"></span>
                                             <input type="text" class="form-control form-control-sm" v-model="sect.title" style="width:200px; margin:5px" />
-                                            <button class="btn btn-sm btn-secondary" type="button" data-toggle="collapse" v-bind:data-target="'#colapse'+sect.rowOrder" style="margin:5px"><span class="fa fa-expand-alt"></span></button>
+                                            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" v-bind:data-target="'#colapse'+sect.rowOrder" style="margin:5px"><span class="fa fa-expand-alt"></span></button>
                                             <span v-if="sect.collapsible" style="margin:10px">Start expanded <input type="checkbox" v-model="sect.startExpanded" /></span>
                                             <span style="margin:10px">Collapsible <input type="checkbox" v-model="sect.collapsible" /> </span>
                                             <span style="margin:10px">Don't render this <input type="checkbox" v-model="sect.excludeOnRender" /> </span>
@@ -345,8 +345,8 @@
                     <div class="settingpnl">
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-bindings" role="tab" aria-controls="nav-bindings" aria-selected="true">Bindings</a>
-                                <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-properties" role="tab" aria-controls="nav-properties" aria-selected="false">Properties</a>
+                                <a class="nav-item nav-link active" id="nav-home-tab" data-bs-toggle="tab" href="#nav-bindings" role="tab" aria-controls="nav-bindings" aria-selected="true">Bindings</a>
+                                <a class="nav-item nav-link" id="nav-profile-tab" data-bs-toggle="tab" href="#nav-properties" role="tab" aria-controls="nav-properties" aria-selected="false">Properties</a>
                             </div>
                         </nav>
                         <div class="tab-content" id="nav-tabContent">

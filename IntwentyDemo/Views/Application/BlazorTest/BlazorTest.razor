@@ -1,0 +1,51 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using Intwenty.DataClient;
+@using Intwenty.Model
+@using Intwenty.Entity
+@using Microsoft.Extensions.Options;
+@inject IOptions<IntwentySettings> Settings
+
+<h3>Blazor Component in NET6</h3>
+<br />
+<br />
+<div>@Data</div>
+<br />
+<br />
+<button @onclick="Test" class="btn btn-dark">Fetch applications in registry</button>
+<br />
+<br />
+<table class="table">
+    <thead>
+        <tr style="cursor:pointer;">
+            <th>Title</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (ApplicationItem a in apps)
+        {
+            <tr>
+                <td>@a.Title</td>
+            </tr>
+          
+        }
+    </tbody>
+</table>
+
+@code {
+
+    [Parameter]
+    public string Data { get; set; } = string.Empty;
+
+    public List<ApplicationItem> apps = new List<ApplicationItem>();
+
+    private void Test()
+    {
+        var client = new Connection(Settings.Value.DefaultConnectionDBMS, Settings.Value.DefaultConnection);
+        client.Open();
+        apps=client.GetEntities<ApplicationItem>();
+        client.Close();
+    }
+ }   
+

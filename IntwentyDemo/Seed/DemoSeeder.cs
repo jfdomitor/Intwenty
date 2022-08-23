@@ -119,6 +119,7 @@ namespace IntwentyDemo.Seed
             systems.Add(new SystemItem() { MetaCode = "INTWENTYDEFAULTSYS", Title = "Default", DbPrefix = "def" });
             systems.Add(new SystemItem() { MetaCode = "WAREHOUSE", Title = "WMS", DbPrefix = "wms" });
             systems.Add(new SystemItem() { MetaCode = "BLOG", Title = "The blog engine", DbPrefix = "blog" });
+            systems.Add(new SystemItem() { MetaCode = "BLAZOR", Title = "The blazor system", DbPrefix = "blz" });
 
 
             //APPLICATIONS
@@ -127,7 +128,8 @@ namespace IntwentyDemo.Seed
             applications.Add(new ApplicationItem() { Id = 30, Description = "An app for managing sales orders", SystemMetaCode = "WAREHOUSE", MetaCode = "SALESORDER", Title = "Sales Order", TitleLocalizationKey = "SALESORDER", DbName = "wms_SalesHeader", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 2, TenantIsolationMethod = 2 });
             applications.Add(new ApplicationItem() { Id = 40, Description = "An app for managing vendors", SystemMetaCode = "WAREHOUSE", MetaCode = "VENDOR", Title = "Vendor", TitleLocalizationKey = "VENDOR", DbName = "wms_Vendor", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
             applications.Add(new ApplicationItem() { Id = 50, Description = "An app for blogging", SystemMetaCode = "BLOG", MetaCode = "BLOGAPP", Title = "The blog", TitleLocalizationKey = "", DbName = "blog_Blog", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
-          
+            applications.Add(new ApplicationItem() { Id = 60, Description = "An app for blazor", SystemMetaCode = "BLAZOR", MetaCode = "BLAZORTESTAPP", Title = "The blazor test app", TitleLocalizationKey = "", DbName = "blz_Blazor", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
+
 
 
             //VALUEDOMAIN (USED IN COMBOBOXES ETC)
@@ -403,11 +405,11 @@ namespace IntwentyDemo.Seed
             dbitems.Add(new DatabaseItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaType = "DATACOLUMN", MetaCode = "COMMENTHEADER", DbName = "CommentLabel", ParentMetaCode = "POSTCOMMENTS", DataType = "STRING", Properties = "" });
             dbitems.Add(new DatabaseItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaType = "DATACOLUMN", MetaCode = "COMMENTTEXT", DbName = "CommentText", ParentMetaCode = "POSTCOMMENTS", DataType = "TEXT", Properties = "" });
 
-            //ITEM - VIEWS
-            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_LISTVIEW", MetaType = "UIVIEW", Title = "Blog Posts", TitleLocalizationKey = "", Path = "Blog/List", IsPrimary = true, IsPublic = false, Properties="RAZORVIEWPATH=Views/Application/Blog/View.cshtml" });
-            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_CREATE_VIEW", MetaType = "UIVIEW", Title = "Create Blog Post", TitleLocalizationKey = "", Path = "Blog/Create", IsPrimary = false, IsPublic = false, Properties = "RAZORVIEWPATH=Views/Application/Blog/View.cshtml" });
-            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_EDIT_VIEW", MetaType = "UIVIEW", Title = "Edit Blog Post", TitleLocalizationKey = "", Path = "Blog/Edit/{id}", IsPrimary = false, IsPublic = false, Properties = "RAZORVIEWPATH=Views/Application/Blog/View.cshtml" });
-            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_PUBLIC_VIEW", MetaType = "UIVIEW", Title = "The Intwenty Blog", TitleLocalizationKey = "", Path = "Blog/Index", IsPrimary = false, IsPublic = true, Properties = "RAZORVIEWPATH=Views/Application/Blog/View.cshtml" });
+            //VIEWS
+            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_LISTVIEW", MetaType = "UIVIEW", Title = "Blog Posts", TitleLocalizationKey = "", Path = "Blog/List", IsPrimary = true, IsPublic = false, FilePath="Views/Application/Blog/View.cshtml" });
+            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_CREATE_VIEW", MetaType = "UIVIEW", Title = "Create Blog Post", TitleLocalizationKey = "", Path = "Blog/Create", IsPrimary = false, IsPublic = false, FilePath = "Views/Application/Blog/View.cshtml" });
+            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_EDIT_VIEW", MetaType = "UIVIEW", Title = "Edit Blog Post", TitleLocalizationKey = "", Path = "Blog/Edit/{id}", IsPrimary = false, IsPublic = false, FilePath = "Views/Application/Blog/View.cshtml" });
+            views.Add(new ViewItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", MetaCode = "BLOG_PUBLIC_VIEW", MetaType = "UIVIEW", Title = "The Intwenty Blog", TitleLocalizationKey = "", Path = "Blog/Index", IsPrimary = false, IsPublic = true, FilePath = "Views/Application/Blog/View.cshtml" });
 
             //UI
             userinterface.Add(new UserInterfaceItem() { SystemMetaCode = "BLOG", AppMetaCode = "BLOGAPP", ViewMetaCode = "BLOG_LISTVIEW", MetaCode = "BLOG_LISTUI", MetaType = "LISTINTERFACE", DataTableMetaCode = "BLOGAPP" });
@@ -449,6 +451,18 @@ namespace IntwentyDemo.Seed
 
 
             #endregion
+
+            #region Blazor
+
+            //DATABASE - MAINTABLE
+            dbitems.Add(new DatabaseItem() { SystemMetaCode = "BLAZOR", AppMetaCode = "BLAZORTESTAPP", MetaType = "DATACOLUMN", MetaCode = "BLAZORDATA", DbName = "BlazorData", ParentMetaCode = "ROOT", DataType = "STRING", Properties = "" });
+
+
+            //VIEWS
+            views.Add(new ViewItem() { SystemMetaCode = "BLAZOR", AppMetaCode = "BLAZORTESTAPP", MetaCode = "BLAZORVIEW", MetaType = "UIVIEW", Title = "Blazor Tests", TitleLocalizationKey = "", Path = "BlazorTest/Index", IsPrimary = true, IsPublic = true, FilePath = "Views/Application/BlazorTest/View.cshtml" });
+
+            #endregion
+
 
 
             #region endpoints

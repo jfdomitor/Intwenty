@@ -54,6 +54,7 @@ namespace Intwenty.Model
             AccountsUserSelectableRoleUsage = new IntwentyAccountDataUsage();
             AccountsLegalIdNumberUsage = new IntwentyAccountDataUsage();
             AccountsCompanyNameUsage = new IntwentyAccountDataUsage();
+            AllowBlazor = true;
         }
 
         public LogVerbosityTypes LogVerbosity { get; set; }
@@ -67,6 +68,7 @@ namespace Intwenty.Model
         public DBMS DefaultConnectionDBMS { get; set; }
         public string IAMConnection { get; set; }
         public DBMS IAMConnectionDBMS { get; set; }
+        public bool AllowBlazor { get; set; }
 
         #region Product
         public string ProductId { get; set; }
@@ -313,7 +315,6 @@ namespace Intwenty.Model
 
         public BankIdUsageTypes BankIdUsage { get; set; }
         #endregion
-
 
         #region UIControls
         public bool UIControlsEnableVueIf { get; set; }
