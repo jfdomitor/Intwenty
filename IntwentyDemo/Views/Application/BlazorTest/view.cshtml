@@ -1,11 +1,43 @@
 ﻿@await Html.PartialAsync("_Modals")
 
 <br />
+<b>This view requires intwenty setting AllowBlazor=true</b>
 <br />
 
 @(await Html.RenderComponentAsync<IntwentyDemo.Views.Application.BlazorTest.BlazorTest>(RenderMode.ServerPrerendered,new {  Data= "Welcome to the blazor component" }))
 
 @section Scripts
 {
-    
+    <script>
+        class BlazorTestJSFunctions
+        {
+            static dotNetHelper;
+
+            static setDotNetHelper(value) 
+            {
+                BlazorTestJSFunctions.dotNetHelper = value;
+            }
+
+            static raiseDlg() {
+
+                //raiseYesNoModal("Test", "Test JS", BlazorTestJSFunctions.handleYesInJS);
+                raiseYesNoModal("Test", "Test Net", BlazorTestJSFunctions.handleYesInNet);
+
+            }
+
+            static handleYesInJS() {
+
+               alert("JS Handler yes clicked");
+
+            }
+
+
+            static handleYesInNet() {
+
+                BlazorTestJSFunctions.dotNetHelper.invokeMethodAsync("MessageFromJavaScript");
+
+            }
+        }
+        window.BlazorTestJSFunctions = BlazorTestJSFunctions;
+    </script>
 }

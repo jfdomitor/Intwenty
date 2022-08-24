@@ -45,9 +45,20 @@
        class="form-control form-control-sm"
        maxlength="300" />
 <br />
-<button @onclick="Test2" class="btn btn-dark">Process bound value:@InputValue</button>
+<button @onclick="BtnProcessInboundValueClick" class="btn btn-dark">Process bound value</button>
 
 @code {
+
+    private DotNetObjectReference<BlazorTest> dotNetHelper;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.setDotNetHelper", dotNetHelper);
+        }
+    }
 
 
     [Parameter]
@@ -65,16 +76,15 @@
         client.Close();
     }
 
-    private async Task Test2()
+    private async Task BtnProcessInboundValueClick()
     {
-        InputValue = "Ramones";
-        await JSRuntime.InvokeVoidAsync("raiseYesNoModal", "Test Header", InputValue);
+        await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.raiseDlg");
     }
 
     [JSInvokable]
-    static async Task Test3()
+    public void MessageFromJavaScript()
     {
-        InputValue = "Called from JS";
+        JSRuntime.InvokeVoidAsync("raiseInformationModal", "Test", InputValue);
     }
 }   
 
