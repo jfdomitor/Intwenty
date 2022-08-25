@@ -78,6 +78,7 @@
 
     private async Task BtnProcessInboundValueClick()
     {
+        apps.Add(new ApplicationItem() { Title = InputValue });
         await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.raiseDlg");
     }
 
