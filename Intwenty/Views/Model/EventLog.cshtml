@@ -53,7 +53,7 @@
                 <th>Verbosity</th>
                 <th>Message</th>
                 <th>User</th>
-                <th>App</th>
+                <th>Product/App</th>
             </tr>
         </thead>
         <tr v-for="item in list">
@@ -62,7 +62,12 @@
             <td>{{item.verbosity}}</td>
             <td>{{item.message}}</td>
             <td>{{item.userName}}</td>
-            <td>{{item.appMetaCode}}</td>
+            <td v-if="item.appMetaCode='NONE'">
+                {{item.productTitle}}
+            </td>
+            <td v-if="item.appMetaCode!='NONE'">
+                {{item.productTitle}} ({{item.appMetaCode}})
+            </td>
         </tr>
     </table>
 

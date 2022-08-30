@@ -1,5 +1,11 @@
 ﻿@await Html.PartialAsync("_Modals")
 
+@{
+    //This is required for views using blazor components in intwenty
+    ViewData["ISBLAZORVIEW"] = "TRUE";
+}
+
+
 <br />
 <b>This view requires intwenty setting AllowBlazor=true</b>
 <br />

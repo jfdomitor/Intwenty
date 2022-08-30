@@ -15,6 +15,8 @@ namespace Intwenty.Entity
         public string AppMetaCode { get; set; }
         public int ApplicationId { get; set; }
         public string UserName { get; set; }
+        public string ProductID { get; set; }
+        public string ProductTitle { get; set; }
 
     }
 
