@@ -33,8 +33,7 @@
                 ,instanceId: @Model.RuntimeRequestInfo.Id
                 ,version:1
                 ,applist: []
-                ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig)
-                {<text>,@st.TableName:[]</text>}}
+                ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig){<text>,@st.TableName:[]</text>}}
                 ,validation: {}
                 ,aftersaveactionpath: '@aftersaveactionpath'
                 ,aftersaveaction: '@aftersaveaction'
@@ -565,7 +564,7 @@
 
                     this[objname].sortColumns = s;
                     @if (!Settings.Value.UIControlsEnableVueListSorting){
-                        <text>context.getPage();</text>
+                        <text>context.getPage(dbtablename);</text>
                     }
                 },
                 nextPage: function (dbtablename)

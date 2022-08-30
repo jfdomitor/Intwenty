@@ -3,6 +3,7 @@
 @{
     //This is required for views using blazor components in intwenty
     ViewData["ISBLAZORVIEW"] = "TRUE";
+    ViewData["Title"] = "Blazor Demo";
 }
 
 
@@ -27,7 +28,7 @@
             static raiseDlg() {
 
                 //raiseYesNoModal("Test", "Test JS", BlazorTestJSFunctions.handleYesInJS);
-                raiseYesNoModal("Test", "Test Net", BlazorTestJSFunctions.handleYesInNet);
+                raiseYesNoModal("Test", "Invoke JS from Net", BlazorTestJSFunctions.handleYesInNet);
 
             }
 

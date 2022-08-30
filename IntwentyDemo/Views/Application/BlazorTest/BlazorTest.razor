@@ -85,7 +85,7 @@
     [JSInvokable]
     public void MessageFromJavaScript()
     {
-        JSRuntime.InvokeVoidAsync("raiseInformationModal", "Test", InputValue);
+        JSRuntime.InvokeVoidAsync("raiseInformationModal", "Test", InputValue + ": Invoked Net from JS");
     }
 }   
 
