@@ -119,13 +119,20 @@
     <!--script src="~/lib/popper.js/umd/popper.min.js"></script -->
     <!-- script src="~/lib/bootstrap-4.4.1/dist/js/bootstrap.min.js"></script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-    <script src="~/lib/vue/vue.min.js"></script>
+    @if (currentpath.Contains("Vue3Test")){
+        <script src="https://unpkg.com/vue@3"></script>
+    }else{
+        <script src="~/lib/vue/vue.min.js"></script>
+        <script src="~/js/intwenty.js" asp-append-version="true"></script>
+    }
+    
     <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/lib/selectize.js/js/standalone/selectize.min.js"></script>
-    <script src="~/js/intwenty.js" asp-append-version="true"></script>
+   
     <script src="~/lib/Croppie/croppie.js"></script>
    
     <script>
+       
         $(function ()
         {
 

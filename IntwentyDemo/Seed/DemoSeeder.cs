@@ -120,6 +120,7 @@ namespace IntwentyDemo.Seed
             systems.Add(new SystemItem() { MetaCode = "WAREHOUSE", Title = "WMS", DbPrefix = "wms" });
             systems.Add(new SystemItem() { MetaCode = "BLOG", Title = "The blog engine", DbPrefix = "blog" });
             systems.Add(new SystemItem() { MetaCode = "BLAZOR", Title = "The blazor system", DbPrefix = "blz" });
+            systems.Add(new SystemItem() { MetaCode = "VUE3TEST", Title = "The vue js 3 test system", DbPrefix = "vu3" });
 
 
             //APPLICATIONS
@@ -129,6 +130,7 @@ namespace IntwentyDemo.Seed
             applications.Add(new ApplicationItem() { Id = 40, Description = "An app for managing vendors", SystemMetaCode = "WAREHOUSE", MetaCode = "VENDOR", Title = "Vendor", TitleLocalizationKey = "VENDOR", DbName = "wms_Vendor", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
             applications.Add(new ApplicationItem() { Id = 50, Description = "An app for blogging", SystemMetaCode = "BLOG", MetaCode = "BLOGAPP", Title = "The blog", TitleLocalizationKey = "", DbName = "blog_Blog", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
             applications.Add(new ApplicationItem() { Id = 60, Description = "An app for blazor", SystemMetaCode = "BLAZOR", MetaCode = "BLAZORTESTAPP", Title = "The blazor test app", TitleLocalizationKey = "", DbName = "blz_Blazor", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
+            applications.Add(new ApplicationItem() { Id = 70, Description = "An app for vue js 3", SystemMetaCode = "VUE3TEST", MetaCode = "VUE3TESTAPP", Title = "The vue 3 test app", TitleLocalizationKey = "", DbName = "vu3_VueTest", DataMode = 0, UseVersioning = false, TenantIsolationLevel = 0, TenantIsolationMethod = 0 });
 
 
 
@@ -455,6 +457,18 @@ namespace IntwentyDemo.Seed
             #region Blazor
 
             //DATABASE - MAINTABLE
+            dbitems.Add(new DatabaseItem() { SystemMetaCode = "VUE3TEST", AppMetaCode = "VUE3TESTAPP", MetaType = "DATACOLUMN", MetaCode = "VUE3DATA", DbName = "Vue3Data", ParentMetaCode = "ROOT", DataType = "STRING", Properties = "" });
+
+
+            //VIEWS
+            views.Add(new ViewItem() { SystemMetaCode = "VUE3TEST", AppMetaCode = "VUE3TESTAPP", MetaCode = "VUE3VIEW", MetaType = "UIVIEW", Title = "Vue 3 Tests", TitleLocalizationKey = "", Path = "Vue3Test/Index", IsPrimary = true, IsPublic = true, FilePath = "Views/Application/Vue3Test/View.cshtml" });
+
+            #endregion
+
+
+            #region Vue3
+
+            //DATABASE - MAINTABLE
             dbitems.Add(new DatabaseItem() { SystemMetaCode = "BLAZOR", AppMetaCode = "BLAZORTESTAPP", MetaType = "DATACOLUMN", MetaCode = "BLAZORDATA", DbName = "BlazorData", ParentMetaCode = "ROOT", DataType = "STRING", Properties = "" });
 
 
@@ -462,8 +476,6 @@ namespace IntwentyDemo.Seed
             views.Add(new ViewItem() { SystemMetaCode = "BLAZOR", AppMetaCode = "BLAZORTESTAPP", MetaCode = "BLAZORVIEW", MetaType = "UIVIEW", Title = "Blazor Tests", TitleLocalizationKey = "", Path = "BlazorTest/Index", IsPrimary = true, IsPublic = true, FilePath = "Views/Application/BlazorTest/View.cshtml" });
 
             #endregion
-
-
 
             #region endpoints
 

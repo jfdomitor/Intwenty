@@ -1,0 +1,57 @@
+﻿@await Html.PartialAsync("_Modals")
+
+@{
+    //This is required for views using blazor components in intwenty
+    ViewData["ISBLAZORVIEW"] = "FALSE";
+    ViewData["Title"] = "Vue JS 3 Demo";
+}
+
+
+<div id="app">
+
+
+    <h1>{{ message }}</h1>
+
+  
+
+    <radiolist id="test_id1"
+               name="test_id1"
+               class=""
+               v-model="model.testtable.test_id_field"
+               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeRadioList"
+               data-title="Control Title"
+               data-contextobject="model"
+               data-dbtable="testtable"
+               data-dbfield="test_id_field"
+               data-required="True"
+               data-domain="TestDomain"
+               data-orientation="Horizontal">
+    </radiolist>
+</div>
+
+@section Scripts
+{
+
+    <script type="module">
+
+        import { buttoncounter, radiolist } from '.././js/vuecomponents.js'
+
+        //Vue.createApp(buttoncounter).mount('#app')
+
+
+        Vue.createApp({
+            data() {
+                return {
+                    message: 'Hello World!',
+                    model: { testtable: { test_id_field : ""} }
+                }
+            },
+            methods: {
+              
+            }
+        }).mount('#app');
+   
+    </script>
+
+ 
+}
