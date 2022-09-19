@@ -12,11 +12,18 @@
 
     <h1>{{ message }}</h1>
 
-  
+  <br />
+  <br />
+
+  <buttoncounter></buttoncounter>
+
+    <br />
+    <br />
 
     <radiolist id="test_id1"
                name="test_id1"
                class=""
+               data-jsmethod="getTestDomain"
                v-model="model.testtable.test_id_field"
                data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeRadioList"
                data-title="Control Title"
@@ -25,8 +32,9 @@
                data-dbfield="test_id_field"
                data-required="True"
                data-domain="TestDomain"
-               data-orientation="Horizontal">
+               data-orientation="HORIZONTAL">
     </radiolist>
+
 </div>
 
 @section Scripts
@@ -34,12 +42,12 @@
 
     <script type="module">
 
-        import { buttoncounter, radiolist } from '.././js/vuecomponents.js'
+        import { buttoncounter, radiolist  } from '.././js/vuecomponents.js'
 
         //Vue.createApp(buttoncounter).mount('#app')
 
 
-        Vue.createApp({
+        const app = Vue.createApp({
             data() {
                 return {
                     message: 'Hello World!',
@@ -47,9 +55,21 @@
                 }
             },
             methods: {
-              
-            }
-        }).mount('#app');
+                getTestDomain: function (domainname, query, donefunc)
+                {
+                    donefunc([{ code: 'TEST1', value: 'No 1' }, { code: 'TEST2', value: 'No 2' }]);
+                }
+            },
+            mounted: function () 
+            {
+                var context = this;
+                context.model.testtable.test_id_field = 'TEST2';
+
+           }
+        });
+        app.component('buttoncounter', buttoncounter);
+        app.component('radiolist', radiolist);
+        const mountedapp = app.mount('#app');
    
     </script>
 

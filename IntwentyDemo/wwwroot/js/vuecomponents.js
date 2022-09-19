@@ -65,7 +65,8 @@ const radiolist =
                 this.$emit('update:textfield', domainvalue.value);
             }
 
-        }
+        },
+       
     }
     , updated: function () {
 
