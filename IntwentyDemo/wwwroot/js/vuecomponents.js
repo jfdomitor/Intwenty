@@ -8,18 +8,22 @@
 
 const radiolist =
 {
+
     template: `<div>
                 <template v-for="item in domvalues">
                  <div v-bind:id="controlid + '_' + item.code + '_parent'" v-bind:class="checkBoxClass">
-                     <input class="form-check-input" type="radio" v-bind:id="controlid + '_' + item.code" v-bind:name="controlid" v-bind:value="item.code" v-on:change="radiochanged(event)" />
+                     <input class="form-check-input" type="radio" v-bind:id="controlid + '_' + item.code" v-bind:name="controlid" v-bind:value="item.code" v-bind:data-textval="item.value" v-model="idfield" v-on:change="radiochanged($event)" />
                      <label class="form-check-label">{{item.value}}</label>
                 </div>
                 </template>
                </div>`,
-    props: ['idfield', 'textfield'],
+    props: {
+        idfield: String,
+        textfield: String
+    },
+    emits: ['update:idfield','update:textfield'],
     data() {
         return { domvalues: [], controlid: "", orientation: "HORIZONTAL", domainname: "" }
-
     },
     mounted: function () {
         var vm = this;
@@ -51,6 +55,9 @@ const radiolist =
             if (!event.srcElement.value)
                 return;
 
+            var codeoption = event.srcElement.value;
+            var textoption = event.srcElement.dataset.textval;
+            /*
             var domainvalue = null;
             for (var i = 0; i < this.domvalues.length; i++) {
                 if (this.domvalues[i].code == event.srcElement.value) {
@@ -58,11 +65,13 @@ const radiolist =
                     break;
                 }
 
-            }
+            }*/
 
-            if (domainvalue) {
-                this.$emit('update:idfield', domainvalue.code);
-                this.$emit('update:textfield', domainvalue.value);
+            if (codeoption) {
+                this.$emit('update:idfield', codeoption);
+            }
+            if (textoption) {
+                this.$emit('update:textfield', textoption);
             }
 
         },
@@ -82,6 +91,7 @@ const radiolist =
         },
         textfield: function (newval, oldval) {
         }
+
     },
     destroyed: function () {
     },
@@ -93,8 +103,134 @@ const radiolist =
                 , 'form-check': this.orientation === 'VERTICAL'
             }
         }
+      
     }
 
 };
 
-export { buttoncounter, radiolist }; 
+const searchbox =
+{
+    template: '<div></div>',
+    props: {
+        idfield: String,
+        textfield: String
+    },
+    emits: ['update:idfield', 'update:textfield'],
+    data: function () {
+        return { selectizeinstance: null };
+    },
+    mounted: function () {
+        var vm = this;
+        var element = $(this.$el);
+
+        var jsmethod = $(element).data('jsmethod');
+        var domainname = $(element).data('domain');
+        var usearch = $(element).data('usesearch');
+        var mselect = $(element).data('multiselect');
+        var acreate = $(element).data('allowcreate');
+        var allowcreate = (acreate == "TRUE");
+        var usesearch = (usearch == "TRUE");
+        var usemultiselect = (mselect == "TRUE");
+
+        var plugs = null;
+        var maxitems = 1;
+        if (usemultiselect) {
+            maxitems = 10;
+            plugs = ['remove_button'];
+        }
+
+        if (!jsmethod)
+            jsmethod = 'getDomain';
+
+        element.selectize({
+            plugins: plugs
+            , delimiter: ','
+            , maxItems: maxitems
+            , valueField: 'code'
+            , labelField: 'display'
+            , searchField: 'display'
+            , options: []
+            , create: allowcreate
+            , preload: true
+            , load: function (query, callback) {
+
+                if (!query || !usesearch)
+                    query = 'ALL';
+                if (usesearch && query == 'ALL')
+                    query = 'PRELOAD';
+
+                if (!domainname) return callback();
+
+                if (vm.$root[jsmethod]) {
+                    vm.$root[jsmethod](domainname, query, function (response) {
+                        callback(response);
+                        if (vm.idfield) {
+                            var persisteditems = vm.idfield.split(",");
+                            for (var i = 0; i < persisteditems.length; i++) {
+                                element[0].selectize.addItem(persisteditems[i], true);
+                            }
+                        }
+                    });
+                }
+
+
+            }
+
+        }).on('change', function () {
+
+            var selected_objects = $.map(element[0].selectize.items, function (value) {
+                return element[0].selectize.options[value];
+            });
+
+            var codestr = "";
+            var valstr = "";
+            var delim = "";
+            for (var i = 0; i < selected_objects.length; i++) {
+                var code = selected_objects[i].code;
+                var val = selected_objects[i].value;
+                codestr += delim + code;
+                valstr += delim + val;
+                delim = ",";
+
+            }
+            vm.$emit('update:idfield', codestr);
+            vm.$emit('update:textfield', valstr);
+
+        });
+
+        vm.selectizeinstance = element[0].selectize;
+    },
+    updated: function () {
+
+    },
+    watch:
+    {
+        idfield: function (newval, oldval) {
+            var t = "";
+
+
+            if (this.selectizeinstance) {
+                this.selectizeinstance.clear(true);
+
+                if (newval) {
+                    var persisteditems = newval.split(",");
+                    for (var i = 0; i < persisteditems.length; i++) {
+                        //ADD ITEM BUT DONT TRIGGER CHANGE
+                        this.selectizeinstance.addItem(persisteditems[i], true);
+
+                    }
+                }
+            }
+
+
+        },
+        textfield: function (newval, oldval)
+        {
+        }
+    },
+    destroyed: function () {
+        this.selectizeinstance.destroy();
+    }
+};
+
+export { buttoncounter, radiolist, searchbox }; 

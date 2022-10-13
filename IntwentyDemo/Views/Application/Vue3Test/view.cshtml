@@ -11,6 +11,7 @@
 
 
     <h1>{{ message }}</h1>
+    <span>{{ model }}</span>
 
   <br />
   <br />
@@ -24,16 +25,62 @@
                name="test_id1"
                class=""
                data-jsmethod="getTestDomain"
-               v-model="model.testtable.test_id_field"
+               v-model:idfield="model.testtable.test_id_field"
+               v-model:textfield="model.testtable.test_value_field"
                data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeRadioList"
                data-title="Control Title"
                data-contextobject="model"
                data-dbtable="testtable"
                data-dbfield="test_id_field"
+               data-dbfield2="test_value_field"
                data-required="True"
                data-domain="TestDomain"
                data-orientation="HORIZONTAL">
     </radiolist>
+
+    <radiolist id="test_id2"
+               name="test_id2"
+               class=""
+               data-jsmethod="getTestDomain"
+               v-model:idfield="model.testtable.test_id_field2"
+               v-model:textfield="model.testtable.test_value_field2"
+               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeRadioList"
+               data-title="Control Title"
+               data-contextobject="model"
+               data-dbtable="testtable"
+               data-dbfield="test_id_field2"
+               data-dbfield2="test_value_field2"
+               data-required="True"
+               data-domain="X"
+               data-orientation="HORIZONTAL">
+    </radiolist>
+
+    <br />
+
+    <searchbox id="MS_TAGS"
+               name="MS_TAGS"
+               class="form-control form-control-sm"
+               data-jsmethod="getTagDomain"
+               v-model:idfield="model.testtable.test_id_field3"
+               v-model:textfield="model.testtable.test_value_field3"
+               data-metatype="SEARCHBOX"
+               data-title="Tags"
+               data-contextobject="model" 
+               data-dbtable="testtable"
+               data-dbfield="test_id_field3"
+               data-dbfield2="test_value_field3" 
+               data-required="False"
+               data-domain="X"
+               data-usesearch="TRUE"
+               data-multiselect="TRUE"
+               data-allowcreate="TRUE" />
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+
 
 </div>
 
@@ -42,7 +89,8 @@
 
     <script type="module">
 
-        import { buttoncounter, radiolist  } from '.././js/vuecomponents.js'
+        
+        import { buttoncounter, radiolist, searchbox } from '.././js/vuecomponents.js'
 
         //Vue.createApp(buttoncounter).mount('#app')
 
@@ -51,24 +99,33 @@
             data() {
                 return {
                     message: 'Hello World!',
-                    model: { testtable: { test_id_field : ""} }
+                    model: { testtable: { test_id_field: "TEST2", test_value_field: "No 2", test_id_field2: "TEST1", test_value_field2: "No 1", test_id_field3: "T1", test_value_field3: "Tag 1" } },
+                    testobj:{variable:'test'}
                 }
             },
             methods: {
                 getTestDomain: function (domainname, query, donefunc)
                 {
-                    donefunc([{ code: 'TEST1', value: 'No 1' }, { code: 'TEST2', value: 'No 2' }]);
+                    return donefunc([{ code: 'TEST1', value: 'No 1' }, { code: 'TEST2', value: 'No 2' }]);
+                },
+                getTagDomain: function (domainname, query, donefunc) {
+                    return donefunc([{ id:1, code: 'T1', value: 'Tag 1', display: 'Tag 1' }, { id:2, code: 'T2', value: 'Tag 2', display: 'Tag 2' }]);
+                },
+                test: function () {
+                   alert();
                 }
             },
             mounted: function () 
             {
-                var context = this;
-                context.model.testtable.test_id_field = 'TEST2';
+                //var context = this;
+                //context.model.testtable.test_id_field = 'TEST2';
+                //context.model.testtable.test_value_field = 'No 2';
 
            }
         });
         app.component('buttoncounter', buttoncounter);
         app.component('radiolist', radiolist);
+        app.component('searchbox', searchbox);
         const mountedapp = app.mount('#app');
    
     </script>
