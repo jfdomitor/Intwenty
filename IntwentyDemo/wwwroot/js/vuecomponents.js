@@ -110,7 +110,7 @@ const radiolist =
 
 const searchbox =
 {
-    template: '<div></div>',
+    template: `<div><div></div></div>`,
     props: {
         idfield: String,
         textfield: String
@@ -122,7 +122,6 @@ const searchbox =
     mounted: function () {
         var vm = this;
         var element = $(this.$el);
-
         var jsmethod = $(element).data('jsmethod');
         var domainname = $(element).data('domain');
         var usearch = $(element).data('usesearch');
@@ -233,4 +232,107 @@ const searchbox =
     }
 };
 
-export { buttoncounter, radiolist, searchbox }; 
+const combobox =
+{
+    template: '<div><input></input></div>',
+    props: {
+        idfield: String,
+        textfield: String
+    },
+    emits: ['update:idfield', 'update:textfield'],
+    data: function () {
+        return { selectizeinstance: null };
+    },
+    mounted: function () {
+        var vm = this;
+        var element = $(this.$el);
+
+        var domainname = $(element).data('domain');
+        var jsmethod = $(element).data('jsmethod');
+        if (!jsmethod)
+            jsmethod = 'getDomain';
+
+        element.selectize({
+            delimiter: ','
+            , maxItems: 1
+            , valueField: 'code'
+            , labelField: 'display'
+            , searchField: 'display'
+            , options: []
+            , create: false
+            , preload: true
+            , load: function (query, callback) {
+
+                if (!domainname) return callback();
+
+                if (vm.$root[jsmethod]) {
+                    vm.$root[jsmethod](domainname, 'ALL', function (response) {
+                        callback(response);
+                        if (vm.idfield) {
+                            var persisteditems = vm.idfield.split(",");
+                            for (var i = 0; i < persisteditems.length; i++) {
+                                element[0].selectize.addItem(persisteditems[i], true);
+                            }
+                        }
+                    });
+                }
+
+
+
+            }
+
+        }).on('change', function () {
+
+            var selected_objects = $.map(element[0].selectize.items, function (value) {
+                return element[0].selectize.options[value];
+            });
+
+            var codestr = "";
+            var valstr = "";
+            var delim = "";
+            for (var i = 0; i < selected_objects.length; i++) {
+                var code = selected_objects[i].code;
+                var val = selected_objects[i].value;
+                codestr += delim + code;
+                valstr += delim + val;
+                delim = ",";
+
+            }
+            vm.$emit('update:idfield', codestr);
+            vm.$emit('update:textfield', valstr);
+
+        });
+
+        vm.selectizeinstance = element[0].selectize;
+
+
+    },
+    updated: function () {
+
+    },
+    watch:
+    {
+
+        idfield: function (newval, oldval) {
+
+            if (this.selectizeinstance) {
+                this.selectizeinstance.clear(true);
+
+                if (newval) {
+                    var persisteditems = newval.split(",");
+                    for (var i = 0; i < persisteditems.length; i++) {
+                        //ADD ITEM BUT DONT TRIGGER CHANGE
+                        this.selectizeinstance.addItem(persisteditems[i], true);
+                    }
+                }
+            }
+        },
+        textfield: function (newval, oldval) {
+        }
+    },
+    destroyed: function () {
+        this.selectizeinstance.destroy();
+    }
+};
+
+export { buttoncounter, radiolist, searchbox, combobox }; 

@@ -52,7 +52,7 @@
                data-dbfield2="test_value_field2"
                data-required="True"
                data-domain="X"
-               data-orientation="HORIZONTAL">
+               data-orientation="VERTICAL">
     </radiolist>
 
     <br />
@@ -63,7 +63,7 @@
                data-jsmethod="getTagDomain"
                v-model:idfield="model.testtable.test_id_field3"
                v-model:textfield="model.testtable.test_value_field3"
-               data-metatype="SEARCHBOX"
+               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeSearchBox"
                data-title="Tags"
                data-contextobject="model" 
                data-dbtable="testtable"
@@ -73,7 +73,48 @@
                data-domain="X"
                data-usesearch="TRUE"
                data-multiselect="TRUE"
-               data-allowcreate="TRUE" />
+               data-allowcreate="TRUE" ></searchbox>
+
+    <br />
+
+
+    <searchbox id="MS_TAGS2"
+               name="MS_TAGS2"
+               class="form-control form-control-sm"
+               data-jsmethod="getTagDomain"
+               v-model:idfield="model.testtable.test_id_field3"
+               v-model:textfield="model.testtable.test_value_field3"
+               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeSearchBox"
+               data-title="Tags"
+               data-contextobject="model"
+               data-dbtable="testtable"
+               data-dbfield="test_id_field3"
+               data-dbfield2="test_value_field3"
+               data-required="False"
+               data-domain="Y"
+               data-usesearch="TRUE"
+               data-multiselect="TRUE"
+               data-allowcreate="TRUE"></searchbox>
+
+    <br />
+
+    <combobox id="MS_CB"
+               name="MS_CB"
+               class="form-control form-control-sm"
+               data-jsmethod="getCBDomain"
+               v-model:idfield="model.testtable.test_id_field4"
+               v-model:textfield="model.testtable.test_value_field4"
+               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeComboBox"
+               data-title="List"
+               data-contextobject="model" 
+               data-dbtable="testtable"
+               data-dbfield="test_id_field4"
+               data-dbfield2="test_value_field4" 
+               data-required="False"
+              data-domain="Z">
+    </combobox>
+
+  
 
 
     <br />
@@ -89,8 +130,8 @@
 
     <script type="module">
 
-        
-        import { buttoncounter, radiolist, searchbox } from '.././js/vuecomponents.js'
+
+        import { buttoncounter, radiolist, searchbox, combobox } from '.././js/vuecomponents.js'
 
         //Vue.createApp(buttoncounter).mount('#app')
 
@@ -99,7 +140,7 @@
             data() {
                 return {
                     message: 'Hello World!',
-                    model: { testtable: { test_id_field: "TEST2", test_value_field: "No 2", test_id_field2: "TEST1", test_value_field2: "No 1", test_id_field3: "T1", test_value_field3: "Tag 1" } },
+                    model: { testtable: { test_id_field: "TEST2", test_value_field: "No 2", test_id_field2: "TEST1", test_value_field2: "No 1", test_id_field3: "T1", test_value_field3: "Tag 1", test_id_field4: "V1", test_value_field4: "Val 1" } },
                     testobj:{variable:'test'}
                 }
             },
@@ -110,6 +151,9 @@
                 },
                 getTagDomain: function (domainname, query, donefunc) {
                     return donefunc([{ id:1, code: 'T1', value: 'Tag 1', display: 'Tag 1' }, { id:2, code: 'T2', value: 'Tag 2', display: 'Tag 2' }]);
+                },
+                getCBDomain: function (domainname, query, donefunc) {
+                    return donefunc([{ id: 1, code: 'V1', value: 'Val 1', display: 'Val 1' }, { id: 2, code: 'V2', value: 'Val 2', display: 'Val 2' }]);
                 },
                 test: function () {
                    alert();
@@ -126,6 +170,7 @@
         app.component('buttoncounter', buttoncounter);
         app.component('radiolist', radiolist);
         app.component('searchbox', searchbox);
+        app.component('combobox', combobox);
         const mountedapp = app.mount('#app');
    
     </script>
