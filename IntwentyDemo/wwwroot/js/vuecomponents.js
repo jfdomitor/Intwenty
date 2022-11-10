@@ -100,7 +100,7 @@ const radiolist =
         checkBoxClass: function () {
             return {
                 'form-check form-check-inline': this.orientation === 'HORIZONTAL'
-                , 'form-check': this.orientation === 'VERTICAL'
+                ,'form-check': this.orientation === 'VERTICAL'
             }
         }
       
@@ -340,7 +340,7 @@ const checklist =
     template: `<div>
                 <template v-for="item in domvalues">
                  <div v-bind:id="controlid + '_' + item.code + '_parent'" v-bind:class="checkBoxClass">
-                     <input class="form-check-input" type="checkbox" v-bind:id="controlid + '_' + item.code" v-bind:data-domainvalue="item.code" v-bind:value="item.code" v-bind:data-textval="item.value" true-value="item.code" false-value="''" v-model="idfield" v-on:input="checkchanged($event)" />
+                     <input class="form-check-input" type="checkbox" v-bind:id="controlid + '_' + item.code" v-bind:data-domainvalue="item.code" v-bind:value="item.code" v-bind:data-textval="item.value" v-on:input="checkchanged($event)" />
                      <label class="form-check-label">{{item.value}}</label>
                 </div>
                 </template>
@@ -370,14 +370,19 @@ const checklist =
             if (vm.$root[vm.jsmethod]) {
                 vm.$root[vm.jsmethod](vm.domainname, 'ALL', function (response) {
                     vm.domvalues = response;
+
                 });
             }
         }
+
+      
+        
     },
     methods:
     {
         checkchanged: function (event)
         {
+    
             if (!event)
                 return;
             if (!event.srcElement)
@@ -438,12 +443,27 @@ const checklist =
         }
     },
     updated: function () {
+        var vm = this;
 
+        if (vm.idfield && vm.selecteditems.length==0) {
+            var persisteditems = vm.idfield.split(",");
+            for (var i = 0; i < persisteditems.length; i++) {
+                for (var x = 0; x < vm.domvalues.length; x++) {
+                    if (vm.domvalues[x].code == persisteditems[i]) {
+                        vm.selecteditems.push(vm.domvalues[x]);
+                        $("#" + vm.controlid + "_" + vm.domvalues[x].code).prop('checked', true);
+                    }
+
+                }
+
+            }
+        }
     },
     watch:
     {
 
-        idfield: function (newval, oldval) {
+        idfield: function (newval, oldval)
+        {
             var element = $(this.$el);
             var controlid = $(element).attr('id');
 
@@ -478,7 +498,7 @@ const checklist =
         checkBoxClass: function () {
             return {
                 'form-check form-check-inline': this.orientation === 'HORIZONTAL'
-                , 'form-check': this.orientation === 'VERTICAL'
+                ,'form-check': this.orientation === 'VERTICAL'
             }
         }
     }
