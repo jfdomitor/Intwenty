@@ -20,9 +20,10 @@
 }
 
   <script type="module">
-       import { buttoncounter, radiolist, searchbox, combobox, checklist } from ".././js/vuecomponents.js";
 
-       const app = Vue.createApp(
+    import { buttoncounter, radiolist, searchbox, combobox, checklist } from ".././js/vuecomponents.js";
+
+     const app = Vue.createApp(
        {
             data()
             {
@@ -734,6 +735,6 @@
         app.component('checklist', checklist);
 
         const mountedapp = app.mount("#@Model.RuntimeRequestInfo.ViewHtmlId");
-
+        
 </script>
 
