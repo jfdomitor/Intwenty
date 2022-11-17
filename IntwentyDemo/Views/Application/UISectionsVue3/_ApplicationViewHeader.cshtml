@@ -1,0 +1,62 @@
+﻿@model Intwenty.Model.ViewModel
+
+
+<div class="card">
+    <div class="card-header"><h2>@Model.LocalizedTitle</h2></div>
+    <div class="card-body">
+
+        <p>@Model.LocalizedDescription</p>
+
+        <ul class="nav">
+            @if (Model.HasCreateFunction)
+            {
+                <li class="nav-item">
+                    @if (Model.CreateFunction.IsModalAction)
+                    {
+                        <button class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px" v-on:click="openApplicationModal(null, '@Model.CreateFunction.ActionMetaCode')"><span class="fa fa-plus" style="font-size:large"></span> @Model.CreateFunction.LocalizedTitle</button>
+                    }
+                    else
+                    {
+                        <a href="@Model.CreateFunction.BuildRuntimeURI(Model.RuntimeRequestInfo.RequestInfo)" role="button" class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px"><span class="fa fa-plus" style="font-size:large"></span> @Model.CreateFunction.LocalizedTitle</a>
+
+                    }
+
+                </li>
+            }
+
+            @if (Model.HasNavigateFunction)
+            {
+                if (!string.IsNullOrEmpty(Model.NavigateFunction.ActionPath) && Model.NavigateFunction.ActionPath.ToLower().Contains("referer"))
+                {
+                    var referer = Context.Request.Headers["Referer"].ToString();
+                    <li class="nav-item">
+                        <a href="@referer" role="button" class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px"><span class="far fa-hand-point-left" style="font-size:large"></span> @Model.NavigateFunction.LocalizedTitle</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a href="@Model.NavigateFunction.BuildRuntimeURI(Model.RuntimeRequestInfo.RequestInfo)" role="button" class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px"><span class="far fa-hand-point-left" style="font-size:large"></span> @Model.NavigateFunction.LocalizedTitle</a>
+                    </li>
+                }
+            }
+
+            @if (Model.HasExportFunction)
+            {
+                <li class="nav-item">
+                    <button class="nav-link btn btn-sm btn-outline-secondary" type="button" v-on:click="exportToExcel()" style="margin:10px"><span class="fa fa-file-export" style="color:seagreen; font-size:large"></span> @Model.ExportFunction.LocalizedTitle</button>
+                </li>
+            }
+
+            @if (Model.HasSaveFunction)
+            {
+                <li class="nav-item">
+                    <button class="nav-link btn btn-sm btn-outline-primary" type="button" v-on:click="saveApplication()" style="margin:10px"><span class="fa fa-save" style="font-size:large"></span> @Model.SaveFunction.LocalizedTitle</button>
+                </li>
+            }
+
+            @await Html.PartialAsync("UISections/_ApplicationViewHeaderButtons", Model)
+        </ul>
+
+    </div>
+</div>

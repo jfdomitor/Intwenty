@@ -1,0 +1,191 @@
+﻿@model UserInterfaceModelItem
+
+@foreach (var sect in Model.Sections)
+{
+    var sectiontitle = sect.LocalizedTitle;
+    var colapse = "class=\"collapse\"";
+    var card = "class=\"card\"";
+    var cardbody = "class=\"card-body\"";
+    var accordion = "class=\"accordion\"";
+    if (sect.StartExpanded || !sect.Collapsible)
+    {
+        colapse = "class=\"collapse show\"";
+    }
+    @if (sect.ExcludeOnRender)
+    {
+        colapse = "";
+        card = "";
+        cardbody = "";
+        accordion = "";
+
+    }
+
+    @if (Model.CurrentRenderContext == CurrentRenderContextOptions.ModalSubTable ||
+         Model.CurrentRenderContext == CurrentRenderContextOptions.ModalView)
+    {
+        sectiontitle = string.Empty;
+    }
+
+    <div @Html.Raw(accordion) id="accordion_@sect.MetaCode">
+        <div @Html.Raw(card) id="cardheader_@sect.MetaCode" style="overflow:inherit">
+            @if (!sect.ExcludeOnRender)
+            {
+                <div class="card-header">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            @if (sect.Collapsible)
+                            {
+                                <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-target="#colapse_@sect.MetaCode" style="margin-right:20px;margin-bottom:5px"><span class="fa fa-expand-alt"></span></button>
+                            }
+                        </li>
+                        <li class="nav-item">
+                            <h4>@sectiontitle</h4>
+                        </li>
+                    </ul>
+
+
+                </div>
+            }
+
+            <div id="colapse_@sect.MetaCode" @Html.Raw(colapse) data-parent="#accordion_@sect.MetaCode">
+                <div @Html.Raw(cardbody) id="cardbody_@sect.MetaCode">
+                    <br />
+                    <div class="row">
+                        @foreach (var pl in sect.LayoutPanels)
+                        {
+                        <div class="col-md-@(12/sect.LayoutPanels.Count)">
+
+                            @if (!string.IsNullOrEmpty(pl.LocalizedTitle))
+                            {
+                                @:<fieldset class="intwentypanel">
+                                    @:<legend>@pl.LocalizedTitle</legend>
+                            }
+
+                            @foreach (var t in pl.Controls)
+                            {
+                                //Current Render Context
+                                t.CurrentRenderContext = Model.CurrentRenderContext;
+
+                                if (t.IsUIContainerType)
+                                {
+                                    continue;
+                                }
+                                if (t.IsUIBindingType && (!t.IsDataColumn1Connected || !t.IsDataTableConnected))
+                                {
+                                    continue;
+                                }
+
+                                if (t.IsMetaTypeTextBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_TextBox", t)
+                                }
+
+                                if (t.IsMetaTypeNumBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_NumBox", t)
+
+                                }
+
+                                if (t.IsMetaTypeDatePicker)
+                                {
+                                    @await Html.PartialAsync("UIControls/_DatePicker", t)
+
+                                }
+
+                                if (t.IsMetaTypeCheckBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_CheckBox", t)
+
+                                }
+
+                                if (t.IsMetaTypeTextArea)
+                                {
+                                    @await Html.PartialAsync("UIControls/_TextArea", t)
+
+                                }
+
+                                if (t.IsMetaTypeComboBox && t.HasValueDomain)
+                                {
+                                    @await Html.PartialAsync("UIControls/_ComboBox", t)
+
+                                }
+
+                                if (t.IsMetaTypeImageBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_ImageBox", t)
+
+                                }
+
+                                if (t.IsMetaTypeImage)
+                                {
+                                    @await Html.PartialAsync("UIControls/_Image", t)
+
+                                }
+
+                                if (t.IsMetaTypeEmailBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_EmailBox", t)
+
+                                }
+
+
+                                if (t.IsMetaTypeSearchBox)
+                                {
+                                    @await Html.PartialAsync("UIControls/_SearchBox", t)
+                                }
+
+                                if (t.IsMetaTypeLabel)
+                                {
+                                    @await Html.PartialAsync("UIControls/_Label", t)
+
+                                }
+
+                                if (t.IsMetaTypeTextBlock)
+                                {
+                                    @await Html.PartialAsync("UIControls/_TextBlock", t)
+
+                                }
+
+                                if (t.IsMetaTypeStaticHTML)
+                                {
+                                    @await Html.PartialAsync("UIControls/_StaticHtml", t)
+
+                                }
+
+                                if (t.IsMetaTypeYesNoUnknown)
+                                {
+                                    @await Html.PartialAsync("UIControls/_YesNoUnknown", t)
+
+                                }
+
+                                if (t.IsMetaTypeRadioList)
+                                {
+                                    @await Html.PartialAsync("UIControls/_RadioList", t)
+
+                                }
+
+                                if (t.IsMetaTypeCheckList)
+                                {
+                                    @await Html.PartialAsync("UIControls/_CheckList", t)
+
+                                }
+
+                            }  <!--FOR CONTROL -->
+
+
+                            @if (!string.IsNullOrEmpty(pl.LocalizedTitle))
+                            {
+                            @: </fieldset>
+                        }
+
+                        </div> <!--COL PANEL -->
+
+                        }
+
+                    </div> <!--ROW SECTION-->
+                </div> <!--CARD-BODY -->
+            </div><!--COLAPSE -->
+        </div>  <!--CARD -->
+    </div><!--ACCORDION -->
+    <br />
+} <!--SECTION-->

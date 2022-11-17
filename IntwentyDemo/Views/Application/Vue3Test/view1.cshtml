@@ -158,7 +158,25 @@
                 return {
                     message: 'Hello World!',
                     model: { testtable: { test_id_field: "TEST2", test_value_field: "No 2", test_id_field2: "TEST1", test_value_field2: "No 1", test_id_field3: "T1", test_value_field3: "Tag 1", test_id_field4: "V1", test_value_field4: "Val 1", test_id_field5: "V1", test_value_field5: "Val 1" } },
-                    testobj:{variable:'test'}
+                    testobj:{variable:'test'},
+                    tesstobj2: {
+                        baseurl: '/Application/API/'
+                        , requestInfo: ''
+                        , appMainTable: "vu3_VueTest"
+                        , appId: 70
+                        , applicationViewId: 19
+                        , instanceId: 0
+                        , version: 1
+                        , applist: []
+                        , model: { vu3_VueTest: {} }
+                        , validation: {}
+                        , aftersaveactionpath: ''
+                        , aftersaveaction: ''
+                        , modelSaved: false
+                        , idgen: -1
+                        , model_settings: { showFilter: false }
+                        , model_pageInfo: { applicationId: 70, applicationViewId: 19, maxCount: 0, pageSize: 20, pageNumber: 0, filterValues: [], skipPaging: false, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
+                    }
                 }
             },
             methods: {
@@ -177,6 +195,26 @@
                 },
                 test: function () {
                    alert();
+                },
+                test2 : function(){
+                   return {
+                        baseurl: '/Application/API/'
+                            , requestInfo: ''
+                                , appMainTable: "vu3_VueTest"
+                                    , appId: 70
+                                        , applicationViewId: 19
+                                            , instanceId: 0
+                                                , version: 1
+                                                    , applist: []
+                                                        , model: { vu3_VueTest: { } }
+                            , validation: {}
+                            , aftersaveactionpath: ''
+                            , aftersaveaction: ''
+                            , modelSaved: false
+                            , idgen: -1
+                            , model_settings: { showFilter: false }
+                            , model_pageInfo: { applicationId: 70, applicationViewId: 19, maxCount: 0, pageSize: 20, pageNumber: 0, filterValues: [], skipPaging: false, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
+                    }
                 }
             },
             mounted: function () 

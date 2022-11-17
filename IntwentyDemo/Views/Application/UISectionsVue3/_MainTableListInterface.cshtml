@@ -1,0 +1,167 @@
+﻿@model UserInterfaceModelItem
+
+@{
+
+    var func_edit_path = "";
+    var func_edit_path_requestinfo = "";
+    var func_edit_path_use_requestinfo = false;
+
+    if (Model.HasEditFunction)
+    {
+        if (!Model.EditFunction.IsModalAction)
+        {
+            func_edit_path = Model.EditFunction.ActionPath;
+            if (func_edit_path.Contains("{requestinfo}"))
+            {
+                func_edit_path_use_requestinfo = true;
+                func_edit_path = func_edit_path.Replace("/{requestinfo}", "");
+                func_edit_path_requestinfo = Model.EditFunction.BuildRuntimeRequestInfo(Model.RuntimeRequestInfo.RequestInfo);
+            }
+            if (func_edit_path.Contains("{id}"))
+            {
+                func_edit_path = func_edit_path.Replace("/{id}", "");
+            }
+            else
+            {
+                //TODO: 
+                //Call edit view with b64 encoded request info
+                //Need (per tableline): 1. js decode requestinfo. 2. insert ID= js.id 3. reencode requestinfo, assign it to url
+                //
+
+            }
+
+
+        }
+    }
+}
+
+@if (Model.HasFilterFunction)
+{
+
+    <div class="row">
+
+        <div class="col-lg-7">
+
+            <button v-on:click="model_settings.showFilter=!model_settings.showFilter">
+                <i class="fas fa-search"></i>
+                <span v-if="model_settings.showFilter">Hide Filter</span>
+                <span v-if="!model_settings.showFilter">Show Filter</span>
+            </button>
+
+            <br />
+            <br />
+
+            <fieldset style="padding:5px; border:1px solid black; border-radius:4px" v-if="model_settings.showFilter">
+
+                <div class="row">
+                    <div class="col-lg-5"><button type="button" v-on:click="addFilterValue()"><span class="fa fa-plus"></span> Add filter</button></div>
+                    <div class="col-lg-5"></div>
+                    <div class="col-lg-2"></div>
+                </div>
+
+                <div class="mt-2"></div>
+
+                <div class="row" v-for="filteritem in model_pageInfo.filterValues">
+
+                    <div class="col-lg-5">
+                        <div class="form-group">
+                            <select v-model="filteritem.name" class="form-control form-control-sm" placeholder="Filter">
+                                @{
+                                    foreach (var c in Model.Table.Columns)
+                                    {
+                                        <option value="@c.DataColumnDbName">@c.LocalizedTitle</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="form-group">
+                            <input type="text" class="form-control form-control-sm" v-model="filteritem.value" v-on:blur="runFilter()" placeholder="Value to filter on" />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteFilterValue(filteritem)"><i class="fa fa-trash"></i></button>
+                    </div>
+
+
+
+                </div>
+
+
+
+            </fieldset>
+
+        </div>
+        <div class="col-lg-5"></div>
+
+    </div>
+
+
+}
+
+
+<table class="table table-responsive-sm">
+    <thead>
+        <tr>
+            @if (Model.HasDeleteFunction)
+            {
+                <th style="width:5%"></th>
+            }
+            @if (Model.HasEditFunction)
+            {
+                <th style="width:5%"></th>
+            }
+
+           @foreach (var c in Model.Table.Columns)
+           {
+                <th v-on:click="sortBycolumn('@c.DataColumnDbName',null)" style="cursor:pointer">@c.LocalizedTitle <span class="fa fa-sort-alpha-down-alt"></span></th>
+           }
+        </tr>
+    </thead>
+
+    <tr v-for="item in sortedAppTable">
+
+        @if (Model.HasDeleteFunction)
+        {
+            <td style="vertical-align:middle"><button class="btn btn-sm btn-danger" v-on:click="deleteApplication(item)"><span class="fas fa-trash" title="Remove"></span></button></td>
+        }
+        @if (Model.HasEditFunction)
+        {
+            @if (Model.EditFunction.IsModalAction)
+            {
+                <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary" v-on:click="openApplicationModal(item, '@Model.EditFunction.ActionMetaCode')"><span class="fas fa-edit" title="Edit"></span></button></td>
+            }
+            else
+            {
+                @if (func_edit_path_use_requestinfo)
+                {
+                    <td style="vertical-align:middle"><a v-bind:href="'@func_edit_path/' + item.Id + '/@func_edit_path_requestinfo'" class="btn btn-sm btn-secondary" role="button"><span class="fas fa-edit" title="Edit"></span></a></td>
+                }
+                else
+                {
+                    <td style="vertical-align:middle"><a v-bind:href="'@func_edit_path/' + item.Id" class="btn btn-sm btn-secondary" role="button"><span class="fas fa-edit" title="Edit"></span></a></td>
+                }
+
+            }
+        }
+
+        @foreach (var c in Model.UIStructure.Where(p => !p.IsRoot && p.IsMetaTypeTableTextColumn))
+        {
+            <td>{{item.@c.DataColumnDbName}}</td>
+        }
+
+    </tr>
+</table>
+
+@if (Model.HasPagingFunction)
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item" v-bind:class="{ disabled: isFirstPage(null) }"><a class="page-link" href="#" v-on:click="prevPage()">Previous {{model_pageInfo.pageSize}}</a></li>
+            <li class="page-item" v-bind:class="{ disabled: isLastPage(null) }"><a class="page-link" href="#" v-on:click="nextPage()">Next {{model_pageInfo.pageSize}}</a></li>
+        </ul>
+    </nav>
+}
