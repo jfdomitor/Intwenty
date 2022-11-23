@@ -316,93 +316,15 @@ initializePropertyUI = function (context, modelitem) {
 
 };
 
-/*
-
-Vue.prototype.onFileUpload = function () {
-
-};
-
-Vue.prototype.uploadImage = function (event) {
-    var context = this;
-    var endpoint = context.baseurl + 'UploadImage';
-    var formData = new FormData();
-    formData.append('File', event.srcElement.files[0]);
-    formData.append('FileName', event.srcElement.files[0].name);
-    formData.append('FileSize', event.srcElement.files[0].size);
-
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            var dbtable = event.srcElement.dataset.dbtable;
-            var dbfield = event.srcElement.dataset.dbfield;
-
-            var fileref = JSON.parse(xhr.response);
-            context.model[dbtable][dbfield] = "/USERDOC/" + fileref.fileName;
-            context.$forceUpdate();
-        }
-    }
-    xhr.open('POST', endpoint, true);
-    xhr.send(formData);
-};
-
-Vue.prototype.canSave = function () {
-    var context = this;
-    var result = true;
-    $("[data-required]").each(function () {
-        var required = $(this).data('required');
-        if (required === "True") {
-
-            var metatype = $(this).data('metatype');
-            var dbfield = $(this).data('dbfield');
-            var dbtable = $(this).data('dbtable');
-
-            if (!context.model[dbtable][dbfield]) {
-                result = false;
-                $(this).addClass('requiredNotValid');
-
-            }
-            else if (context.model[dbtable][dbfield].length == 0) {
-                result = false;
-                $(this).addClass('requiredNotValid');
-            }
-            else {
-                if (metatype == "EMAILBOX") {
-                    var check = context.model[dbtable][dbfield]
-                    if (check.indexOf("@") < 1) {
-                        result = false;
-                        $(this).addClass('requiredNotValid');
-                    }
-                }
-                if (metatype == "PASSWORDBOX") {
-                    var check = context.model[dbtable][dbfield].length;
-                    if (check > 40) {
-                        result = false;
-                        $(this).addClass('requiredNotValid');
-                    }
-                }
-
-                if (result) {
-                    $(this).removeClass('requiredNotValid');
-                }
-            }
-        }
-    });
-
-    context.$forceUpdate();
-
-    return result;
-};
-
-Vue.prototype.isRequiredNotValid = function (uiid) {
-    return $("#" + uiid).hasClass("requiredNotValid");
-};
-
-Vue.prototype.canShowUIControl = function (uiid, tablename, columnname)
-{
+canShowUIControl= function (uiid, tablename, columnname, context) {
     return true;
 };
 
-Vue.prototype.onUserInput = function (event) {
+isRequiredNotValid= function (uiid, context) {
+    return $("#" + uiid).hasClass("requiredNotValid");
+};
+
+onUserInput = function (event, context) {
     if (!event)
         return;
 
@@ -424,9 +346,14 @@ Vue.prototype.onUserInput = function (event) {
     });
 };
 
-
-Vue.prototype.downloadExcel = function () {
+downloadExcel = function ()
+{
 
 };
 
-*/
+test = function (context)
+{
+    alert(context.appId);
+
+};
+

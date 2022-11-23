@@ -72,7 +72,6 @@
              saveApplication: function ()
              {
                     var context = this;
-
                     var endpointurl = "@Model.RuntimeRequestInfo.EndpointSaveApplicationPath";
 
                     context.model[context.appMainTable].ApplicationId = context.appId;
@@ -659,8 +658,18 @@
                     }
                     xhr.open('POST', endpoint, true);
                     xhr.send(formData);
+                },
+                canShowUIControl:function (uiid, tablename, columnname) 
+                {
+                    return canShowUIControl(uiid, tablename, columnname,this);
+                },
+                isRequiredNotValid: function (uiid) {
+                    return isRequiredNotValid(uiid, this);
+                },
+                onUserInput: function (event) 
+                {
+                    onUserInput(event, this);
                 }
-                 @await Html.PartialAsync("UISectionsVue3/_ApplicationViewJSCustomMethods", Model)
         },
         computed: {
 
