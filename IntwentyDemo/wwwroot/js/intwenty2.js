@@ -1,4 +1,4 @@
-﻿function handleIntwentyViewMode(istoogle) {
+﻿handleIntwentyViewMode = function (istoogle) {
     var menucontainer = $("#main_menu_container");
     var contentcontainer = $("#main_content_container");
     if (!menucontainer)
@@ -56,16 +56,14 @@
     }
 };
 
-function setCookie(cname, cvalue, exdays)
-{
+setCookie = function (cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
+};
 
-function getCookie(cname)
-{
+getCookie = function (cname) {
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
@@ -79,9 +77,9 @@ function getCookie(cname)
         }
     }
     return "";
-}
+};
 
-function raiseInformationModal(headertext, bodytext, close_callback) {
+raiseInformationModal = function (headertext, bodytext, close_callback) {
     $('#msg_dlg_modal_hdr').text(headertext);
     $('#msg_dlg_modal_text').text(bodytext);
     if (close_callback) {
@@ -93,21 +91,24 @@ function raiseInformationModal(headertext, bodytext, close_callback) {
 };
 
 
-function raiseValidationErrorModal(message) {
+raiseValidationErrorModal = function (message)
+{
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(message);
     $('#msg_dlg_modal').modal('show');
 
 };
 
-function raiseErrorModal(operationresult) {
+raiseErrorModal = function (operationresult)
+{
     $('#msg_dlg_modal_hdr').text('Error');
     $('#msg_dlg_modal_text').text(operationresult.userError);
     $('#msg_dlg_modal').modal('show');
 
 };
 
-function raiseYesNoModal(headertxt, bodytext, yes_callback) {
+raiseYesNoModal = function (headertxt, bodytext, yes_callback)
+{
     $('#yesno_dlg_modal_hdr').text(headertxt);
     $('#yesno_dlg_modal_text').text(bodytext);
     $('#yesno_dlg_modal_yesbtn').off('click', yes_callback);
@@ -115,7 +116,8 @@ function raiseYesNoModal(headertxt, bodytext, yes_callback) {
     $('#yesno_dlg_modal').modal('show');
 };
 
-function hasRequiredValues(datalist, requiredlist) {
+hasRequiredValues = function (datalist, requiredlist)
+{
 
     for (var i = 0; i < datalist.length; i++) {
         for (var z = 0; z < requiredlist.length; z++) {
@@ -129,11 +131,11 @@ function hasRequiredValues(datalist, requiredlist) {
     }
 
     return true;
-
 };
 
 
-Array.prototype.where = function (filter) {
+Array.prototype.where = function (filter)
+{
 
     var collection = this;
 
@@ -165,10 +167,57 @@ Array.prototype.firstOrDefault = function (func) {
     return this.where(func)[0] || null;
 };
 
-/*
+canSave = function (context)
+{
+    var result = true;
+    $("[data-required]").each(function () {
+        var required = $(this).data('required');
+        if (required === "True") {
 
-Object.prototype.selectableProperties = function (item) {
-    var context = this;
+            var metatype = $(this).data('metatype');
+            var dbfield = $(this).data('dbfield');
+            var dbtable = $(this).data('dbtable');
+
+            if (!context.model[dbtable][dbfield]) {
+                result = false;
+                $(this).addClass('requiredNotValid');
+
+            }
+            else if (context.model[dbtable][dbfield].length == 0) {
+                result = false;
+                $(this).addClass('requiredNotValid');
+            }
+            else {
+                if (metatype == "EMAILBOX") {
+                    var check = context.model[dbtable][dbfield]
+                    if (check.indexOf("@") < 1) {
+                        result = false;
+                        $(this).addClass('requiredNotValid');
+                    }
+                }
+                if (metatype == "PASSWORDBOX") {
+                    var check = context.model[dbtable][dbfield].length;
+                    if (check > 40) {
+                        result = false;
+                        $(this).addClass('requiredNotValid');
+                    }
+                }
+
+                if (result) {
+                    $(this).removeClass('requiredNotValid');
+                }
+            }
+        }
+    });
+
+    context.$forceUpdate();
+
+    return result;
+};
+
+
+selectableProperties = function (context, item)
+{
 
     if (!item.metaType)
         return [];
@@ -194,7 +243,8 @@ Object.prototype.selectableProperties = function (item) {
 };
 
 
-Object.prototype.addProperty = function (modelitem) {
+addProperty = function (context, modelitem)
+{
 
     if (!modelitem)
         return;
@@ -226,10 +276,11 @@ Object.prototype.addProperty = function (modelitem) {
 
     modelitem.currentProperty.codeValue = "";
 
-    this.$forceUpdate();
+    context.$forceUpdate();
 };
 
-Object.prototype.deleteProperty = function (property, modelitem) {
+deleteProperty = function (property, modelitem)
+{
 
     if (!property)
         return;
@@ -248,7 +299,7 @@ Object.prototype.deleteProperty = function (property, modelitem) {
     }
 };
 
-Object.prototype.initializePropertyUI = function (modelitem) {
+initializePropertyUI = function (context, modelitem) {
     if (!modelitem)
         return;
 
@@ -261,11 +312,11 @@ Object.prototype.initializePropertyUI = function (modelitem) {
 
     modelitem.showSettings = !modelitem.showSettings;
 
-    this.$forceUpdate();
+    context.$forceUpdate();
 
 };
 
-
+/*
 
 Vue.prototype.onFileUpload = function () {
 

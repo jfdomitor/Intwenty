@@ -19,50 +19,213 @@
     }
 }
 
-  <script type="module">
+<script type="module">
 
     import { buttoncounter, radiolist, searchbox, combobox, checklist } from ".././js/vuecomponents.js";
+    const app = Vue.createApp({
+        data: function() 
+        {
+            var retval = {
+                baseurl: "@Model.RuntimeRequestInfo.EndpointBasePath"
+                ,requestInfo: "@Model.RuntimeRequestInfo.RequestInfo"
+                ,appMainTable: "@Model.ApplicationInfo.DbName"
+                ,appId: @Model.ApplicationInfo.Id
+                ,applicationViewId: @Model.Id
+                ,instanceId: @Model.RuntimeRequestInfo.Id
+                ,version: 1
+                ,applist: []
+                ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig){<text>,@st.TableName:[]</text>}}
+                ,validation: {}
+                ,aftersaveactionpath: "@aftersaveactionpath"
+                ,aftersaveaction: "@aftersaveaction"
+                ,modelSaved: false
+                ,idgen: -1
+                ,model_settings: { showFilter: false }
+                ,model_pageInfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: @maintableconfig.PageSize , pageNumber: 0, filterValues: [],skipPaging:@maintableconfig.SkipPaging, properties:"", parentId:0, foreignKeyId:0,foreignKeyName:"", sortColumns:"Id", sortDirection:"ASC" }
+                @foreach (var s in subtableconfig)
+                {
+                    var table = s.TableName;
+                    var table_settings = s.TableName + "_settings";
+                    var table_pageinfo = s.TableName + "_pageInfo";
+                    <text>
+                       ,@table:{}
+                       ,@table_settings: { showFilter: false }
+                       ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
+                   </text>
+                }
+            };
 
-     const app = Vue.createApp(
-       {
-            data()
+            return retval;
+        },
+        methods:
+        {
+             createNewApplication: function ()
+             {
+                    var context = this;
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointCreateNewPath/" + context.appId;
+                    $.get(endpointurl, function (response) {
+                        context.model = JSON.parse(response.data);
+                    }).done(function () {
+                        //
+                    });
+             },
+             saveApplication: function ()
+             {
+                    var context = this;
+
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointSaveApplicationPath";
+
+                    context.model[context.appMainTable].ApplicationId = context.appId;
+                    context.model[context.appMainTable].ApplicationViewId = context.applicationViewId;
+                    context.model[context.appMainTable].Properties = context.requestInfo;
+
+                    if (!canSave(context))
+                        return;
+
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(this.model),
+                        success: function (response)
+                        {
+                            if (context.aftersaveaction == 'GOTOREFERER')
+                            {
+                                 window.location.href = '@Context.Request.Headers["Referer"].ToString()';
+                            }
+                            else if (context.aftersaveaction == 'REFRESH')
+                            {
+                                context.version = response.version;
+                                context.instanceId = response.id;
+                                context.modelSaved = true;
+                                context.getApplication();
+                                setTimeout(function () { context.modelSaved = false; }, 3000);
+                            }
+                            else
+                            {
+                                if (context.aftersaveactionpath != '')
+                                {
+                                    endpointurl = '@Url.Content("~/" + aftersaveactionpath)';
+                                    window.location.href = endpointurl;
+                                }
+                            }
+                        },
+                        error: function (response)
+                        {
+                            raiseErrorModal(response.responseJSON);
+                        }
+                    });
+
+             },
+             deleteApplication: function (item, successcallback) 
+             {
+                    var context = this;
+                   var endpointurl = "@Model.RuntimeRequestInfo.EndpointDeleteApplicationPath";
+
+                    var deleteapp = function ()
+                    {
+                        if (!item.ApplicationId)
+                            item.ApplicationId = context.appId;
+
+                        //If the line comes from a child application, don't set the view id
+                        //The server will authorize athorize on application level instead.
+                        if (item.ApplicationId === context.appId)
+                            item.ApplicationViewId = context.applicationViewId;
+
+                        item.Properties = context.requestInfo;
+
+                        $.ajax({
+                            url: endpointurl,
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify(item),
+                            success: function (response)
+                            {
+                                if (successcallback)
+                                    successcallback();
+                                else
+                                    context.getPage();
+                            },
+                            error: function (response)
+                            {
+                                raiseErrorModal(response.responseJSON);
+                            }
+                        });
+                    };
+
+                    raiseYesNoModal("Delete ?", "This record will be deleted, are you sure ?", deleteapp);
+              },
+             getApplication: function ()
+             {
+                    var context = this;
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetApplicationPath/" + context.appId + "/" + context.applicationViewId + "/" + context.instanceId;
+                    if (context.requestInfo != "")
+                        endpointurl += "/" + context.requestInfo;
+                    $.get(endpointurl, function (response)
+                    {
+                        var maindata = JSON.parse(response.data);
+                        context.model[context.appMainTable] = maindata[context.appMainTable];
+
+                    }).done(function () {
+
+                        @foreach (var s in subtableconfig)
+                        {
+                            <text>
+                            context.getPage('@s.TableName');
+                            </text>
+                        }
+
+                        context.$forceUpdate();
+                     });
+             },
+              deleteTableLine: function (item, dbtablename)
+              {
+                    var context = this;
+
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointDeleteLinePath";
+
+                    var deletelinefunc = function ()
+                    {
+                        for (var i = 0; i < context.model[dbtablename].length; i++) {
+                            var lineitem = context.model[dbtablename][i];
+                            if (lineitem.Id > 0 && item.Id > 0 && lineitem.Id === item.Id) {
+
+                                var senddata = { Id: item.Id, ParentId: context.model[context.appMainTable].Id, TableName: dbtablename, ApplicationId: context.appId, ApplicationViewId: context.applicationViewId, Properties: context.requestInfo };
+
+                                $.ajax({
+                                    url: endpointurl,
+                                    type: "POST",
+                                    contentType: "application/json",
+                                    data: JSON.stringify(senddata),
+                                    success: function (response)
+                                    {
+                                        context.model[dbtablename].splice(i, 1);
+                                        context.modelSaved = true;
+                                        setTimeout(function () { context.modelSaved = false; }, 3000);
+                                    },
+                                    error: function (response) {
+                                        raiseErrorModal(response);
+                                    }
+                                });
+
+                                break;
+                            }
+                            else {
+                                if (item.hasOwnProperty("LocalId") && lineitem.hasOwnProperty("LocalId")) {
+                                    if (lineitem.LocalId === item.LocalId) {
+                                        context.model[dbtablename].splice(i, 1);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    raiseYesNoModal("Delete ?", "This record will be deleted, are you sure ?", deletelinefunc);
+
+             },
+            openApplicationModal: function (item, uimetacode)
             {
-                return
-                {
-                    baseurl: "@Model.RuntimeRequestInfo.EndpointBasePath"
-                    ,requestInfo:"@Model.RuntimeRequestInfo.RequestInfo"
-                    ,appMainTable: "@Model.ApplicationInfo.DbName"
-                    ,appId: @Model.ApplicationInfo.Id
-                    ,applicationViewId: @Model.Id
-                    ,instanceId: @Model.RuntimeRequestInfo.Id
-                    ,version:1
-                    ,applist: []
-                    ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig){<text>,@st.TableName:[]</text>}}
-                    ,validation: {}
-                    ,aftersaveactionpath: "@aftersaveactionpath"
-                    ,aftersaveaction: "@aftersaveaction"
-                    ,modelSaved: false
-                    ,idgen: -1
-                    ,model_settings: { showFilter: false }
-                    ,model_pageInfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: @maintableconfig.PageSize , pageNumber: 0, filterValues: [],skipPaging:@maintableconfig.SkipPaging, properties:"", parentId:0, foreignKeyId:0,foreignKeyName:"", sortColumns:"Id", sortDirection:"ASC" }
-                     @foreach (var s in subtableconfig)
-                     {
-                         var table = s.TableName;
-                         var table_settings = s.TableName + "_settings";
-                         var table_pageinfo = s.TableName + "_pageInfo";
-                         <text>
-                         ,@table:{}
-                         ,@table_settings: { showFilter: false }
-                         ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
-                         </text>
-                     }
-                 }
-            },
-            methods:
-            {
-                
-                openApplicationModal: function (item, uimetacode)
-                {
                     var context = this;
 
 
@@ -126,11 +289,9 @@
                         });
                     }
 
-
-
-                },
-                openSubTableModal: function (item, uimetacode, dbtablename)
-                {
+             },
+             openSubTableModal: function (item, uimetacode, dbtablename)
+             {
                     var context = this;
 
                 
@@ -249,106 +410,6 @@
                         $('#addEditModalSaveBtn_' + uimetacode).off().on('click', saveFunc);
                         $('#addEditModal_' + uimetacode).modal('show');
                     }
-
-
-                },
-                deleteTableLine: function (item, dbtablename)
-                {
-                    var context = this;
-
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointDeleteLinePath";
-
-                    var deletelinefunc = function ()
-                    {
-                        for (var i = 0; i < context.model[dbtablename].length; i++) {
-                            var lineitem = context.model[dbtablename][i];
-                            if (lineitem.Id > 0 && item.Id > 0 && lineitem.Id === item.Id) {
-
-                                var senddata = { Id: item.Id, ParentId: context.model[context.appMainTable].Id, TableName: dbtablename, ApplicationId: context.appId, ApplicationViewId: context.applicationViewId, Properties: context.requestInfo };
-
-                                $.ajax({
-                                    url: endpointurl,
-                                    type: "POST",
-                                    contentType: "application/json",
-                                    data: JSON.stringify(senddata),
-                                    success: function (response)
-                                    {
-                                        context.model[dbtablename].splice(i, 1);
-                                        context.modelSaved = true;
-                                        setTimeout(function () { context.modelSaved = false; }, 3000);
-                                    },
-                                    error: function (response) {
-                                        raiseErrorModal(response);
-                                    }
-                                });
-
-                                break;
-                            }
-                            else {
-                                if (item.hasOwnProperty("LocalId") && lineitem.hasOwnProperty("LocalId")) {
-                                    if (lineitem.LocalId === item.LocalId) {
-                                        context.model[dbtablename].splice(i, 1);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    };
-
-                    raiseYesNoModal("Delete ?", "This record will be deleted, are you sure ?", deletelinefunc);
-
-                },
-                saveApplication: function ()
-                {
-                    var context = this;
-
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointSaveApplicationPath";
-
-                    context.model[context.appMainTable].ApplicationId = context.appId;
-                    context.model[context.appMainTable].ApplicationViewId = context.applicationViewId;
-                    context.model[context.appMainTable].Properties = context.requestInfo;
-
-                    if (!context.canSave())
-                        return;
-
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(this.model),
-                        success: function (response)
-                        {
-                            if (context.aftersaveaction == 'GOTOREFERER')
-                            {
-                                 window.location.href = '@Context.Request.Headers["Referer"].ToString()';
-                            }
-                            else if (context.aftersaveaction == 'REFRESH')
-                            {
-                                context.version = response.version;
-                                context.instanceId = response.id;
-                                context.modelSaved = true;
-                                context.getApplication();
-                                setTimeout(function () { context.modelSaved = false; }, 3000);
-                            }
-                            else
-                            {
-                                if (context.aftersaveactionpath != '')
-                                {
-                                    endpointurl = '@Url.Content("~/" + aftersaveactionpath)';
-                                    window.location.href = endpointurl;
-                                }
-                            }
-                        },
-                        error: function (response)
-                        {
-                            raiseErrorModal(response.responseJSON);
-                        }
-                    });
-
-                },
-                onImageChanged: function (event)
-                {
-                    this.uploadImage(event);
                 },
                 getPage: function (dbtablename)
                 {
@@ -409,98 +470,6 @@
                         }
                     });
                 },
-                exportToExcel: function ()
-                {
-                    var context = this;
-                    var args =  { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: 20000, pageNumber: 0, filterValues: [], skipPaging:true };
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetPagedListPath";
-
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(args),
-                        success: function (response) {
-                            var data = JSON.parse(response.data);
-                            alasql.promise('SELECT * INTO XLSX("download.xlsx",{headers:true}) FROM ?', [data])
-                                .then(function (data) {
-                                    console.log('Data saved');
-                                }).catch(function (err) {
-                                    console.log('Error:', err);
-                                });
-                        }
-                    });
-                },
-                deleteApplication: function (item, successcallback) {
-                    var context = this;
-                   var endpointurl = "@Model.RuntimeRequestInfo.EndpointDeleteApplicationPath";
-
-                    var deleteapp = function ()
-                    {
-                        if (!item.ApplicationId)
-                            item.ApplicationId = context.appId;
-
-                        //If the line comes from a child application, don't set the view id
-                        //The server will authorize athorize on application level instead.
-                        if (item.ApplicationId === context.appId)
-                            item.ApplicationViewId = context.applicationViewId;
-
-                        item.Properties = context.requestInfo;
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(item),
-                            success: function (response)
-                            {
-                                if (successcallback)
-                                    successcallback();
-                                else
-                                    context.getPage();
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-                    };
-
-                    raiseYesNoModal("Delete ?", "This record will be deleted, are you sure ?", deleteapp);
-                },
-                getApplication: function ()
-                {
-                    var context = this;
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetApplicationPath/" + context.appId + "/" + context.applicationViewId + "/" + context.instanceId;
-                    if (context.requestInfo != "")
-                        endpointurl += "/" + context.requestInfo;
-                    $.get(endpointurl, function (response)
-                    {
-                        var maindata = JSON.parse(response.data);
-                        context.model[context.appMainTable] = maindata[context.appMainTable];
-
-                    }).done(function () {
-
-                        @foreach (var s in subtableconfig)
-                        {
-                            <text>
-                            context.getPage('@s.TableName');
-                            </text>
-                        }
-
-                        context.$forceUpdate();
-                     });
-                },
-                createNewApplication: function ()
-                {
-                    var context = this;
-                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointCreateNewPath/" + context.appId;
-                    $.get(endpointurl, function (response) {
-                        context.model = JSON.parse(response.data);
-                    }).done(function () {
-                        //
-                    });
-                },
                 getDomain: function (domainname, query, donefunc)
                 {
                      //USED BY THE SEARCHBOX UICONTROL
@@ -520,7 +489,50 @@
                         }
                     });
 
+                },
+                addFilterValue: function (dbtablename)
+                {
+                    var context = this;
 
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    context[objname].filterValues.push({ "name": "", "value": "" });
+                },
+                deleteFilterValue: function (item, dbtablename)
+                {
+                    var context = this;
+
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    for (var i = 0; i < context[objname].filterValues.length; i++) {
+                        if (context[objname].filterValues[i].name === item.name) {
+                            context[objname].filterValues.splice(i, 1);
+                            context.getPage(dbtablename);
+                            break;
+
+                        }
+                    }
+                },
+                runFilter: function (dbtablename)
+                {
+                    var context = this;
+
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    if (context[objname].filterValues.length > 0)
+                        context.getPage(dbtablename);
                 },
                 isFirstPage: function (dbtablename)
                 {
@@ -599,54 +611,58 @@
                         context[objname].pageNumber = 0;
                     context.getPage(dbtablename);
                 },
-                runFilter: function (dbtablename)
+                exportToExcel: function ()
                 {
                     var context = this;
+                    var args =  { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: 20000, pageNumber: 0, filterValues: [], skipPaging:true };
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetPagedListPath";
 
-                    var objname = "";
-                    if (dbtablename)
-                        objname = dbtablename + "_pageInfo";
-                    else
-                        objname = "model_pageInfo";
-
-                    if (context[objname].filterValues.length > 0)
-                        context.getPage(dbtablename);
+                    $.ajax({
+                        url: endpointurl,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(args),
+                        success: function (response) {
+                            var data = JSON.parse(response.data);
+                            alasql.promise('SELECT * INTO XLSX("download.xlsx",{headers:true}) FROM ?', [data])
+                                .then(function (data) {
+                                    console.log('Data saved');
+                                }).catch(function (err) {
+                                    console.log('Error:', err);
+                                });
+                        }
+                    });
                 },
-                addFilterValue: function (dbtablename)
+                onImageChanged: function (event)
                 {
-                    var context = this;
-
-                    var objname = "";
-                    if (dbtablename)
-                        objname = dbtablename + "_pageInfo";
-                    else
-                        objname = "model_pageInfo";
-
-                    context[objname].filterValues.push({ "name": "", "value": "" });
+                    this.uploadImage(event);
                 },
-                deleteFilterValue: function (item, dbtablename)
+                uploadImage: function (event) 
                 {
                     var context = this;
+                    var endpoint = context.baseurl + 'UploadImage';
+                    var formData = new FormData();
+                    formData.append('File', event.srcElement.files[0]);
+                    formData.append('FileName', event.srcElement.files[0].name);
+                    formData.append('FileSize', event.srcElement.files[0].size);
 
-                    var objname = "";
-                    if (dbtablename)
-                        objname = dbtablename + "_pageInfo";
-                    else
-                        objname = "model_pageInfo";
+                    var xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4) {
+                            var dbtable = event.srcElement.dataset.dbtable;
+                            var dbfield = event.srcElement.dataset.dbfield;
 
-                    for (var i = 0; i < context[objname].filterValues.length; i++) {
-                        if (context[objname].filterValues[i].name === item.name) {
-                            context[objname].filterValues.splice(i, 1);
-                            context.getPage(dbtablename);
-                            break;
-
+                            var fileref = JSON.parse(xhr.response);
+                            context.model[dbtable][dbfield] = "/USERDOC/" + fileref.fileName;
+                            context.$forceUpdate();
                         }
                     }
+                    xhr.open('POST', endpoint, true);
+                    xhr.send(formData);
                 }
-                
-
-            },
-            computed: {
+                 @await Html.PartialAsync("UISectionsVue3/_ApplicationViewJSCustomMethods", Model)
+        },
+        computed: {
 
                 @if (Settings.Value.UIControlsEnableVueListSorting)
                 {
@@ -654,9 +670,13 @@
                         sortedAppTable: function() {
                                 return this.applist.sort((a, b) => {
                                     let modifier = 1;
-                                    if (this.model_pageInfo.sortDirection === "DESC") modifier = -1;
-                                    if (a[this.model_pageInfo.sortColumns] < b[this.model_pageInfo.sortColumns]) return -1 * modifier;
-                                    if (a[this.model_pageInfo.sortColumns] > b[this.model_pageInfo.sortColumns]) return 1 * modifier;
+                                    if (this.model_pageInfo.sortDirection === "DESC") 
+                                        modifier = -1;
+                                    if (a[this.model_pageInfo.sortColumns]<b[this.model_pageInfo.sortColumns]) 
+                                       return -1 * modifier;
+                                    if (a[this.model_pageInfo.sortColumns]>b[this.model_pageInfo.sortColumns]) 
+                                       return 1 * modifier;
+
                                     return 0;
                                 });
                          }
@@ -671,9 +691,15 @@
                                 var lineobjectname = "@s.TableName" + "_pageInfo";
                                 return this.model[dbtablename].sort((a, b) => {
                                     let modifier = 1;
-                                    if (this[lineobjectname].sortDirection === 'DESC') modifier = -1;
-                                    if (a[this[lineobjectname].sortColumns] < b[this[lineobjectname].sortColumns]) return -1 * modifier;
-                                    if (a[this[lineobjectname].sortColumns] > b[this[lineobjectname].sortColumns]) return 1 * modifier;
+                                    if (this[lineobjectname].sortDirection === 'DESC') 
+                                        modifier = -1;
+
+                                    if (a[this[lineobjectname].sortColumns]<b[this[lineobjectname].sortColumns]) 
+                                        return -1 * modifier;
+
+                                    if (a[this[lineobjectname].sortColumns]>b[this[lineobjectname].sortColumns]) 
+                                        return 1 * modifier;
+
                                     return 0;
                                 });
                             }
@@ -699,6 +725,7 @@
                         </text>
                     }
                 }
+               
              },
             mounted: function ()
             {
@@ -726,15 +753,14 @@
                 }
 
             }
-        });
+    });
 
-        app.component('buttoncounter', buttoncounter);
-        app.component('radiolist', radiolist);
-        app.component('searchbox', searchbox);
-        app.component('combobox', combobox);
-        app.component('checklist', checklist);
+      app.component('buttoncounter', buttoncounter);
+      app.component('radiolist', radiolist);
+      app.component('searchbox', searchbox);
+      app.component('combobox', combobox);
+      app.component('checklist', checklist);
 
-        const mountedapp = app.mount("#@Model.RuntimeRequestInfo.ViewHtmlId");
-        
+      const mountedapp = app.mount("#@Model.RuntimeRequestInfo.ViewHtmlId");
 </script>
 
