@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Edit application";
+    ViewData["ISVUE3"] = "TRUE";
 }
 
 @await Html.PartialAsync("_Modals")
@@ -42,11 +43,9 @@
     {
     <script>
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                model: {}
-               ,systems:[]
+        const app = Vue.createApp({
+            data: function () {
+                return { model: {}, systems: [] };
             },
             methods:
             {
@@ -89,7 +88,9 @@
                 });
 
             }
-        })
+        });
+
+        const mountedapp = app.mount("#app");
 
     </script>
 }
