@@ -1,7 +1,6 @@
-﻿
-
-@{
+﻿@{
     ViewData["Title"] = "Create new application";
+    ViewData["ISVUE3"] = "TRUE";
 }
 
 @await Html.PartialAsync("_Modals")
@@ -38,11 +37,9 @@
     {
     <script>
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                 model: {id: -1, title: "", dbName: "", systemMetaCode: "", description: "", applicationPath:""}
-                ,systems:[]
+        const app = Vue.createApp({
+            data: function() {
+                 return { model: {id: -1, title: "", dbName: "", systemMetaCode: "", description: "", applicationPath:""}, systems:[] };
             },
             methods:
             {
@@ -154,7 +151,9 @@
                     context.systems = response;
                 });
             }
-        })
+        });
+
+        const mountedapp = app.mount("#app");
 
     </script>
 }
