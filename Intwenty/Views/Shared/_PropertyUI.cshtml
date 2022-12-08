@@ -19,7 +19,7 @@ Requires an item with properties, which name is passed as the model
                     v-model="@(Model).currentProperty"
                     v-on:change="propertyChanged(event)"
                     class="form-control form-control-sm">
-                <option v-for="item in selectableProperties(@(Model))" v-bind:value="item">{{item.displayName}}</option>
+                <option v-for="item in selectablePropList(@(Model))" v-bind:value="item">{{item.displayName}}</option>
             </select>
         </div>
 
@@ -47,7 +47,7 @@ Requires an item with properties, which name is passed as the model
         </div>
 
 
-        <button class="btn btn-sm btn-secondary mr-2" v-on:click="addProperty(@(Model))" style="margin-left:2px"><span class="fa fa-plus"></span> Add</button>
+        <button class="btn btn-sm btn-secondary mr-2" v-on:click="addProp(@(Model))" style="margin-left:2px"><span class="fa fa-plus"></span> Add</button>
 
 
     </div>

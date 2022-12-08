@@ -1,4 +1,7 @@
 ﻿@model ApplicationModel
+@{
+    ViewData["ISVUE3"] = "TRUE";
+}
 
 @await Html.PartialAsync("_Modals")
 
@@ -319,28 +322,22 @@
 
     <script>
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                datalist: []
-                ,model: {}
-                ,uisettings: {}
-                ,currentuilist: []
-                ,functionsettings: {}
-                ,propertyCollection: []
+        const app = Vue.createApp({
+            data: function () 
+            {
+                return {  datalist:[],model:{},uisettings:{},currentuilist:[],functionsettings:{},propertyCollection:[] };
             },
             methods:
             {
-                getFunctionDescription: function () {
+                getFunctionDescription: function ()
+                {
                     var context = this;
-
 
                     if (context.functionsettings.metaType == 'NAVIGATE')
                         return "Adds a button to the view that navigates the user to the [path]";
 
                     if (context.functionsettings.metaType == 'SAVE')
                         return "Adds a button to the view that triggers the application save operation";
-
 
 
                     return "";
@@ -402,7 +399,7 @@
 
                     }
 
-                    context.initializePropertyUI(context.functionsettings);
+                    initializePropertyUI(context, context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_edit_function_modal").modal('show');
@@ -439,7 +436,7 @@
 
                     }
 
-                    context.initializePropertyUI(context.functionsettings);
+                    initializePropertyUI(context, context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_edit_function_modal").modal('show');
@@ -567,7 +564,7 @@
                         });
                     }
 
-                    context.initializePropertyUI(context.model);
+                    initializePropertyUI(context, context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_app_view_modal").modal('show');
@@ -627,7 +624,7 @@
                         });
                     }
 
-                    context.initializePropertyUI(context.model);
+                    initializePropertyUI(context,context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_app_view_modal").modal('show');
@@ -782,6 +779,18 @@
                     }
 
                     return res;
+                },
+                selectablePropList: function (object)
+                {
+                    return selectableProperties(this, object);
+                },
+                addProp: function (object)
+                {
+                    return addProperty(this, object);
+                },
+                propertyChanged: function () 
+                {
+                    this.$forceUpdate();
                 }
             },
             computed: {
@@ -813,6 +822,9 @@
 
             }
         });
+
+        const mountedapp = app.mount("#app");
+
     </script>
 
 
