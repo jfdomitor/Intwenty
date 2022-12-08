@@ -1,5 +1,10 @@
-﻿
+﻿@{
+    ViewData["ISVUE3"] = "TRUE";
+}
+
+
 @await Html.PartialAsync("_Modals")
+
 
 <div id="app">
     <div>
@@ -50,10 +55,9 @@
 
     <script>
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                datalist: []
+        const app = Vue.createApp({
+            data: function () {
+                return { datalist:[] };
             },
             methods: {
 
@@ -112,6 +116,9 @@
 
             }
         });
+
+        const mountedapp = app.mount("#app");
+
     </script>
 
 

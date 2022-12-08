@@ -3,9 +3,14 @@
     var currentpath = Context.Request.Path.ToUriComponent();
     var ishomepath = string.IsNullOrEmpty(currentpath) || currentpath.Length < 5 || currentpath.Contains("Home/Index");
     var isblazorview = false;
+    var isvue3 = false;
     if (Settings.Value.AllowBlazor && ViewData["ISBLAZORVIEW"] != null && (string)ViewData["ISBLAZORVIEW"] == "TRUE")
     {
         isblazorview = true;
+    }
+    if ((string)ViewData["ISVUE3"] == "TRUE")
+    {
+        isvue3 = true;
     }
 }
 
@@ -119,7 +124,8 @@
     <!--script src="~/lib/popper.js/umd/popper.min.js"></script -->
     <!-- script src="~/lib/bootstrap-4.4.1/dist/js/bootstrap.min.js"></script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-    @if (currentpath.Contains("Vue3Test")){
+    @if (isvue3)
+    {
         <script src="https://unpkg.com/vue@3"></script>
         <script src="~/js/intwenty2.js" asp-append-version="true"></script>
     }else{
