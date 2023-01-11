@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "UI Design";
+    ViewData["ISVUE3"] = "TRUE";
 }
 
 @await Html.PartialAsync("_Modals")
@@ -298,20 +299,9 @@
     <script>
 
 
-
-        var app = new Vue({
-            el: '#app',
-            data: {
-                model: {
-                    table: { columns: [] },
-                    dataTable: { columns: [] },
-                    functions: [],
-                    metaType: "",
-                    metaCode: "",
-                    id:0
-                },
-                functionsettings: {},
-                columnsettings: {}
+        const app = Vue.createApp({
+            data: function () {
+                return {model: { table: { columns: [] }, dataTable: { columns: [] }, functions: [], metaType: "", metaCode: "",id: 0},functionsettings: {},columnsettings: {}};
             },
             methods:
             {
@@ -495,7 +485,7 @@
                         
                     };
 
-                    context.initializePropertyUI(context.functionsettings);
+                    initializePropertyUI(context,context.model);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $('#create_edit_function_modal_deletebtn').off('click', delfunc);
@@ -535,7 +525,7 @@
                      
                     };
 
-                    context.initializePropertyUI(context.columnsettings);
+                    initializePropertyUI(context, context.model);
                     $('#create_edit_column_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_column_modal_yesbtn').off().on('click', yesfunc);
                     $('#create_edit_column_modal_deletebtn').off('click', delfunc);
@@ -543,6 +533,15 @@
                     $("#create_edit_column_modal").modal('show');
 
 
+                },
+                selectablePropList: function (object) {
+                    return selectableProperties(this, object);
+                },
+                addProp: function (object) {
+                    return addProperty(this, object);
+                },
+                propertyChanged: function () {
+                    this.$forceUpdate();
                 }
 
 
@@ -566,6 +565,8 @@
            
             }
         });
+
+        const mountedapp = app.mount("#app");
 
     </script>
 }
