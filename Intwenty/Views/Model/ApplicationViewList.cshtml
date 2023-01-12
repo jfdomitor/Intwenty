@@ -168,7 +168,7 @@
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="nav-viewproperties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
-                                @await Html.PartialAsync("_PropertyUI", "model")
+                                <propertytool id="appvieprops" v-model:propobject="model" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
 
                         </div>
@@ -320,12 +320,14 @@
 @section Scripts
 {
 
-    <script>
+    <script type="module">
+
+        import { propertytool } from '../../js/vuecomponents.js'
 
         const app = Vue.createApp({
             data: function () 
             {
-                return {  datalist:[],model:{},uisettings:{},currentuilist:[],functionsettings:{},propertyCollection:[] };
+                return {  datalist:[],model:{propertyList:[]},uisettings:{},currentuilist:[],functionsettings:{},propertyCollection:[] };
             },
             methods:
             {
@@ -823,6 +825,7 @@
             }
         });
 
+        app.component('propertytool', propertytool);
         const mountedapp = app.mount("#app");
 
     </script>

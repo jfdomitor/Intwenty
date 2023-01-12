@@ -504,5 +504,238 @@ const checklist =
     }
 };
 
-export { buttoncounter, radiolist, searchbox, combobox, checklist }; 
+const propertytool =
+{
+
+    template: `<div>
+    <hr />
+    <div class="form-inline" v-if="currentProperty">
+
+        <div class="mr-2">
+            <select id="propcbox"
+                    name="propcbox"
+                    v-model="currentProperty"
+                    v-on:change="propertyChanged($event)"
+                    class="form-control form-control-sm">
+                <option v-for="item in selectableProperties()" v-bind:value="item">{{item.displayName}}</option>
+            </select>
+        </div>
+
+        <div class="mr-2" v-if="currentProperty.isBoolType">
+
+        </div>
+
+        <div class="mr-2" v-if="currentProperty.isStringType">
+            <input class="form-control-sm" v-model="currentProperty.codeValue" type="text" />
+        </div>
+
+        <div class="mr-2" v-if="currentProperty.isNumericType">
+            <input class="form-control-sm" v-model="currentProperty.codeValue" type="number" />
+        </div>
+
+        <div class="mr-2" v-if="currentProperty.isListType">
+            <div class="form-group">
+                <select id="cboxpropvalues"
+                        name="cboxpropvalues"
+                        v-model="currentProperty.codeValue"
+                        class="form-control form-control-sm">
+                    <option v-for="item in currentProperty.validValues" v-bind:value="item.codeValue">{{item.displayValue}}</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-sm btn-secondary mr-2" v-on:click="addProperty()" style="margin-left:2px"><span class="fa fa-plus"></span> Add</button>
+    </div>
+    <hr />
+    <table class="table table-sm" style="width:90%">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="property in propertyList">
+                <td>{{property.codeName}}</td>
+                <td>{{property.displayValue}}</td>
+                <td><span v-on:click="deleteProperty(property)" class="fa fa-trash" style="cursor:pointer"></span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>`,
+    props: {
+        propobject: {},
+        propcollection: []
+    },
+    emits: ['update:propobject'],
+    data() {
+        return {
+            metaType: "", currentProperty: { codeName: "", codeValue: "", displayValue: "", isBoolType: false, isStringType: false, isNumericType: false, isListType: false }
+        };
+    },
+    mounted: function ()
+    {
+        var vm = this;
+
+
+        if (!vm.propobject.metaType)
+            return;
+
+        vm.metaType = propobject.metaType;
+        if (!vm.propobject.propertyList)
+             vm.propobject.propertyList = [];
+
+        if (!vm.propobject.hasOwnProperty("showSettings"))
+            vm.propobject.showSettings = false;
+
+        vm.propobject.showSettings = !vm.propobject.showSettings;
+
+    },
+    methods:
+    {
+
+        selectableProperties: function ()
+        {
+
+            var vm = this;
+            if (!vm.propcollection)
+                return;
+
+
+            var result = [];
+            for (var i = 0; i < vm.propcollection.length; i++) {
+                var isincluded = false;
+                if (vm.propcollection[i].validFor) {
+                    for (var z = 0; z < vm.propcollection[i].validFor.length; z++) {
+
+                        if (vm.metaType === vm.propcollection[i].validFor[z])
+                            isincluded = true;
+                    }
+                }
+                if (isincluded)
+                    result.push(vm.propcollection[i]);
+            }
+
+            return result;
+        },
+        addProperty : function () {
+
+            var vm = this;
+
+            if (!vm.propobject)
+                return;
+
+            if (!vm.currentProperty)
+                return;
+
+            if (!vm.propobject.propertyList)
+                return;
+
+            if (vm.currentProperty.isBoolType) {
+                vm.currentProperty.codeValue = "TRUE";
+                vm.currentProperty.displayValue = "True";
+            }
+
+            if (vm.currentProperty.isStringType || vm.currentProperty.isNumericType || vm.currentProperty.isListType)
+                vm.currentProperty.displayValue = vm.currentProperty.codeValue;
+
+
+            var t = vm.propobject.propertyList.firstOrDefault({ codeName: vm.propobject.currentProperty.codeName });
+            if (t != null)
+                return;
+
+            if (!vm.currentProperty.codeValue)
+                return;
+
+
+            vm.propobject.propertyList.push({ codeName: currentProperty.codeName, codeValue: currentProperty.codeValue, displayValue: currentProperty.displayValue });
+
+            vm.propobject.currentProperty = {};
+
+            //context.$forceUpdate();
+        },
+        deleteProperty : function (property) {
+
+            if (!vm.propobject)
+                return;
+
+            if (!vm.currentProperty)
+                return;
+
+            if (!vm.propobject.propertyList)
+                return;
+
+            for (var i = 0; i < vm.propobject.propertyList.length; i++) {
+                if (vm.propobject.propertyList[i].codeName === property.codeName) {
+                    vm.propobject.propertyList.splice(i, 1);
+                    break;
+                }
+            }
+        },
+        propertyChanged: function (event)
+        {
+            var vm = this;
+
+            if (!event)
+                return;
+            if (!event.srcElement)
+                return;
+            if (!event.srcElement.value)
+                return;
+            if (!event.srcElement.selectedOptions)
+                return;
+
+            var selectedcodename = event.srcElement.selectedOptions[0]._value.codeName; 
+
+            for (var i = 0; i < vm.propcollection.length; i++) {
+                if (vm.propcollection[i].codeName == selectedcodename)
+                {
+                    var prop = { codeName: vm.propcollection[i].codeName, codeValue: vm.propcollection[i].codeValue, displayValue: vm.propcollection[i].displayValue, isBoolType: vm.propcollection[i].isBoolType, isStringType: vm.propcollection[i].isStringType, isNumericType: vm.propcollection[i].isNumericType, isListType: vm.propcollection[i].isListType };
+                    vm.currentProperty = prop;
+                    break;
+                }
+            }
+
+          
+
+        }
+
+
+    }
+    ,updated: function () {
+
+    },
+    watch:
+    {
+        
+        propobject: function (newval, oldval) {
+          
+            var vm = this;
+
+            if (!newval.metaType)
+                return;
+
+            vm.metaType = newval.metaType;
+
+            if (!newval.propertyList)
+                newval.propertyList = [];
+
+            if (!newval.hasOwnProperty("showSettings"))
+                newval.showSettings = false;
+
+            newval.showSettings = !newval.showSettings;
+        }
+        
+    },
+    destroyed: function () {
+    },
+    computed:
+    {
+       
+
+    }
+
+};
+
+export { buttoncounter, radiolist, searchbox, combobox, checklist, propertytool }; 
 
