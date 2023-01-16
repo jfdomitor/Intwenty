@@ -509,15 +509,15 @@ const propertytool =
 
     template: `<div>
     <hr />
-    <div class="form-inline" v-if="currentProperty">
+    <div class="form-inline">
 
         <div class="mr-2">
             <select id="propcbox"
                     name="propcbox"
-                    v-model="currentProperty"
+                    v-model="propName"
                     v-on:change="propertyChanged($event)"
                     class="form-control form-control-sm">
-                <option v-for="item in selectableProperties()" v-bind:value="item">{{item.displayName}}</option>
+                <option v-for="item in selectableProperties()" v-bind:value="item.codeName">{{item.displayName}}</option>
             </select>
         </div>
 
@@ -526,20 +526,20 @@ const propertytool =
         </div>
 
         <div class="mr-2" v-if="currentProperty.isStringType">
-            <input class="form-control-sm" v-model="currentProperty.codeValue" type="text" />
+            <input class="form-control-sm" v-model="propValue" type="text" />
         </div>
 
         <div class="mr-2" v-if="currentProperty.isNumericType">
-            <input class="form-control-sm" v-model="currentProperty.codeValue" type="number" />
+            <input class="form-control-sm" v-model="propValue" type="number" />
         </div>
 
         <div class="mr-2" v-if="currentProperty.isListType">
             <div class="form-group">
                 <select id="cboxpropvalues"
                         name="cboxpropvalues"
-                        v-model="currentProperty.codeValue"
+                        v-model="propValue"
                         class="form-control form-control-sm">
-                    <option v-for="item in currentProperty.validValues" v-bind:value="item.codeValue">{{item.displayValue}}</option>
+                    <option v-for="item in selectableValues()" v-bind:value="item.codeValue">{{item.displayValue}}</option>
                 </select>
             </div>
         </div>
@@ -555,7 +555,7 @@ const propertytool =
             </tr>
         </thead>
         <tbody>
-            <tr v-for="property in propertyList">
+            <tr v-for="property in propobject.propertyList">
                 <td>{{property.codeName}}</td>
                 <td>{{property.displayValue}}</td>
                 <td><span v-on:click="deleteProperty(property)" class="fa fa-trash" style="cursor:pointer"></span></td>
@@ -570,7 +570,7 @@ const propertytool =
     emits: ['update:propobject'],
     data() {
         return {
-            metaType: "", currentProperty: { codeName: "", codeValue: "", displayValue: "", isBoolType: false, isStringType: false, isNumericType: false, isListType: false }
+            metaType: "", currentProperty: { codeName: "", codeValue: "", displayValue: "", displayName: "", isBoolType: false, isStringType: false, isNumericType: false, isListType: false, validValues: [] }, propName: "", propValue: ""
         };
     },
     mounted: function ()
@@ -593,7 +593,36 @@ const propertytool =
     },
     methods:
     {
+        copyProperty: function (propcode) {
 
+            var vm = this;
+            if (!vm.propcollection)
+                return;
+            if (!propcode)
+                return;
+            if (propcode == "")
+                return;
+
+            var prop = { codeName: "", codeValue: "", displayValue: "", displayName: "", isBoolType: false, isStringType: false, isNumericType: false, isListType: false, validValues: [] };
+            for (var i = 0; i < vm.propcollection.length; i++)
+            {
+                if (vm.propcollection[i].codeName == propcode)
+                {
+                    prop.codeName = vm.propcollection[i].codeName;
+                    prop.codeValue = vm.propcollection[i].codeValue;
+                    prop.displayName = vm.propcollection[i].displayName;
+                    prop.displayValue = vm.propcollection[i].displayValue;
+                    prop.isNumericType = vm.propcollection[i].isNumericType;
+                    prop.isStringType = vm.propcollection[i].isStringType;
+                    prop.isBoolType = vm.propcollection[i].isBoolType;
+                    prop.isListType = vm.propcollection[i].isListType;
+                    prop.validValues = vm.propcollection[i].validValues;
+                    break;
+                }
+            }
+
+            return prop;
+        },
         selectableProperties: function ()
         {
 
@@ -613,10 +642,27 @@ const propertytool =
                     }
                 }
                 if (isincluded)
-                    result.push(vm.propcollection[i]);
+                    result.push(vm.copyProperty(vm.propcollection[i].codeName));
             }
 
             return result;
+        },
+        selectableValues: function ()
+        {
+            var vm = this;
+
+            if (!vm.propobject)
+                return;
+
+            if (!vm.propName)
+                return;
+
+            if (vm.propName=="")
+                return;
+
+            var prop = vm.copyProperty(vm.propName);
+
+            return prop.validValues;
         },
         addProperty : function () {
 
@@ -625,32 +671,28 @@ const propertytool =
             if (!vm.propobject)
                 return;
 
-            if (!vm.currentProperty)
+            if (!vm.propName)
+                return;
+
+            if (!vm.propValue)
                 return;
 
             if (!vm.propobject.propertyList)
                 return;
 
-            if (vm.currentProperty.isBoolType) {
-                vm.currentProperty.codeValue = "TRUE";
-                vm.currentProperty.displayValue = "True";
+            var selprop = vm.copyProperty(vm.propName);
+
+            if (selprop.isBoolType) {
+                selprop.codeValue = "TRUE";
+                selprop.displayValue = "True";
             }
 
-            if (vm.currentProperty.isStringType || vm.currentProperty.isNumericType || vm.currentProperty.isListType)
-                vm.currentProperty.displayValue = vm.currentProperty.codeValue;
+            if (selprop.isStringType || selprop.isNumericType || selprop.isListType)
+                selprop.displayValue = selprop.codeValue;
 
-
-            var t = vm.propobject.propertyList.firstOrDefault({ codeName: vm.propobject.currentProperty.codeName });
-            if (t != null)
-                return;
-
-            if (!vm.currentProperty.codeValue)
-                return;
-
-
-            vm.propobject.propertyList.push({ codeName: currentProperty.codeName, codeValue: currentProperty.codeValue, displayValue: currentProperty.displayValue });
-
-            vm.propobject.currentProperty = {};
+            vm.propobject.propertyList.push(selprop);
+            
+            //vm.currentProperty = {};
 
             //context.$forceUpdate();
         },
@@ -674,6 +716,7 @@ const propertytool =
         },
         propertyChanged: function (event)
         {
+            
             var vm = this;
 
             if (!event)
@@ -685,17 +728,9 @@ const propertytool =
             if (!event.srcElement.selectedOptions)
                 return;
 
-            var selectedcodename = event.srcElement.selectedOptions[0]._value.codeName; 
-
-            for (var i = 0; i < vm.propcollection.length; i++) {
-                if (vm.propcollection[i].codeName == selectedcodename)
-                {
-                    var prop = { codeName: vm.propcollection[i].codeName, codeValue: vm.propcollection[i].codeValue, displayValue: vm.propcollection[i].displayValue, isBoolType: vm.propcollection[i].isBoolType, isStringType: vm.propcollection[i].isStringType, isNumericType: vm.propcollection[i].isNumericType, isListType: vm.propcollection[i].isListType };
-                    vm.currentProperty = prop;
-                    break;
-                }
-            }
-
+            //var test = vm.currentProperty.codeName;
+            var selectedcodename = event.srcElement.selectedOptions[0]._value;
+            vm.currentProperty = vm.copyProperty(selectedcodename);
           
 
         }
@@ -725,6 +760,7 @@ const propertytool =
 
             newval.showSettings = !newval.showSettings;
         }
+        
         
     },
     destroyed: function () {
