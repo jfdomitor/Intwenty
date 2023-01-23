@@ -559,8 +559,8 @@ const propertytool =
     </table>
 </div>`,
     props: {
-        propobject: {},
-        propcollection: []
+        propobject: Object,
+        propcollection: Array
     },
     emits: ['update:propobject'],
     data() {
