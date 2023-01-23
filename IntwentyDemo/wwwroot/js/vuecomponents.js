@@ -520,19 +520,14 @@ const propertytool =
                 <option v-for="item in selectableProperties()" v-bind:value="item.codeName">{{item.displayName}}</option>
             </select>
         </div>
-
         <div class="mr-2" v-if="currentProperty.isBoolType">
-
         </div>
-
         <div class="mr-2" v-if="currentProperty.isStringType">
             <input class="form-control-sm" v-model="propValue" type="text" />
         </div>
-
         <div class="mr-2" v-if="currentProperty.isNumericType">
             <input class="form-control-sm" v-model="propValue" type="number" />
         </div>
-
         <div class="mr-2" v-if="currentProperty.isListType">
             <div class="form-group">
                 <select id="cboxpropvalues"
@@ -680,23 +675,52 @@ const propertytool =
             if (!vm.propobject.propertyList)
                 return;
 
+            //Property already exists
+            var filter = { codeName: vm.propName };
+            var existingprop = vm.propobject.propertyList.where(filter);
+            if (existingprop)
+            {
+                if (existingprop.length > 0)
+                {
+                    return;
+                }
+            }
+
+
             var selprop = vm.copyProperty(vm.propName);
+
+            if (selprop.isListType)
+            {
+                var filter = { codeValue: vm.propValue };
+                var selvalue = selprop.validValues.where(filter);
+                if (selvalue) {
+                    selprop.displayValue = selvalue[0].displayValue;
+                    selprop.codeValue = selvalue[0].codeValue;
+                }
+            }
 
             if (selprop.isBoolType) {
                 selprop.codeValue = "TRUE";
                 selprop.displayValue = "True";
             }
 
-            if (selprop.isStringType || selprop.isNumericType || selprop.isListType)
-                selprop.displayValue = selprop.codeValue;
+            if (selprop.isStringType || selprop.isNumericType)
+            {
+                selprop.codeValue = vm.propValue;
+                selprop.displayValue = vm.propValue;
+            }
 
             vm.propobject.propertyList.push(selprop);
-            
+
+            this.$emit('update:propobject', vm.propobject);
+
             //vm.currentProperty = {};
 
             //context.$forceUpdate();
         },
         deleteProperty : function (property) {
+
+            var vm = this;
 
             if (!vm.propobject)
                 return;
@@ -713,6 +737,8 @@ const propertytool =
                     break;
                 }
             }
+
+            this.$emit('update:propobject', vm.propobject);
         },
         propertyChanged: function (event)
         {
@@ -731,6 +757,7 @@ const propertytool =
             //var test = vm.currentProperty.codeName;
             var selectedcodename = event.srcElement.selectedOptions[0]._value;
             vm.currentProperty = vm.copyProperty(selectedcodename);
+            vm.propValue = "";
           
 
         }
