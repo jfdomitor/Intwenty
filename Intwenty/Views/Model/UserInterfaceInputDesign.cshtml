@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "UI Design";
+    ViewData["ISVUE3"] = "TRUE";
 }
 
 @await Html.PartialAsync("_Modals")
@@ -389,9 +390,10 @@
 
 
                             </div>
-                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-properties-tab">
-                                @await Html.PartialAsync("_PropertyUI", "active_setting_input")
+                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
+                                <propertytool id="appvieprops" v-model:propobject="active_setting_input" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
+                           
                         </div>
 
 
@@ -415,7 +417,7 @@
 
 
 
-    <script>
+    <script type="module">
 
         $(window).scroll(function () {
             var scrollTop = $(window).scrollTop();
@@ -426,19 +428,19 @@
                 $("#selectcontrolnav").css({ "margin-top": ($(window).scrollTop()-200) + "px" });
             }
         });
+         
+        import { propertytool } from '../../../js/vuecomponents.js'
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                model: {
-
-                },
+        const app = Vue.createApp({
+            data: function () {
+                return { model: {showComponents:false,sections:[]},
                 dbtables: [],
                 valuedomains: [],
                 listviewtable: {},
                 active_setting_input: {},
                 metaproperties: [],
-                idgenerator: 0
+                propertyCollection:[],
+                idgenerator: 0 };
             },
             methods:
             {
@@ -452,13 +454,11 @@
                 {
                     this.active_setting_input = input;
                     this.active_setting_input.dataTableDbName = this.userInterfaceTable.dbName;
-                    this.initializePropertyUI(this.active_setting_input);
                     this.$forceUpdate();
                     $("#ui_setting_modal").modal('show');
                 },
                 openViewSettings() {
                     this.active_setting_input = this.model;
-                    this.initializePropertyUI(this.active_setting_input);
                     this.$forceUpdate();
                     $("#ui_setting_modal").modal('show');
                 },
@@ -765,6 +765,10 @@
                 });
             }
         });
+
+        app.component('propertytool', propertytool);
+        const mountedapp = app.mount("#app");
+
 
     </script>
 }
