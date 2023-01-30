@@ -215,7 +215,7 @@ canSave = function (context)
     return result;
 };
 
-
+/*
 selectableProperties = function (context, item)
 {
 
@@ -315,6 +315,7 @@ initializePropertyUI = function (context, modelitem) {
     context.$forceUpdate();
 
 };
+*/
 
 canShowUIControl= function (uiid, tablename, columnname, context) {
     return true;

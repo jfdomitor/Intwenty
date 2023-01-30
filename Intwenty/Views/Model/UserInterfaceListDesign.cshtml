@@ -210,8 +210,8 @@
 
 
                             </div>
-                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-properties-tab">
-                                @await Html.PartialAsync("_PropertyUI", "functionsettings")
+                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
+                                <propertytool id="appvieprops" v-model:propobject="functionsettings" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
 
                         </div>
@@ -266,8 +266,8 @@
                                 </div>
 
                             </div>
-                            <div class="tab-pane fade" id="nav-colproperties" role="tabpanel" aria-labelledby="nav-colproperties-tab">
-                                @await Html.PartialAsync("_PropertyUI", "columnsettings")
+                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
+                                <propertytool id="appvieprops" v-model:propobject="columnsettings" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
 
                         </div>
@@ -296,12 +296,13 @@
 
 
 
-    <script>
+    <script type="module">
 
+        import { propertytool } from '../../../js/vuecomponents.js'
 
         const app = Vue.createApp({
             data: function () {
-                return {model: { table: { columns: [] }, dataTable: { columns: [] }, functions: [], metaType: "", metaCode: "",id: 0},functionsettings: {},columnsettings: {}};
+                return { model: { table: { columns: [] }, dataTable: { columns: [] }, functions: [], metaType: "", metaCode: "", id: 0 }, functionsettings: {}, columnsettings: {}, propertyCollection :[]};
             },
             methods:
             {
@@ -485,7 +486,7 @@
                         
                     };
 
-                    initializePropertyUI(context,context.model);
+
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $('#create_edit_function_modal_deletebtn').off('click', delfunc);
@@ -525,7 +526,7 @@
                      
                     };
 
-                    initializePropertyUI(context, context.model);
+
                     $('#create_edit_column_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_column_modal_yesbtn').off().on('click', yesfunc);
                     $('#create_edit_column_modal_deletebtn').off('click', delfunc);
@@ -566,6 +567,7 @@
             }
         });
 
+        app.component('propertytool', propertytool);
         const mountedapp = app.mount("#app");
 
     </script>

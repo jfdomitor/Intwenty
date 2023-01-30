@@ -276,10 +276,9 @@
                                 </div>
 
                             </div>
-                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-properties-tab">
-                                @await Html.PartialAsync("_PropertyUI", "functionsettings")
+                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
+                                <propertytool id="appvieprops" v-model:propobject="functionsettings" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
-
                         </div>
 
                     </div>
@@ -401,7 +400,6 @@
 
                     }
 
-                    initializePropertyUI(context, context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_edit_function_modal").modal('show');
@@ -438,7 +436,6 @@
 
                     }
 
-                    initializePropertyUI(context, context.functionsettings);
                     $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
                     $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_edit_function_modal").modal('show');
@@ -566,7 +563,6 @@
                         });
                     }
 
-                    initializePropertyUI(context, context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_app_view_modal").modal('show');
@@ -627,7 +623,6 @@
                         });
                     }
 
-                    initializePropertyUI(context,context.model);
                     $('#create_app_view_modal_yesbtn').off('click', yesfunc);
                     $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
                     $("#create_app_view_modal").modal('show');
