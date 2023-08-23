@@ -92,7 +92,7 @@
                 <nav class="navbar bg-dark" id="selectcontrolnav">
                     <ul class="navbar-nav">
                         <li class="nav-item" v-for="comp in model.uiControls" style="padding:5px">
-                            <div class="text-light" v-bind:id="comp.code" draggable="true" v-on:dragstart="dragUI(event)"><i class="fas fa-dragon"></i> {{comp.title}}</div>
+                        <div class="text-light" v-bind:id="comp.code" draggable="true" v-on:dragstart="dragUI($event)"><i class="fas fa-dragon"></i> {{comp.title}}</div>
                         </li>
                     </ul>
                 </nav>
@@ -122,7 +122,7 @@
                                     <div v-bind:id="'colapse'+sect.rowOrder" class="collapse show" v-bind:data-parent="'#accordion_'+sect.rowOrder">
                                         <div class="card-body">
 
-                                            <label><b> Choose Layout </b></label>
+                                            <label><b>Choose Layout</b></label>
                                             <input v-bind:id="'pnlcnt_1_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="1" v-on:change="layoutClassChanged(sect)" /> 1 Panel
                                             <input v-bind:id="'pnlcnt_2_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="2" v-on:change="layoutClassChanged(sect)" /> 2 Panel
                                             <input v-bind:id="'pnlcnt_3_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="3" v-on:change="layoutClassChanged(sect)" /> 3 Panel
@@ -143,11 +143,10 @@
 
                                                 <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels">
 
-                                                    <div class="formpanel" v-for="input in lrow.userInputs" v-if="!pnl.isRemoved">
+                                                    <div class="formpanel" v-if="!pnl.isRemoved" v-for="input in lrow.userInputs">
 
-                                                <div v-if="input.metaType=='' && input.parentMetaCode===pnl.metaCode  && !input.isRemoved" style="text-align:center; margin-top:40px">
-              
-                                                            <div class="p-12 bg-gray-30 border border-gray-90" v-on:drop="dropUI(event, input)" v-on:dragover="allowDropUI(event)">
+                                                        <div v-if="input.metaType=='' && input.parentMetaCode===pnl.metaCode && !input.isRemoved" style="text-align:center; margin-top:40px">
+                                                    <div class="p-12 bg-gray-30 border border-gray-90" v-on:drop="dropUI($event, input)" v-on:dragover="allowDropUI($event)">
                                                                 <label class="block cursor-pointer">
                                                                     <i>Drop component here.</i>
                                                                 </label>
@@ -503,16 +502,16 @@
                 layoutClass: function (sect) 
                 {
                     return {
-                        'col-lg-12': sect.layoutPanelCount === 1,
-                        'col-lg-6': sect.layoutPanelCount === 2,
-                        'col-lg-4': sect.layoutPanelCount === 3,
+                        'col-lg-12': sect.layoutPanelCount == 1,
+                        'col-lg-6': sect.layoutPanelCount == 2,
+                        'col-lg-4': sect.layoutPanelCount == 3
                     }
                 },
                 componentDesignerClass: function ()
                 {
                     return {
                         'col-lg-9': this.model.showComponents,
-                        'col-lg-12': !this.model.showComponents,
+                        'col-lg-12': !this.model.showComponents
                     }
                 },
                 layoutClassChanged: function (sect)
