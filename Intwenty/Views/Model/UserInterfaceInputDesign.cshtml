@@ -27,8 +27,6 @@
         margin-top: 10px;
     }
 
-    
-}
 </style>
 
 
@@ -72,12 +70,13 @@
 
             </div>
             <div v-bind:class="componentDesignerClass()">
+
                 <div class="btn btn-secondary btn-sm" v-on:click="model.showComponents=!model.showComponents">
                     <i class="fas fa-align-justify"></i>
-                    <span v-if="!model.showComponents">Show UI Controls</span>
-                    <span v-if="model.showComponents">Hide UI Controls</span>
+                    <span v-if="!model.showComponents"> Show UI Controls</span>
+                    <span v-if="model.showComponents"> Hide UI Controls</span>
                 </div>
-                <div class="btn btn-sm btn-secondary" v-on:click="addSection()">
+                <div class="btn btn-sm btn-secondary m-2" v-on:click="addSection()">
                     <i class="fa fa-plus"></i> Add section
                 </div>
                 <div class="btn btn-sm btn-secondary" v-on:click="openViewSettings()" style="float:right">
@@ -92,20 +91,20 @@
 
                 <nav class="navbar bg-dark" id="selectcontrolnav">
                     <ul class="navbar-nav">
-                        <li class="nav-item" v-for="comp in model.uiControls">
+                        <li class="nav-item" v-for="comp in model.uiControls" style="padding:5px">
                             <div class="text-light" v-bind:id="comp.code" draggable="true" v-on:dragstart="dragUI(event)"><i class="fas fa-dragon"></i> {{comp.title}}</div>
                         </li>
                     </ul>
                 </nav>
+
             </div>
 
             <div v-bind:class="componentDesignerClass()">
 
-                <div>
 
-                    <div class="row" v-for="sect in model.sections" v-if="!sect.isRemoved">
+                <div class="row" v-for="sect in model.sections">
 
-                        <div class="col-lg-12">
+                        <div class="col-lg-12" v-if="!sect.isRemoved">
 
                             <div class="accordion" v-bind:id="'accordion_'+sect.rowOrder">
                                 <div class="card">
@@ -117,41 +116,37 @@
                                             <span v-if="sect.collapsible" style="margin:10px">Start expanded <input type="checkbox" v-model="sect.startExpanded" /></span>
                                             <span style="margin:10px">Collapsible <input type="checkbox" v-model="sect.collapsible" /> </span>
                                             <span style="margin:10px">Don't render this <input type="checkbox" v-model="sect.excludeOnRender" /> </span>
-
                                         </div>
                                     </div>
 
                                     <div v-bind:id="'colapse'+sect.rowOrder" class="collapse show" v-bind:data-parent="'#accordion_'+sect.rowOrder">
                                         <div class="card-body">
 
-                                            <label><b>Choose Layout </b></label>
+                                            <label><b> Choose Layout </b></label>
                                             <input v-bind:id="'pnlcnt_1_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="1" v-on:change="layoutClassChanged(sect)" /> 1 Panel
                                             <input v-bind:id="'pnlcnt_2_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="2" v-on:change="layoutClassChanged(sect)" /> 2 Panel
                                             <input v-bind:id="'pnlcnt_3_'+sect.rowOrder" type="radio" v-bind:name="'panelcntname_'+sect.rowOrder" v-model.number="sect.layoutPanelCount" value="3" v-on:change="layoutClassChanged(sect)" /> 3 Panel
 
 
-
+                                            
                                             <div class="row">
-                                                <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels" v-if="!pnl.isRemoved">
-                                                    <div class="form-group">
-                                                        <label class="control-label">Panel Title (Optional)</label>
-                                                        <input type="text" class="form-control form-control-sm" v-model="pnl.title" />
-                                                    </div>
-                                                </div>
+                                                <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels">
+                                                     <div class="form-group" v-if="!pnl.isRemoved">
+                                                           <label class="control-label">Panel Title (Optional)</label>
+                                                           <input type="text" class="form-control form-control-sm" v-model="pnl.title" />
+                                                      </div>
+                                                 </div>
                                             </div>
-
-
 
 
                                             <div class="row" v-for="lrow in sect.layoutRows">
 
-                                                <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels" v-if="!pnl.isRemoved">
+                                                <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels">
 
-                                                    <div class="formpanel" v-for="input in lrow.userInputs" v-if="input.parentMetaCode===pnl.metaCode && !pnl.isRemoved && !input.isRemoved">
+                                                    <div class="formpanel" v-for="input in lrow.userInputs" v-if="!pnl.isRemoved">
 
-                                                        <div v-if="input.metaType==''" style="text-align:center; margin-top:40px">
-
-                                                          
+                                                <div v-if="input.metaType=='' && input.parentMetaCode===pnl.metaCode  && !input.isRemoved" style="text-align:center; margin-top:40px">
+              
                                                             <div class="p-12 bg-gray-30 border border-gray-90" v-on:drop="dropUI(event, input)" v-on:dragover="allowDropUI(event)">
                                                                 <label class="block cursor-pointer">
                                                                     <i>Drop component here.</i>
@@ -315,20 +310,18 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+               
 
 
                         </div>
                     </div>
+                
                 </div>
             </div>
         </div>
 
 
   
-
-
-
 
 
     <!-- SETTING MODAL-->
@@ -390,10 +383,11 @@
 
 
                             </div>
+                            <!--
                             <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
                                 <propertytool id="appvieprops" v-model:propobject="active_setting_input" v-bind:propcollection="propertyCollection"></propertytool>
                             </div>
-                           
+                           -->
                         </div>
 
 
@@ -411,11 +405,7 @@
 </div>
 
 @section Scripts
-        {
-
-
-
-
+{
 
     <script type="module">
 
@@ -432,15 +422,17 @@
         import { propertytool } from '../../../js/vuecomponents.js'
 
         const app = Vue.createApp({
-            data: function () {
-                return { model: {showComponents:false,sections:[]},
-                dbtables: [],
-                valuedomains: [],
-                listviewtable: {},
-                active_setting_input: {},
-                metaproperties: [],
-                propertyCollection:[],
-                idgenerator: 0 };
+            data: function () 
+            {
+                 return { model:{ showComponents:false,sections:[] },
+                    dbtables: [],
+                    valuedomains: [],
+                    listviewtable: {},
+                    active_setting_input: {},
+                    metaproperties: [],
+                    propertyCollection:[],
+                    idgenerator: 0 };
+                
             },
             methods:
             {
@@ -464,6 +456,9 @@
                 },
                 addLayoutRow: function (sect)
                 {
+                    if (!sect)
+                        return;
+
                     var new_row_order = 0;
                     if (sect.layoutRows.length > 0)
                         new_row_order = sect.layoutRows[(sect.layoutRows.length-1)].rowOrder + 1;
@@ -484,7 +479,7 @@
                     }
                     sect.layoutRows.push(row);
 
-                },
+                }, 
                 addSection: function ()
                 {
                     var new_section_order = 0;
@@ -493,7 +488,7 @@
                     else
                         new_section_order = 1;
 
-                    var sect = { id:0, rowOrder: new_section_order, columnOrder: 1, title: "-- Your title --", layoutPanelCount:2,  layoutPanels: [], layoutRows: [], collapsible:true,startExpanded:true };
+                    var sect = { id: 0, rowOrder: new_section_order, columnOrder: 1, title: "-- Your title --", layoutPanelCount: 2, layoutPanels: [], layoutRows: [], collapsible: true, startExpanded: true, isRemoved: false };
                     this.model.sections.push(sect);
                     this.layoutClassChanged(sect);
                     this.addLayoutRow(sect);
@@ -505,7 +500,8 @@
 
                     return [];
                 },
-                layoutClass: function (sect) {
+                layoutClass: function (sect) 
+                {
                     return {
                         'col-lg-12': sect.layoutPanelCount === 1,
                         'col-lg-6': sect.layoutPanelCount === 2,
@@ -732,6 +728,13 @@
                         return this.dbtables[0];
 
                     return {};
+                },
+                hasSections: function ()
+                {
+                    if (this.model.sections.length > 0)
+                        return true;
+
+                    return false;
                 }
                
 
