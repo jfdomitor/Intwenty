@@ -143,10 +143,11 @@
 
                                                 <div v-bind:class="layoutClass(sect)" v-for="pnl in sect.layoutPanels">
 
-                                                    <div class="formpanel" v-if="!pnl.isRemoved" v-for="input in lrow.userInputs">
+
+                                            <div class="formpanel" v-if="!pnl.isRemoved" v-for="input in validUserInputs(pnl,lrow)">
 
                                                         <div v-if="input.metaType=='' && input.parentMetaCode===pnl.metaCode && !input.isRemoved" style="text-align:center; margin-top:40px">
-                                                    <div class="p-12 bg-gray-30 border border-gray-90" v-on:drop="dropUI($event, input)" v-on:dragover="allowDropUI($event)">
+                                                            <div class="p-12 bg-gray-30 border border-gray-90" v-on:drop="dropUI($event, input)" v-on:dragover="allowDropUI($event)">
                                                                 <label class="block cursor-pointer">
                                                                     <i>Drop component here.</i>
                                                                 </label>
@@ -155,7 +156,7 @@
 
 
 
-                                                        <div v-bind:id="'uipnl_' + input.id" class="uipnl" v-if="input.metaType!=''">
+                                                        <div v-bind:id="'uipnl_' + input.id" class="uipnl" v-if="input.metaType!='' && input.parentMetaCode===pnl.metaCode">
 
                                                             <span class="fa fa-trash" v-on:click="removeUserInput(input)" style="margin:5px; cursor:pointer" title="Remove"></span>
                                                             <span class="fa fa-cog" v-on:click="openSettingsDlg(input)" style="margin:5px; cursor:pointer" title="Settings"></span>
@@ -300,8 +301,8 @@
 
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
+                                                </div>  <!--Col end -->
+                                            </div> <!--Row end -->
                                             <br />
                                             <div class="btn btn-sm btn-secondary" v-on:click="addLayoutRow(sect)">
                                                 <span class="fa fa-plus"></span> Add layout row
@@ -597,6 +598,16 @@
 
 
 
+                },
+                validUserInputs: function (panel, row) {
+                  
+                    var result = [];
+                    for (var i = 0; i < row.userInputs.length; i++)
+                        if (row.userInputs[i].parentMetaCode === panel.metaCode && !row.userInputs[i].isRemoved)
+                            result.push(row.userInputs[i]);
+
+
+                    return result;
                 },
                 SaveApplicationUI: function ()
                 {
