@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Configure database";
+    ViewData["ISVUE3"] = "TRUE";
 }
 
 @await Html.PartialAsync("_Modals")
@@ -41,13 +42,16 @@
 
 @section Scripts
     {
-    <script>
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                model: {isRunning: false},
-                resultlist: []
+    <script type="module">
+
+        import { propertytool } from '../../../js/vuecomponents.js'
+
+        const app = Vue.createApp({
+            data: function () {
+                return {
+                    model: { isRunning: false },  resultlist: []
+                };
             },
             methods:
             {
@@ -87,7 +91,9 @@
             {
 
             }
-        })
+      });
+
+        const mountedapp = app.mount("#app");
 
     </script>
 }
