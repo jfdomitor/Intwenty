@@ -50,19 +50,24 @@
   </ItemGroup>
 
   
-<ItemGroup Label="Packaging">
+   <ItemGroup Label="Packaging">
     <Content Include="Build\Intwenty.targets" PackagePath="build\Intwenty.targets" />
-</ItemGroup>
+   </ItemGroup>
 
-  
-<ItemGroup>
-  <Content Update="wwwroot\js\intwenty.js">
-    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-  </Content>
-</ItemGroup>
-
-  
+  <ItemGroup>
+    <Content Update="wwwroot\js\intwenty.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+	 <Content Update="wwwroot\js\intwenty2.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+	 <Content Update="wwwroot\js\vuecomponents.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
 
 

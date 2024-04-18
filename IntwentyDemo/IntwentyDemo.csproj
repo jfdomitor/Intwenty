@@ -26,12 +26,19 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\sqlite\" />
-    <Folder Include="wwwroot\sqlite\" />
     <Folder Include="wwwroot\USERDOC\" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="wwwroot\js\intwenty.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+	 <Content Update="wwwroot\js\intwenty2.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+	 <Content Update="wwwroot\js\vuecomponents.js">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
