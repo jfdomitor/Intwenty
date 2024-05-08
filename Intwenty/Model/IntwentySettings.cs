@@ -69,6 +69,18 @@ namespace Intwenty.Model
         public string IAMConnection { get; set; }
         public DBMS IAMConnectionDBMS { get; set; }
         public bool AllowBlazor { get; set; }
+        public bool AllowSignalR { get; set; }
+
+
+        #region Login Session
+        public int LoginMaxMinutes { get; set; }
+
+            public bool LoginAlwaysRemember { get; set; }
+
+            public bool LoginRequireCookieConsent{ get; set; }
+
+        #endregion
+
 
         #region Product
         public string ProductId { get; set; }

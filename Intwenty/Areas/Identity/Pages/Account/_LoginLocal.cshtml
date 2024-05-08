@@ -45,11 +45,14 @@
             <input id="local_password" type="password" v-model="model.password" class="form-control" />
             <span id="local_password_validation" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <div class="checkbox">
+        @if (!Settings.Value.LoginAlwaysRemember)
+        {
+            <div class="form-group">
+                <div class="checkbox">
                 <label><input type="checkbox" v-model="model.rememberMe" /> @Localizer["Remember Me"] ?</label>
             </div>
         </div>
+        }
     </form>
     <div class="form-group">
         <button type="button" class="btn btn-primary" v-on:click="localLogin()">@Localizer["Login"]</button>

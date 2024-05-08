@@ -424,6 +424,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
                 }
             }
 
+            if (_settings.Value.LoginAlwaysRemember)
+                model.RememberMe = true;
+
             var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
             if (result.Succeeded)
             {

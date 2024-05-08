@@ -141,75 +141,78 @@ namespace Intwenty.Controllers
 
             db.Close();
 
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test1ORMCreateTable());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test2ORMInsert());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test3ORMUpdate());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test4ORMDelete());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test5NotUsed());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test6CreateIntwentyStandardModel());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test7CreateIntwentyStandardApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test8GetListOfIntwentyStandardApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test9GetListOfIntwentyStandardApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test11UpdateIntwentyStandardApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test111GetTypedApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test12DeleteIntwentyApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test13GetAllValueDomains());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test14GetDataSet());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test15Transactions());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test17GetLists());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test18TestIdentity());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test30CreateIntwentySimpleModel());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test32CreateIntwentySimpleApplication());
-            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test34GetListOfIntwentySimpleApplication());
-
-
-
-            //TEST ALL SUPPORTED DB
-            if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlite))
+            if (_settings.AllowSignalR)
             {
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test100SqliteInsertPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test101SqliteGetJSONArrayPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test102SqliteGetEntitiesPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test103SqliteGetResultSetPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test104SqliteGetDataTablePerformance());
-            }
 
-            if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlServer))
-            {
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test200SqlServerInsertPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test201SqlServerGetJSONArrayPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test202SqlServerGetEntitiesPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test203SqlServerGetResultSetPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test204SqlServerGetDataTablePerformance());
-            }
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test1ORMCreateTable());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test2ORMInsert());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test3ORMUpdate());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test4ORMDelete());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test5NotUsed());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test6CreateIntwentyStandardModel());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test7CreateIntwentyStandardApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test8GetListOfIntwentyStandardApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test9GetListOfIntwentyStandardApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test11UpdateIntwentyStandardApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test111GetTypedApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test12DeleteIntwentyApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test13GetAllValueDomains());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test14GetDataSet());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test15Transactions());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test17GetLists());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test18TestIdentity());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test30CreateIntwentySimpleModel());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test32CreateIntwentySimpleApplication());
+                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test34GetListOfIntwentySimpleApplication());
 
-            if (!string.IsNullOrEmpty(_settings.TestDbConnectionMariaDb))
-            {
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test300MariaDbInsertPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test301MariaDbGetJSONArrayPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test302MariaDbGetEntitiesPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test303MariaDbGetResultSetPerformance());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test304MariaDbGetDataTablePerformance());
-            }
 
-            if (!string.IsNullOrEmpty(_settings.TestDbConnectionPostgres))
-            {
-                int expected = 5000;
-                for (int i = 0; i < 5; i++)
+
+                //TEST ALL SUPPORTED DB
+                if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlite))
                 {
-                    if (i == 0)
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(true));
-                    else
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(false));
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test100SqliteInsertPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test101SqliteGetJSONArrayPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test102SqliteGetEntitiesPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test103SqliteGetResultSetPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test104SqliteGetDataTablePerformance());
+                }
 
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test401PostgresGetJSONArrayPerformance(expected));
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test402PostgresGetEntitiesPerformance(expected));
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test403PostgresGetResultSetPerformance(expected));
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test404PostgresGetDataTablePerformance(expected));
-                    expected += 5000;
+                if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlServer))
+                {
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test200SqlServerInsertPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test201SqlServerGetJSONArrayPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test202SqlServerGetEntitiesPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test203SqlServerGetResultSetPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test204SqlServerGetDataTablePerformance());
+                }
+
+                if (!string.IsNullOrEmpty(_settings.TestDbConnectionMariaDb))
+                {
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test300MariaDbInsertPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test301MariaDbGetJSONArrayPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test302MariaDbGetEntitiesPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test303MariaDbGetResultSetPerformance());
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test304MariaDbGetDataTablePerformance());
+                }
+
+                if (!string.IsNullOrEmpty(_settings.TestDbConnectionPostgres))
+                {
+                    int expected = 5000;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (i == 0)
+                            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(true));
+                        else
+                            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(false));
+
+                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test401PostgresGetJSONArrayPerformance(expected));
+                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test402PostgresGetEntitiesPerformance(expected));
+                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test403PostgresGetResultSetPerformance(expected));
+                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test404PostgresGetDataTablePerformance(expected));
+                        expected += 5000;
+                    }
                 }
             }
-
 
             return new JsonResult(res);
 

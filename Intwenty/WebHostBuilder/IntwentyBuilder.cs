@@ -51,15 +51,24 @@ namespace Intwenty.WebHostBuilder
        public static void AddIntwenty<TIntwentyDataService,TIntwentyEventService,TInwentySeeder,TIntwentyModelService>(this IServiceCollection services, IConfiguration configuration) 
                            where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
         {
-            services.AddSignalR();
-
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
 
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
+
+            if (settings.AllowSignalR)
+            {
+                services.AddSignalR();
+            }
+
+            if (settings.LoginRequireCookieConsent)
+            {
+                services.Configure<CookiePolicyOptions>(options =>
+                {
+                    options.CheckConsentNeeded = context => true;
+                    options.MinimumSameSitePolicy = SameSiteMode.None;
+
+                });
+            }
+         
 
             if (string.IsNullOrEmpty(settings.DefaultConnection))
                 throw new InvalidOperationException("Could not find default database connection in setting file");
@@ -114,9 +123,6 @@ namespace Intwenty.WebHostBuilder
 
                 options.User.RequireUniqueEmail = true;
 
-                
-                
-
             })
              .AddRoles<IntwentyProductAuthorizationItem>()
              .AddUserStore<IntwentyUserStore>()
@@ -126,16 +132,16 @@ namespace Intwenty.WebHostBuilder
              .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
              .AddDefaultTokenProviders();
 
-            //If remember me is clicked on sign in, the cookiw will be valid 14 days, otherwise only the session
+            //If remember me is clicked on sign in, the cookie will be valid for ExpireTimeSpan, otherwise only the session
             services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.Cookie.Name = "IntwentyAuthCookie";
+                options.Cookie.Name = "AC_" + settings.ProductId;
                 options.Cookie.HttpOnly = true;
                 options.LoginPath = "/Identity/Account/Login";
                 options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
                 options.SlidingExpiration = true;
-                options.ExpireTimeSpan = TimeSpan.FromDays(365);
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                 
             });
 
@@ -310,7 +316,11 @@ namespace Intwenty.WebHostBuilder
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
 
             builder.UseHttpsRedirection();
-            builder.UseCookiePolicy();
+
+            if (settings.LoginRequireCookieConsent)
+            {
+                builder.UseCookiePolicy();
+            }
 
             builder.UseRouting();
 
