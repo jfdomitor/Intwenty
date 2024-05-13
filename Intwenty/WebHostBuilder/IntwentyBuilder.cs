@@ -31,9 +31,12 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Routing;
 using Intwenty.Helpers;
+using Microsoft.Extensions.Options;
 
 namespace Intwenty.WebHostBuilder
 {
+   
+
     public static class IntwentyBuilder
     {
         public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
@@ -104,7 +107,76 @@ namespace Intwenty.WebHostBuilder
                 options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
 
+
+            //Identity authentication start
+            //-------------------------------
+            
+            //Time service needed by identity
+            services.AddSingleton(TimeProvider.System);
+
+            //Http Context Accessor
+            services.AddHttpContextAccessor();
+
+            services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<IntwentyUser>>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
+            services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IntwentyUser>>();
+
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
+           .AddCookie(IdentityConstants.ApplicationScheme, options =>
+           {
+               options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+               options.Cookie.Name = "AC_" + settings.ProductId;
+               options.Cookie.HttpOnly = true;
+               options.LoginPath = "/Identity/Account/Login";
+               options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+               options.SlidingExpiration = true;
+               options.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               options.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               options.Events = new CookieAuthenticationEvents
+               {
+                   OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+               };
+           });
+
+
+            services.AddIdentityCore<IntwentyUser>(options =>
+            {
+
+                options.SignIn.RequireConfirmedAccount = settings.AccountsRequireConfirmed;
+
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 5;
+                options.Password.RequireNonAlphanumeric = false;
+
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+
+                options.User.RequireUniqueEmail = true;
+
+
+            })
+             .AddRoles<IntwentyProductAuthorizationItem>()
+             .AddUserStore<IntwentyUserStore>()
+             .AddRoleStore<IntwentyProductAuthorizationStore>()
+             .AddUserManager<IntwentyUserManager>()
+             .AddSignInManager<IntwentySignInManager>()
+             .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
+             .AddDefaultTokenProviders();
+
+
+
             //Required for Intwenty if Identity is used
+            /*
             services.AddIdentity<IntwentyUser, IntwentyProductAuthorizationItem>(options =>
             {
                 
@@ -131,6 +203,7 @@ namespace Intwenty.WebHostBuilder
              .AddSignInManager<IntwentySignInManager>()
              .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
              .AddDefaultTokenProviders();
+         
 
             //If remember me is clicked on sign in, the cookie will be valid for ExpireTimeSpan, otherwise only the session
             services.ConfigureApplicationCookie(options =>
@@ -142,29 +215,67 @@ namespace Intwenty.WebHostBuilder
                 options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                
-            });
 
+            });
+               */
 
 
             if (settings.UseExternalLogins && settings.UseFacebookLogin)
             {
-                services.AddAuthentication().AddFacebook(options =>
+                services.AddAuthentication()
+                .AddCookie(IdentityConstants.ExternalScheme, o =>
+                {
+                     o.Cookie.Name = IdentityConstants.ExternalScheme;
+                     o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                     o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                })
+                .AddFacebook(options =>
                 {
                     options.AppId = settings.AccountsFacebookAppId;
                     options.AppSecret = settings.AccountsFacebookAppSecret;
 
-                });
+                 });
             }
 
             if (settings.UseExternalLogins && settings.UseGoogleLogin)
             {
-                services.AddAuthentication().AddGoogle(options =>
+                services.AddAuthentication()
+                 .AddCookie(IdentityConstants.ExternalScheme, o =>
+                 {
+                     o.Cookie.Name = IdentityConstants.ExternalScheme;
+                     o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                     o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                 })
+                .AddGoogle(options =>
                 {
                     options.ClientId = settings.AccountsGoogleClientId;
                     options.ClientSecret = settings.AccountsGoogleClientSecret;
 
                 });
+            }
+
+            if (settings.TwoFactorEnable)
+            {
+                services.AddAuthentication()
+                .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+                {
+                    o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
+                    o.Events = new CookieAuthenticationEvents
+                    {
+                       OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
+                    };
+                })
+               .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
+               {
+                   o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+                   o.Events = new CookieAuthenticationEvents
+                   {
+                       OnRedirectToReturnUrl = _ => Task.CompletedTask
+                   };
+                   o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                   o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               });
+
             }
 
             if (settings.UseFrejaEIdLogin)
@@ -599,7 +710,20 @@ namespace Intwenty.WebHostBuilder
 
         }
 
-      
+        private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
+        {
+            public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+            {
+                TimeProvider = timeProvider;
+            }
+
+            private TimeProvider TimeProvider { get; }
+
+            public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+            {
+                options.TimeProvider ??= TimeProvider;
+            }
+        }
 
 
     }
