@@ -50,7 +50,7 @@ namespace IntwentyDemo
 
                         var configuration = buildercontext.Configuration;
                         var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                       
+
 
                         //****** Required ******
                         //Plug in your own communication service that implements IIntwentyEmailService and IIntwentySmsService
@@ -63,7 +63,7 @@ namespace IntwentyDemo
                         //****** Required ******
                         //Add intwenty 
                         //Here's where you plug in your own code in intwenty, by overriding esential services.
-                        services.AddIntwenty<CustomDataService, CustomEventService, DemoSeeder,CustomModelService>(configuration);
+                        services.AddIntwenty<CustomDataService, CustomEventService, DemoSeeder, CustomModelService>(configuration);
                         //Default services
                         //services.AddIntwenty<IntwentyDataService, EventService>(configuration);
 
@@ -109,9 +109,9 @@ namespace IntwentyDemo
                         //Services,routing,endpoints,localization,data seeding and more....
                         app.UseIntwenty();
 
-                       
+
                     });
-                });
+                });//UseDefaultServiceProvider(options => options.ValidateScopes = false);
 
         }
         /*
