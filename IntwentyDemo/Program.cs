@@ -111,7 +111,13 @@ namespace IntwentyDemo
 
 
                     });
-                });//UseDefaultServiceProvider(options => options.ValidateScopes = false);
+                })
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateScopes = false;
+                    options.ValidateOnBuild = true;
+                   
+                 });
 
         }
         /*

@@ -145,33 +145,6 @@ namespace Intwenty.WebHostBuilder
            });
 
 
-            //services.AddOptions().AddLogging();
-            //services.TryAddScoped<IUserValidator<IntwentyUser>, UserValidator<IntwentyUser>>();
-            //services.TryAddScoped<IPasswordValidator<IntwentyUser>, PasswordValidator<IntwentyUser>>();
-            //services.TryAddScoped<IPasswordHasher<IntwentyUser>, PasswordHasher<IntwentyUser>>();
-            //services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
-            //services.TryAddScoped<IUserConfirmation<IntwentyUser>, DefaultUserConfirmation<IntwentyUser>>();
-            //services.TryAddScoped<IdentityErrorDescriber>();
-            //services.TryAddScoped<IUserClaimsPrincipalFactory<IntwentyUser>, UserClaimsPrincipalFactory<IntwentyUser>>();
-            //var identity_options = Action<IdentityOptions>;
-            //identity_options.SignIn.RequireConfirmedAccount = settings.AccountsRequireConfirmed;
-
-            //options.Password.RequireDigit = false;
-            //options.Password.RequireLowercase = false;
-            //options.Password.RequireUppercase = false;
-            //options.Password.RequireDigit = false;
-            //options.Password.RequiredLength = 5;
-            //options.Password.RequireNonAlphanumeric = false;
-
-            //options.Lockout.AllowedForNewUsers = true;
-            //options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-            //options.Lockout.MaxFailedAccessAttempts = 5;
-
-            //options.User.RequireUniqueEmail = true;
-
-
-
-
             services.AddIdentityCore<IntwentyUser>(options =>
             {
 
@@ -416,6 +389,7 @@ namespace Intwenty.WebHostBuilder
             {
                 services.AddSwaggerGen(options =>
                 {
+         
                     options.DocumentFilter<APIDocumentFilter>();
                     options.AddSecurityDefinition("API-Key", new OpenApiSecurityScheme
                     {
