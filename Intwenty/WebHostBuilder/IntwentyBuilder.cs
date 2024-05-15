@@ -126,6 +126,7 @@ namespace Intwenty.WebHostBuilder
                 o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+
             })
            .AddCookie(IdentityConstants.ApplicationScheme, o =>
            {
