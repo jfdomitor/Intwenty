@@ -97,7 +97,6 @@ namespace Intwenty.WebHostBuilder
             services.TryAddTransient<IIntwentySeeder, TInwentySeeder>();
 
 
-
             //Required for Intwenty services to work correctly
             services.AddControllersWithViews().AddJsonOptions(options =>
             {
@@ -122,27 +121,56 @@ namespace Intwenty.WebHostBuilder
             services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IntwentyUser>>();
 
 
-            services.AddAuthentication(options =>
+            services.AddAuthentication(o =>
             {
-                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
-           .AddCookie(IdentityConstants.ApplicationScheme, options =>
+           .AddCookie(IdentityConstants.ApplicationScheme, o =>
            {
-               options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-               options.Cookie.Name = "AC_" + settings.ProductId;
-               options.Cookie.HttpOnly = true;
-               options.LoginPath = "/Identity/Account/Login";
-               options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-               options.SlidingExpiration = true;
-               options.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-               options.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-               options.Events = new CookieAuthenticationEvents
+               o.AccessDeniedPath = "/Identity/Account/AccessDenied";
+               o.Cookie.Name = "AC_" + settings.ProductId;
+               o.Cookie.HttpOnly = true;
+               o.LoginPath = "/Identity/Account/Login";
+               o.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+               o.SlidingExpiration = true;
+               o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               o.Events = new CookieAuthenticationEvents
                {
                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                };
-           });
+           })
+           .AddCookie(IdentityConstants.ExternalScheme, o =>
+            {
+                o.Cookie.Name = IdentityConstants.ExternalScheme;
+                o.SlidingExpiration = true;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+           })
+           .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+            {
+                o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
+                };
+                o.SlidingExpiration = true;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+            })
+            .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
+            {
+                   o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+                   o.Events = new CookieAuthenticationEvents
+                   {
+                       OnRedirectToReturnUrl = _ => Task.CompletedTask
+                   };
+                   o.SlidingExpiration = true;
+                   o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                   o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+             });
 
 
             services.AddIdentityCore<IntwentyUser>(options =>
@@ -175,60 +203,9 @@ namespace Intwenty.WebHostBuilder
 
 
 
-            //Required for Intwenty if Identity is used
-            /*
-            services.AddIdentity<IntwentyUser, IntwentyProductAuthorizationItem>(options =>
-            {
-                
-                options.SignIn.RequireConfirmedAccount = settings.AccountsRequireConfirmed;
-
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 5;
-                options.Password.RequireNonAlphanumeric = false;
-
-                options.Lockout.AllowedForNewUsers = true;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-                options.Lockout.MaxFailedAccessAttempts = 5;
-
-                options.User.RequireUniqueEmail = true;
-
-            })
-             .AddRoles<IntwentyProductAuthorizationItem>()
-             .AddUserStore<IntwentyUserStore>()
-             .AddRoleStore<IntwentyProductAuthorizationStore>()
-             .AddUserManager<IntwentyUserManager>()
-             .AddSignInManager<IntwentySignInManager>()
-             .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
-             .AddDefaultTokenProviders();
-         
-
-            //If remember me is clicked on sign in, the cookie will be valid for ExpireTimeSpan, otherwise only the session
-            services.ConfigureApplicationCookie(options =>
-            {
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.Cookie.Name = "AC_" + settings.ProductId;
-                options.Cookie.HttpOnly = true;
-                options.LoginPath = "/Identity/Account/Login";
-                options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-                options.SlidingExpiration = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-
-            });
-               */
-
-
             if (settings.UseExternalLogins && settings.UseFacebookLogin)
             {
                 services.AddAuthentication()
-                .AddCookie(IdentityConstants.ExternalScheme, o =>
-                {
-                     o.Cookie.Name = IdentityConstants.ExternalScheme;
-                     o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                     o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                })
                 .AddFacebook(options =>
                 {
                     options.AppId = settings.AccountsFacebookAppId;
@@ -240,12 +217,6 @@ namespace Intwenty.WebHostBuilder
             if (settings.UseExternalLogins && settings.UseGoogleLogin)
             {
                 services.AddAuthentication()
-                 .AddCookie(IdentityConstants.ExternalScheme, o =>
-                 {
-                     o.Cookie.Name = IdentityConstants.ExternalScheme;
-                     o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                     o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                 })
                 .AddGoogle(options =>
                 {
                     options.ClientId = settings.AccountsGoogleClientId;
@@ -254,29 +225,6 @@ namespace Intwenty.WebHostBuilder
                 });
             }
 
-            if (settings.TwoFactorEnable)
-            {
-                services.AddAuthentication()
-                .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
-                {
-                    o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
-                    o.Events = new CookieAuthenticationEvents
-                    {
-                       OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
-                    };
-                })
-               .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
-               {
-                   o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
-                   o.Events = new CookieAuthenticationEvents
-                   {
-                       OnRedirectToReturnUrl = _ => Task.CompletedTask
-                   };
-                   o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-                   o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-               });
-
-            }
 
             if (settings.UseFrejaEIdLogin)
             {

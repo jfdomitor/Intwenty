@@ -111,14 +111,17 @@ namespace IntwentyDemo
 
 
                     });
-                })
+                });
+                
+            /*
+                WARNING: Use to turn of dependency injection validation
                 .UseDefaultServiceProvider(options =>
                 {
                     options.ValidateScopes = false;
                     options.ValidateOnBuild = true;
                    
                  });
-
+            */
         }
         /*
         private void OnShutdown()

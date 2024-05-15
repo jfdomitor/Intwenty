@@ -155,7 +155,7 @@ namespace IntwentyDemo.Services
 
                     client.RunCommand(string.Format("update wms_customer set customerstatus='ACTIVE' where customerid='{0}'", customerid));
 
-                    var customer = client.GetResultSet(string.Format("select * from customer where customerid='{0}'", customerid));
+                    var customer = client.GetResultSet(string.Format("select * from wms_customer where customerid='{0}'", customerid));
 
                     RemoveFromApplicationCache(10, customer.FirstRowGetAsInt("Id").Value);
 

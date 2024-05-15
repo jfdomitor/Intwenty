@@ -1,6 +1,7 @@
 ﻿using Intwenty.Helpers;
 using Intwenty.Interface;
 using Intwenty.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -19,9 +20,13 @@ namespace Intwenty.WebHostBuilder
 
         private readonly IIntwentyModelService _modelservice;
 
-        public APIDocumentFilter(IIntwentyModelService ms)
+        public APIDocumentFilter(IServiceScopeFactory serviceScopeFactory)
         {
-            _modelservice = ms;
+            using IServiceScope scope = serviceScopeFactory.CreateScope();
+
+            var t = scope.ServiceProvider.GetRequiredService<IIntwentyModelService>();
+
+            _modelservice = t;
         }
 
 

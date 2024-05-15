@@ -14,9 +14,9 @@
  
   <ItemGroup>
     <PackageReference Include="ASPSMS" Version="0.0.2" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.8.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.8" />
-    <PackageReference Include="Twilio" Version="5.58.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
+    <PackageReference Include="Twilio" Version="7.0.5" />
   </ItemGroup>
 
 
