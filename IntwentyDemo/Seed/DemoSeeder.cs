@@ -454,7 +454,7 @@ namespace IntwentyDemo.Seed
 
             #endregion
 
-            #region Blazor
+            #region Vue3
 
             //DATABASE - MAINTABLE
             dbitems.Add(new DatabaseItem() { SystemMetaCode = "VUE3TEST", AppMetaCode = "VUE3TESTAPP", MetaType = "DATACOLUMN", MetaCode = "VUE3DATA", DbName = "Vue3Data", ParentMetaCode = "ROOT", DataType = "STRING", Properties = "" });
@@ -466,7 +466,7 @@ namespace IntwentyDemo.Seed
             #endregion
 
 
-            #region Vue3
+            #region Blazor
 
             //DATABASE - MAINTABLE
             dbitems.Add(new DatabaseItem() { SystemMetaCode = "BLAZOR", AppMetaCode = "BLAZORTESTAPP", MetaType = "DATACOLUMN", MetaCode = "BLAZORDATA", DbName = "BlazorData", ParentMetaCode = "ROOT", DataType = "STRING", Properties = "" });
