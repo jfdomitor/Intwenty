@@ -133,7 +133,6 @@ namespace Intwenty.WebHostBuilder
            {
                o.AccessDeniedPath = "/Identity/Account/AccessDenied";
                o.Cookie.Name = "AC_" + settings.ProductId;
-               o.Cookie.HttpOnly = true;
                o.LoginPath = "/Identity/Account/Login";
                o.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
                o.SlidingExpiration = true;
