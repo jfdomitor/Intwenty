@@ -4,6 +4,7 @@
     var ishomepath = string.IsNullOrEmpty(currentpath) || currentpath.Length < 5 || currentpath.Contains("Home/Index");
     var isblazorview = false;
     var isvue3 = false;
+    var useragent = "";
     if (Settings.Value.AllowBlazor && ViewData["ISBLAZORVIEW"] != null && (string)ViewData["ISBLAZORVIEW"] == "TRUE")
     {
         isblazorview = true;
@@ -12,6 +13,13 @@
     {
         isvue3 = true;
     }
+
+    if (Context.Request.Headers.ContainsKey("User-Agent"))
+    {
+        useragent = Context.Request.Headers["User-Agent"];
+    }
+   
+  
 }
 
 <!DOCTYPE html>
@@ -54,7 +62,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarText">
 
-                    <ul class="nav navbar-nav mr-auto">
+                    <ul class="nav navbar-nav me-auto">
 
                         @if (User.Identity.IsAuthenticated)
                         {
@@ -105,7 +113,8 @@
         {
             <hr />
             <footer>
-                <p>&copy; @Localizer["COPYRIGHT"]</p>
+                <p>&copy; @Localizer["COPYRIGHT"] Mobile Device: @DeviceDetector.IsMobileDeviceBrowser(useragent)</p>
+                <p>User Agent: @useragent</p>
             </footer>
             <br />
             <br />

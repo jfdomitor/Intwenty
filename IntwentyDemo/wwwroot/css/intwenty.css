@@ -1,10 +1,12 @@
 ﻿body {
   padding-top: 10px;
-  padding-bottom: 20px; }
+  padding-bottom: 20px;
+}
 
 .body-content {
   padding-left: 15px;
-  padding-right: 15px; }
+  padding-right: 15px;
+}
 
 .landingpage {
   background: url(../images/bg_leaf_1920.jpg) no-repeat center center fixed;
@@ -13,31 +15,72 @@
   -o-background-size: cover;
   background-size: cover;
   height: 100%;
-  color: black; }
+  color: black;
+}
 
 .modal {
-  color: black; }
+  color: black;
+}
 
 .requiredNotValid {
   border-color: red;
-  background: #FDD; }
+  background: #FDD;
+}
 
 /*Used in Intwenty Create / Edit Views */
 .intwentypanel {
   border: solid 0px #DDD !important;
-  padding: 10px; }
+  padding: 10px;
+}
 
 .largecheckbox {
   display: flex;
   align-items: initial;
-  margin-bottom: 10px; }
+  margin-bottom: 10px;
+}
 
 .largecheckbox input[type=checkbox] {
   zoom: 1.5;
   margin: 0px;
   line-height: normal;
-  align-self: center; }
+  align-self: center;
+}
 
 .largecheckbox label {
   font-weight: normal;
-  margin-left: 7px; }
+  margin-left: 7px;
+}
+
+.selectize-control {
+  padding: 0;
+}
+
+.selectize-input {
+  border: none;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -5px;
+  margin-left: -5px;
+}
+
+.form-row > .col {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+label {
+  margin-bottom: 0.5rem;
+}

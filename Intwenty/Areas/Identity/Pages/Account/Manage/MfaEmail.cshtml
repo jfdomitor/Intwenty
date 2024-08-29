@@ -12,19 +12,19 @@
 
     <div class="alert alert-primary" v-if="step==1">
         @Localizer["MFAEMALCODESENT"]
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-danger" v-if="errorVerifyEmail">
         @Localizer["MFANOTVERIFIED"] <a asp-page="./MfaEmail">@Localizer["clicking here"]</a>
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-success" v-if="step==2">
         @Localizer["Thank you. Two-factor authentication is now set up"]
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-danger" v-if="model.resultCode=='ERROR_NOEMAIL'">
         @Localizer["You must update your email first, do it by"] <a asp-page="./Index">@Localizer["clicking here"]</a>
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <div class="row">

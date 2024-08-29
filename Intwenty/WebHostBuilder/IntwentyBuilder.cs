@@ -32,11 +32,12 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Routing;
 using Intwenty.Helpers;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Intwenty.WebHostBuilder
 {
-   
 
+    
     public static class IntwentyBuilder
     {
         public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
@@ -138,7 +139,7 @@ namespace Intwenty.WebHostBuilder
                o.SlidingExpiration = true;
                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
-               o.Events = new CookieAuthenticationEvents
+               o.Events = new IntwentyCookieAuthEvents
                {
                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                };
@@ -482,7 +483,11 @@ namespace Intwenty.WebHostBuilder
                 }
 
                 endpoints.MapRazorPages();
-                endpoints.MapHub<Intwenty.PushData.ServerToClientPush>("/serverhub");
+
+                if (settings.AllowSignalR)
+                {
+                    endpoints.MapHub<Intwenty.PushData.ServerToClientPush>("/serverhub");
+                }
                 if (settings.AllowBlazor)
                 {
                     endpoints.MapBlazorHub();

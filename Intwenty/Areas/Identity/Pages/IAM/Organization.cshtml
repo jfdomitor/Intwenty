@@ -35,27 +35,19 @@
 
     <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
         <strong>Changes have been saved !</strong><br />
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-danger fade show" role="alert" v-if="resultCode=='UNEXPECTED_ERROR'">
         An error occured !
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-danger fade show" role="alert" v-if="resultCode=='MEMBER_HAS_PRODUCT_IN_OTHER_ORG'">
         User cant be added to this organization since it has a product that is used in another organization where the user is a member
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <div class="alert alert-danger fade show" role="alert" v-if="resultCode=='PRODUCT_HAS_SAME_USER_IN_OTHER_ORG'">
         Product cant be added since it has members that is members in other organizations that use the same product
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <br />
