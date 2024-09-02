@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Intwenty.WebHostBuilder
 {
@@ -56,8 +58,7 @@ namespace Intwenty.WebHostBuilder
             await base.ValidatePrincipal(context);
         }
 
-
-
-
     }
+
+   
 }

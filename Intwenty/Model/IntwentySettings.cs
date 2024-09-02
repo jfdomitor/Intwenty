@@ -70,6 +70,7 @@ namespace Intwenty.Model
         public DBMS IAMConnectionDBMS { get; set; }
         public bool AllowBlazor { get; set; }
         public bool AllowSignalR { get; set; }
+        public bool UsePlainTextCookies { get; set; }
 
 
         #region Login Session
@@ -78,6 +79,7 @@ namespace Intwenty.Model
             public bool LoginAlwaysRemember { get; set; }
 
             public bool LoginRequireCookieConsent{ get; set; }
+
 
         #endregion
 

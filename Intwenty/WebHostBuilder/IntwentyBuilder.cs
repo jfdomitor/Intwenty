@@ -33,11 +33,29 @@ using Microsoft.AspNetCore.Routing;
 using Intwenty.Helpers;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Intwenty.WebHostBuilder
 {
 
-    
+    public class MyDataProtector : IDataProtector
+    {
+        public IDataProtector CreateProtector(string purpose)
+        {
+            return new MyDataProtector();
+        }
+
+        public byte[] Protect(byte[] plaintext)
+        {
+            return plaintext;
+        }
+
+        public byte[] Unprotect(byte[] protectedData)
+        {
+            return protectedData;
+        }
+    }
+
     public static class IntwentyBuilder
     {
         public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
@@ -127,26 +145,31 @@ namespace Intwenty.WebHostBuilder
                 o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-
+                
             })
            .AddCookie(IdentityConstants.ApplicationScheme, o =>
            {
                o.AccessDeniedPath = "/Identity/Account/AccessDenied";
-               o.Cookie.Name = "AC_" + settings.ProductId;
+               o.Cookie.Name = "AC_" + settings.ProductId; //IdentityConstants.ApplicationScheme; 
                o.LoginPath = "/Identity/Account/Login";
                o.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-               o.SlidingExpiration = true;
+               //o.SlidingExpiration = true;
                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                o.Events = new IntwentyCookieAuthEvents
                {
                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+                  
                };
+               
+               //Removes cookie security
+               if (settings.UsePlainTextCookies) 
+                   o.DataProtectionProvider = new MyDataProtector();
            })
            .AddCookie(IdentityConstants.ExternalScheme, o =>
             {
                 o.Cookie.Name = IdentityConstants.ExternalScheme;
-                o.SlidingExpiration = true;
+                //o.SlidingExpiration = true;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                 o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
            })
@@ -157,7 +180,7 @@ namespace Intwenty.WebHostBuilder
                 {
                     OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
                 };
-                o.SlidingExpiration = true;
+                //o.SlidingExpiration = true;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                 o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
             })
@@ -168,7 +191,7 @@ namespace Intwenty.WebHostBuilder
                    {
                        OnRedirectToReturnUrl = _ => Task.CompletedTask
                    };
-                   o.SlidingExpiration = true;
+                   //o.SlidingExpiration = true;
                    o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                    o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
              });
@@ -193,6 +216,7 @@ namespace Intwenty.WebHostBuilder
                 options.User.RequireUniqueEmail = true;
 
 
+
             })
              .AddRoles<IntwentyProductAuthorizationItem>()
              .AddUserStore<IntwentyUserStore>()
@@ -203,6 +227,7 @@ namespace Intwenty.WebHostBuilder
              .AddDefaultTokenProviders();
 
 
+            //services.Configure<SecurityStampValidatorOptions>(o => o.ValidationInterval = TimeSpan.FromMinutes(settings.LoginMaxMinutes));
 
             if (settings.UseExternalLogins && settings.UseFacebookLogin)
             {

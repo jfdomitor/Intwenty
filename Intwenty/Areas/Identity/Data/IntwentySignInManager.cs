@@ -81,11 +81,33 @@ namespace Intwenty.Areas.Identity.Data
             if (!await OrganizationManager.IsProductUser(Settings.ProductId, user))
                 return SignInResult.NotAllowed;
 
+            
             var result = await base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
             if (result.Succeeded)
                 ModelRepository.CreateTenantIsolatedTables(user);
 
             return result;
+        }
+
+        public override async Task SignInWithClaimsAsync(IntwentyUser user, AuthenticationProperties authenticationProperties, IEnumerable<Claim> additionalClaims)
+        {
+            if (authenticationProperties != null)
+            {
+                if (authenticationProperties.IsPersistent)
+                    authenticationProperties.ExpiresUtc = DateTimeOffset.Now.AddMinutes(Settings.LoginMaxMinutes);
+            }
+
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
+            }
+            await Context.SignInAsync(AuthenticationScheme,
+                userPrincipal,
+                authenticationProperties ?? new AuthenticationProperties());
+
+            // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+            Context.User = userPrincipal;
         }
 
         public async Task<SignInResult> SignInFrejaId(IntwentyUser user, string authref)
