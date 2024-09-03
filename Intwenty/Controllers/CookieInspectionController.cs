@@ -30,7 +30,6 @@ namespace Intwenty.Controllers
     [Authorize(Policy = "IntwentyAppAuthorizationPolicy")]
     public class CookiesController : Controller
     {
-        private readonly TicketDataFormat _ticketDataFormat;
 
         public CookiesController(IDataProtectionProvider provider)
         {

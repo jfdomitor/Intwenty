@@ -130,7 +130,7 @@ namespace Intwenty.WebHostBuilder
                 3. IntwentySecurityStampValidator.ValidateAsync
                 --- IF TIME ELAPSED SEE PostConfigureSecurityStampValidatorOptions (In this file) --
                 4. IntwentySecurityStampValidator.VerifySecurityStamp
-                5. IntwentySignInManager.ValidateSecurityStampAsync (The comparrison of security stamps)
+                5. IntwentySignInManager.ValidateSecurityStampAsync (The comparrison of security stamps) (Return true if SecurityStamp were turned of in settings)
                 6. IntwentySignInManager.VerifySecurityStampAsync
                 7. IntwentySecurityStampValidator.SecurityStampVerified
               
@@ -163,6 +163,8 @@ namespace Intwenty.WebHostBuilder
                if (settings.UsePlainTextCookies) 
                    o.DataProtectionProvider = new IntwentyDataProtector();
 
+               //If cookie info should be stored in another data source
+               //o.SessionStore = new IntwentyCookieStore();
                
                
            })

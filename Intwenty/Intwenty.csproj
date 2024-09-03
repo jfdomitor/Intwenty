@@ -5,7 +5,7 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>2.0.3</Version>
+    <Version>2.0.4</Version>
     <Authors>Johan Filipsson</Authors>
     <Company>Domitor Consulting AB</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,9 +19,9 @@
     <Description>Create metadata driven applications with vue.js and Net 8. Use this package with visual studio 2022 or later. See https://github.com/Domitor/Intwenty for instructions about using this package.</Description>
     <EnableDefaultContentItems>true</EnableDefaultContentItems>
     <PackageReleaseNotes>Update to .Net 8 and Vue 3</PackageReleaseNotes>
-    <AssemblyVersion>2.0.0.3</AssemblyVersion>
-    <FileVersion>2.0.0.3</FileVersion>
-    <PackageReadmeFile></PackageReadmeFile>
+    <AssemblyVersion>2.0.0.4</AssemblyVersion>
+    <FileVersion>2.0.0.4</FileVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,6 +67,13 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 
