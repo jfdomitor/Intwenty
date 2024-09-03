@@ -48,6 +48,7 @@ namespace Intwenty.Controllers
                 foreach (KeyValuePair<string,string> cookie in reqCookies.ToArray())
                     result+=cookie.Key + ": " + cookie.Value + "\n";
 
+
                 return Content(result, "text/plain");
             }
 

@@ -71,14 +71,16 @@ namespace Intwenty.Model
         public bool AllowBlazor { get; set; }
         public bool AllowSignalR { get; set; }
         public bool UsePlainTextCookies { get; set; }
+        public bool UseSecurityStampValidation { get; set; }
+        public int SecurityStampValidationIntervalMinutes { get; set; }
 
 
         #region Login Session
         public int LoginMaxMinutes { get; set; }
 
-            public bool LoginAlwaysRemember { get; set; }
+        public bool LoginAlwaysRemember { get; set; }
 
-            public bool LoginRequireCookieConsent{ get; set; }
+        public bool LoginRequireCookieConsent{ get; set; }
 
 
         #endregion

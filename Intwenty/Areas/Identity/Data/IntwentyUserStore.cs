@@ -3,8 +3,10 @@ using Intwenty.Areas.Identity.Models;
 using Intwenty.Areas.Identity.Pages.Account;
 using Intwenty.DataClient;
 using Intwenty.Model;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -841,7 +843,7 @@ namespace Intwenty.Areas.Identity.Data
             return Task.FromResult(query);
         }
 
-        public Task<string> GetSecurityStampAsync(IntwentyUser user, CancellationToken cancellationToken)
+        public async Task<string> GetSecurityStampAsync(IntwentyUser user, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -849,7 +851,8 @@ namespace Intwenty.Areas.Identity.Data
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return Task.FromResult(user.SecurityStamp);
+            
+            return await Task.FromResult(user.SecurityStamp);
         }
 
         public Task SetSecurityStampAsync(IntwentyUser user, string stamp, CancellationToken cancellationToken)
@@ -867,5 +870,7 @@ namespace Intwenty.Areas.Identity.Data
             user.SecurityStamp = stamp;
             return Task.CompletedTask;
         }
+
+
     }
 }

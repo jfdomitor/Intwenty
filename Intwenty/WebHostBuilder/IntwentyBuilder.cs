@@ -38,23 +38,7 @@ using Microsoft.AspNetCore.DataProtection;
 namespace Intwenty.WebHostBuilder
 {
 
-    public class MyDataProtector : IDataProtector
-    {
-        public IDataProtector CreateProtector(string purpose)
-        {
-            return new MyDataProtector();
-        }
-
-        public byte[] Protect(byte[] plaintext)
-        {
-            return plaintext;
-        }
-
-        public byte[] Unprotect(byte[] protectedData)
-        {
-            return protectedData;
-        }
-    }
+   
 
     public static class IntwentyBuilder
     {
@@ -135,16 +119,29 @@ namespace Intwenty.WebHostBuilder
             //Http Context Accessor
             services.AddHttpContextAccessor();
 
-            services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<IntwentyUser>>();
+            services.TryAddScoped<IIntwentySecurityStampValidator, IntwentySecurityStampValidator>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
             services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IntwentyUser>>();
 
+            /*
+                Cookie Validation
+                1. On evry call to the server: IntwentyCookieAuthEvents.ValidatePrincipal
+                2. IntwentySecurityStampVerifyer.ValidateAsync
+                3. IntwentySecurityStampValidator.ValidateAsync
+                --- IF TIME ELAPSED SEE PostConfigureSecurityStampValidatorOptions (In this file) --
+                4. IntwentySecurityStampValidator.VerifySecurityStamp
+                5. IntwentySignInManager.ValidateSecurityStampAsync (The comparrison of security stamps)
+                6. IntwentySignInManager.VerifySecurityStampAsync
+                7. IntwentySecurityStampValidator.SecurityStampVerified
+              
+             */
 
             services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                
                 
             })
            .AddCookie(IdentityConstants.ApplicationScheme, o =>
@@ -158,13 +155,16 @@ namespace Intwenty.WebHostBuilder
                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
                o.Events = new IntwentyCookieAuthEvents
                {
-                   OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+                   OnValidatePrincipal = IntwentySecurityStampVerifyer.ValidatePrincipalAsync
                   
                };
                
                //Removes cookie security
                if (settings.UsePlainTextCookies) 
-                   o.DataProtectionProvider = new MyDataProtector();
+                   o.DataProtectionProvider = new IntwentyDataProtector();
+
+               
+               
            })
            .AddCookie(IdentityConstants.ExternalScheme, o =>
             {
@@ -215,7 +215,7 @@ namespace Intwenty.WebHostBuilder
 
                 options.User.RequireUniqueEmail = true;
 
-
+                
 
             })
              .AddRoles<IntwentyProductAuthorizationItem>()
@@ -225,9 +225,6 @@ namespace Intwenty.WebHostBuilder
              .AddSignInManager<IntwentySignInManager>()
              .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
              .AddDefaultTokenProviders();
-
-
-            //services.Configure<SecurityStampValidatorOptions>(o => o.ValidationInterval = TimeSpan.FromMinutes(settings.LoginMaxMinutes));
 
             if (settings.UseExternalLogins && settings.UseFacebookLogin)
             {
@@ -691,16 +688,20 @@ namespace Intwenty.WebHostBuilder
 
         private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
         {
-            public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+            public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider, IOptions<IntwentySettings> settings)
             {
                 TimeProvider = timeProvider;
+                Settings = settings.Value;
             }
 
             private TimeProvider TimeProvider { get; }
 
+            private IntwentySettings Settings { get; }
+
             public void PostConfigure(string? name, SecurityStampValidatorOptions options)
             {
                 options.TimeProvider ??= TimeProvider;
+                options.ValidationInterval = TimeSpan.FromMinutes(Settings.SecurityStampValidationIntervalMinutes);
             }
         }
 

@@ -187,9 +187,47 @@ namespace Intwenty.Areas.Identity.Data
             return base.IsSignedIn(principal);
         }
 
+        public override async Task<IntwentyUser> ValidateSecurityStampAsync(ClaimsPrincipal? principal)
+        {
+            if (principal == null)
+            {
+                return null;
+            }
+            var user = await UserManager.GetUserAsync(principal);
+            string ss = principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType);
+            if (await ValidateSecurityStampAsync(user, ss))
+            {
+                return user;
+            }
 
-      
+            return null;
+        }
 
-      
+        public override async Task<bool> ValidateSecurityStampAsync(IntwentyUser user, string securityStamp)
+        {
+            if (!Settings.UseSecurityStampValidation)
+                return true;
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!UserManager.SupportsUserSecurityStamp || securityStamp == await UserManager.GetSecurityStampAsync(user))
+                return true;
+
+            return false;
+        }
+       
+
+        public override Task<IntwentyUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+        {
+            return base.ValidateTwoFactorSecurityStampAsync(principal);
+        }
+
+
+
+
+
     }
 }
