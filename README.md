@@ -34,13 +34,11 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 3. Keep dependencies to a minimum.
 
 # Backend Dependencies
-- asp.net core 3.1
-- Microsoft.AspNetCore.Mvc 2.2.0
-- Intwenty.DataClient
-- Swashbuckle.AspNetCore 5.6.3
+- Net 8
+- Swashbuckle
 
 # Frontend Dependencies
-- bootstrap 4.3.7
+- bootstrap 5.2
 - popper.js 1.16.1
 - vue.js 2.6.11
 - jquery 3.3.1
