@@ -13,7 +13,7 @@
                 <li class="nav-item">
                     @if (Model.CreateFunction.IsModalAction)
                     {
-                        <button class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px" v-on:click="openApplicationModal(null, '@Model.CreateFunction.ActionMetaCode')"><span class="fa fa-plus" style="font-size:large"></span> @Model.CreateFunction.LocalizedTitle</button>
+                        <button class="nav-link btn btn-sm btn-outline-secondary" style="margin:10px" ba-click="openApplicationModal(null, '@Model.CreateFunction.ActionMetaCode')"><span class="fa fa-plus" style="font-size:large"></span> @Model.CreateFunction.LocalizedTitle</button>
                     }
                     else
                     {
@@ -44,14 +44,14 @@
             @if (Model.HasExportFunction)
             {
                 <li class="nav-item">
-                    <button class="nav-link btn btn-sm btn-outline-secondary" type="button" v-on:click="exportToExcel()" style="margin:10px"><span class="fa fa-file-export" style="color:seagreen; font-size:large"></span> @Model.ExportFunction.LocalizedTitle</button>
+                    <button class="nav-link btn btn-sm btn-outline-secondary" type="button" onclick="exportToExcel()" style="margin:10px"><span class="fa fa-file-export" style="color:seagreen; font-size:large"></span> @Model.ExportFunction.LocalizedTitle</button>
                 </li>
             }
 
             @if (Model.HasSaveFunction)
             {
                 <li class="nav-item">
-                    <button class="nav-link btn btn-sm btn-outline-primary" type="button" v-on:click="saveApplication()" style="margin:10px"><span class="fa fa-save" style="font-size:large"></span> @Model.SaveFunction.LocalizedTitle</button>
+                    <button class="nav-link btn btn-sm btn-outline-primary" type="button" onclick="saveApplication()" style="margin:10px"><span class="fa fa-save" style="font-size:large"></span> @Model.SaveFunction.LocalizedTitle</button>
                 </li>
             }
 
