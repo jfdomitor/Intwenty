@@ -128,21 +128,18 @@
     <script src="~/lib/barea/barea.min.js"></script>
     <script src="~/js/intwenty.js" asp-append-version="true"></script>
     <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
-    <script src="~/lib/selectize.js/js/standalone/selectize.min.js"></script>
+    <!-- src="~/lib/selectize.js/js/standalone/selectize.min.js"></ script -->
     <script src="~/lib/Croppie/croppie.js"></script>
 
     <script>
         
-        $(function ()
-        {
-            $("#expand_ui_btn").on("click", function expandUI()
-            {
+          getTag("expand_ui_btn").onclick = function expandUI()
+          {
                 handleIntwentyViewMode(true);
-            });
+          };
 
-            handleIntwentyViewMode(false);
-        }); 
-            
+          handleIntwentyViewMode(false);
+      
     </script>
 
     @RenderSection("Scripts", required: false)

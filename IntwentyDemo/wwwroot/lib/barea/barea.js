@@ -18,9 +18,10 @@ const DIR_BIND_HANDLER  = 'ba-bind-handler';
 const DIR_FOREACH = 'ba-foreach';
 const DIR_CLICK = 'ba-click';
 const DIR_CLASS = 'ba-class';
+const DIR_CLASS_IF = 'ba-class-if';
 const DIR_HIDE = 'ba-hide';
 const DIR_SHOW = 'ba-show';
-const DIR_IMAGE_SRC = 'ba-img-src';
+const DIR_IMAGE_SRC = 'ba-src';
 const DIR_IF = 'ba-if';
 const DIR_HREF = 'ba-href';
 const DIR_INTERPOLATION = 'interpolation';
@@ -30,6 +31,7 @@ const DIR_TYPE_BINDING = 'binding';
 const DIR_TYPE_HANDLER = 'uihandler';
 const DIR_TYPE_UI_SETTER = 'uisetter';
 const DIR_TYPE_BOOLHANDLER = 'boolhandler';
+const DIR_TYPE_BOOLEXPR = 'boolexpression';
 const DIR_TYPE_TEMPLATE = 'template';
 
 
@@ -299,11 +301,9 @@ class BareaApp {
                     el.remove();
                 }
 
-                if ([DIR_HIDE, DIR_SHOW, DIR_CLASS, DIR_IMAGE_SRC,DIR_IF,DIR_HREF].includes(attr.name))
+                if ([DIR_HIDE, DIR_SHOW, DIR_IF,DIR_CLASS_IF].includes(attr.name))
                 {
-                    if (attr.name===DIR_IMAGE_SRC && el.localName.toLowerCase()!=="img")
-                        return;
-
+                   
                     if (!attr.value)
                         return;
 
@@ -314,17 +314,42 @@ class BareaApp {
                     if (ishandler && !this.#isValidHandlerName(attr.value))
                         return;
 
-                    if (ishandler && [DIR_HIDE, DIR_SHOW,DIR_IF].includes(attr.name)){
-                        let expressions=[];
+                    let expressions=[];
+                    //A DIR_CLASS_IF expression contains both an express/handler and class name(s) 
+                    if (attr.name===DIR_CLASS_IF && attr.value.includes('?'))
+                    {
+                        let attrparts = attr.value.split('?');
+                        attrparts.forEach(n=>{expressions.push(n)});
+                    }
+                    else
+                    {
                         expressions.push(attr.value);
-                        const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,"", DIR_TYPE_BOOLHANDLER, true,"","",templateId,expressions);
-                        this.#domDictionary.push(odo);
-                    }else{
-                        const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,attr.value, DIR_TYPE_UI_SETTER, true,"","",templateId,null);
-                        this.#domDictionary.push(odo);
                     }
 
+                    if (ishandler){
+                        const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,"", DIR_TYPE_BOOLHANDLER, true,"","",templateId,expressions);
+                        this.#domDictionary.push(odo);
+                    }
+                    else
+                    {
+                        const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,"", DIR_TYPE_BOOLEXPR, true,"","",templateId,expressions);
+                        this.#domDictionary.push(odo);
+                    }
+                   
                   
+                }
+
+                if ([DIR_CLASS, DIR_IMAGE_SRC,DIR_HREF].includes(attr.name))
+                {
+                    if (attr.name===DIR_IMAGE_SRC && el.localName.toLowerCase()!=="img")
+                        return;
+
+                    if (!attr.value)
+                        return;
+
+                    const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,attr.value, DIR_TYPE_UI_SETTER, true,"","",templateId,null);
+                    this.#domDictionary.push(odo);
+                    
                 }
 
                 if (DIR_BIND===attr.name)
@@ -594,6 +619,83 @@ class BareaApp {
                     el.setAttribute(META_ARRAY_INDEX, counter);
                 });
 
+                newtag.querySelectorAll(`[${DIR_IF}], [${DIR_HIDE}], [${DIR_SHOW}], [${DIR_CLASS_IF}]`).forEach(el => 
+                {
+                
+                    if (el.hasAttribute(DIR_IF)) {
+                        let attrib = el.getAttribute(DIR_IF);
+
+                         //Expression exist in the attribute
+                        if (!this.#isValidHandlerName(attrib))
+                        {
+                            if (!attrib.includes(varname + '.') && !attrib.includes('root.'))
+                                console.warn(`The ${DIR_IF} expression ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should reference '${varname}' or root`);
+                            
+                            //Convert to fullpath expression example: car.value =>  root.model.cars[4].value
+                            let newexpr = attrib;
+                            if (attrib.includes(varname + '.')){
+                                newexpr = attrib.replaceAll(varname + '.',`${datapath}[${counter}].`);
+                                el.setAttribute(DIR_IF, newexpr);
+                            }     
+                        }
+                    }
+
+                    if (el.hasAttribute(DIR_CLASS_IF)) {
+                        let attrib = el.getAttribute(DIR_CLASS_IF);
+
+                         //Expression exist in the attribute
+                        if (!this.#isValidHandlerName(attrib))
+                        {
+                            if (!attrib.includes(varname + '.') && !attrib.includes('root.'))
+                                console.warn(`The ${DIR_CLASS_IF} expression ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should reference '${varname}' or root`);
+                            
+                            //Convert to fullpath expression example: car.value =>  root.model.cars[4].value
+                            let newexpr = attrib;
+                            if (attrib.includes(varname + '.')){
+                                newexpr = attrib.replaceAll(varname + '.',`${datapath}[${counter}].`);
+                                el.setAttribute(DIR_CLASS_IF, newexpr);
+                            }     
+                        }
+                    }
+
+                    if (el.hasAttribute(DIR_HIDE)) {
+                        let attrib = el.getAttribute(DIR_HIDE);
+
+                         //Expression exist in the attribute
+                        if (!this.#isValidHandlerName(attrib))
+                        {
+                            if (!attrib.includes(varname + '.') && !attrib.includes('root.'))
+                                console.warn(`The ${DIR_HIDE} expression ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should reference '${varname}' or root`);
+                            
+                            //Convert to fullpath expression example: car.value =>  root.model.cars[4].value
+                            let newexpr = attrib;
+                            if (attrib.includes(varname + '.')){
+                                newexpr = attrib.replaceAll(varname + '.',`${datapath}[${counter}].`);
+                                el.setAttribute(DIR_HIDE, newexpr);
+                            }     
+                        }
+                    }
+
+                    if (el.hasAttribute(DIR_SHOW)) {
+                        let attrib = el.getAttribute(DIR_SHOW);
+
+                         //Expression exist in the attribute
+                        if (!this.#isValidHandlerName(attrib))
+                        {
+                            if (!attrib.includes(varname + '.') && !attrib.includes('root.'))
+                                console.warn(`The  ${DIR_SHOW} expression ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should reference '${varname}' or root`);
+                            
+                            //Convert to fullpath expression example: car.value =>  root.model.cars[4].value
+                            let newexpr = attrib;
+                            if (attrib.includes(varname + '.')){
+                                newexpr = attrib.replaceAll(varname + '.',`${datapath}[${counter}].`);
+                                el.setAttribute(DIR_SHOW, newexpr);
+                            }     
+                        }
+                    }
+                    
+                });
+
                 
                 //Add references to input bindings
                 newtag.querySelectorAll(`[${DIR_BIND}]`).forEach(el => 
@@ -602,10 +704,11 @@ class BareaApp {
                     el.setAttribute(META_PATH, `${datapath}[${counter}]`);
                     el.setAttribute(META_ARRAY_INDEX, counter);
                     let attrib = el.getAttribute(DIR_BIND);
-                    if (!attrib.includes(varname))
-                        console.warn(`Error The input binding ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should include '${varname}'`);
+                    if (!attrib.includes(varname + '.'))
+                        console.warn(`The ${DIR_BIND} binding ${attrib} used in an element under ${DIR_FOREACH} does not match the ${DIR_FOREACH} expression, should include '${varname}'`);
 
-                    let bindingpath = attrib.replace(varname,`${datapath}[${counter}]`);
+                    //Convert to fullpath expression example: car.value =>  root.model.cars[4].value
+                    let bindingpath = attrib.replace(varname+'.',`${datapath}[${counter}].`);
                     el.setAttribute(DIR_BIND, bindingpath);
 
                 });
@@ -751,8 +854,92 @@ class BareaApp {
                                 t.element.remove();
                             }   
                         }
-                    }  
+                    }
+                    else if (t.directive===DIR_CLASS_IF && t.expressions.length>1) 
+                    {
+                       let classnames = t.expressions[1].split(/[\s,]+/);
+
+                        // Add classes if condition is true and remove if false
+                        if (boundvalue) {
+                            classnames.forEach(className => {
+                                if (!t.element.classList.contains(className)) {
+                                    t.element.classList.add(className); // Add class if not already present
+                                }
+                            });
+                        } else {
+                            classnames.forEach(className => {
+                                if (t.element.classList.contains(className)) {
+                                    t.element.classList.remove(className); // Remove class if present
+                                }
+                            });
+                        }
+                    }    
                           
+                });
+
+                //Boolean expressions (react on any data change)
+                const boolexpr = instance.#domDictionary.filter(p=> p.directivetype === DIR_TYPE_BOOLEXPR);
+                boolexpr.forEach(t=>
+                {
+                     
+                      let expression = t.expressions[0];
+                      let boundvalue = false;
+                      expression=expression.trim();
+                    
+
+                    function  evaluateCondition(condition, context) {
+                        try {
+                            return new Function("contextdata", `return ${condition};`)(context);
+                        } catch (error) {
+                            console.error("Error evaluating condition:", error);
+                            return false;
+                        }
+                    }
+                    
+
+                     expression=expression.replace('root.','contextdata.');
+                     boundvalue = evaluateCondition(expression, instance.#appDataProxy);
+                      
+                    if (t.directive===DIR_HIDE)
+                        t.element.style.display = boundvalue ? "none" : ""
+                    else if (t.directive===DIR_SHOW)      
+                        t.element.style.display = boundvalue ? "" : "none";
+                    else if (t.directive===DIR_IF) 
+                    {
+                          if (boundvalue)
+                          {
+                              if (!t.element.parentNode)
+                                  if (t.elementnextsibling)
+                                      t.parentelement.insertBefore(t.element, t.elementnextsibling);
+                          }else
+                          {
+                              if (t.element.parentNode)
+                              {
+                                  t.elementnextsibling = t.element.nextSibling;
+                                  t.element.remove();
+                              }   
+                          }
+                    } 
+                    else if (t.directive===DIR_CLASS_IF && t.expressions.length>1) 
+                    {
+                       let classnames = t.expressions[1].split(/[\s,]+/);
+
+                        // Add classes if condition is true and remove if false
+                        if (boundvalue) {
+                            classnames.forEach(className => {
+                                if (!t.element.classList.contains(className)) {
+                                    t.element.classList.add(className); // Add class if not already present
+                                }
+                            });
+                        } else {
+                            classnames.forEach(className => {
+                                if (t.element.classList.contains(className)) {
+                                    t.element.classList.remove(className); // Remove class if present
+                                }
+                            });
+                        }
+                    }     
+                            
                 });
 
                 const bareabind = instance.#domDictionary.filter(p=>p.directive===DIR_BIND && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
@@ -798,18 +985,19 @@ class BareaApp {
                     }                     
                 });
 
-                const bareahide = instance.#domDictionary.filter(p=>(p.directive===DIR_HIDE || p.directive===DIR_SHOW) && p.directivetype===DIR_TYPE_UI_SETTER && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
-                bareahide.forEach(t=>
-                {
-                    let boundvalue = value;
-                    if (bareahide.length> 1  || !instance.#isPrimitive(boundvalue))
-                        boundvalue = instance.getPathData(t.path);
+                //Hide / Show are evaluated every time any value changes
+                // const bareahide = instance.#domDictionary.filter(p=>(p.directive===DIR_HIDE || p.directive===DIR_SHOW) && p.directivetype===DIR_TYPE_UI_SETTER && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
+                // bareahide.forEach(t=>
+                // {
+                //     let boundvalue = value;
+                //     if (bareahide.length> 1  || !instance.#isPrimitive(boundvalue))
+                //         boundvalue = instance.getPathData(t.path);
 
-                    if (t.directive===DIR_HIDE)
-                        t.element.style.display = boundvalue ? "none" : ""
-                    else       
-                        t.element.style.display = boundvalue ? "" : "none";       
-                });
+                //     if (t.directive===DIR_HIDE)
+                //         t.element.style.display = boundvalue ? "none" : ""
+                //     else       
+                //         t.element.style.display = boundvalue ? "" : "none";       
+                // });
 
                 const bareaclass = instance.#domDictionary.filter(p=>p.directive===DIR_CLASS && p.directivetype===DIR_TYPE_UI_SETTER && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
                 bareaclass.forEach(t=>
@@ -817,6 +1005,9 @@ class BareaApp {
                     let boundvalue = value;
                     if (bareaclass.length> 1  || !instance.#isPrimitive(boundvalue))
                         boundvalue = instance.getPathData(t.path);
+
+                    if (boundvalue.includes(','))
+                        boundvalue = boundvalue.replaceAll(',', ' ');
 
                     t.element.className = boundvalue || "";
             
@@ -888,7 +1079,6 @@ class BareaApp {
             return false;
         if (this.#hasAnyChar(handlername,['(',',',')','.']))
         {
-            console.error(`Invalid handlername ${handlername}. You should not specify arguments`);
             return false;
         }
 
