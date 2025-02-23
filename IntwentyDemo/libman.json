@@ -3,14 +3,6 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "jquery@3.4.1",
-      "destination": "wwwroot/lib/jquery/"
-    },
-    {
-      "library": "vue@2.6.11",
-      "destination": "wwwroot/lib/vue/"
-    },
-    {
       "library": "popper.js@1.16.1",
       "destination": "wwwroot/lib/popper.js/"
     },
@@ -38,6 +30,16 @@
       "provider": "cdnjs",
       "library": "selectize.js@0.13.6",
       "destination": "wwwroot/lib/selectize.js/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "barea.js@1.1.0",
+      "destination": "wwwroot/lib/barea/",
+      "files": [
+        "barea.js",
+        "barea.min.js",
+        "LICENSE"
+      ]
     }
   ]
 }

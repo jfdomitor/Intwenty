@@ -57,6 +57,59 @@
 
     <script>
 
+        var e = getBareaApp(false);
+
+        bareaapp.addMountedHandler(function (data) 
+        {
+            @if (Settings.Value.UseFrejaEIdLogin)
+            {
+                <text>
+                       this.startFreja();
+                </text>
+            }
+            @if (Settings.Value.UseBankIdLogin && Settings.Value.BankIdUsage == BankIdUsageTypes.OtherDevice)
+            {
+                <text>
+                       this.startBankId('BANKID_START_OTHER');
+                </text>
+            }
+        });
+
+
+        bareaapp.addHandler("localLogin", function (event, element) {
+            var context = this;
+            var baseurl = '@Url.Content("~/Identity/Account/")';
+            var endpointurl = baseurl + "Login?handler=LocalLogin";
+            var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+            fetch(endpointurl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": antiforgerytoken
+                },
+                body: JSON.stringify(context.model)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.returnUrl) {
+                        window.location = data.returnUrl;
+                    } else {
+                        context.model = data;
+                        if (context.model.resultCode === "LOCKEDOUT" || context.model.resultCode === "REQUIREMFA") {
+                            window.location = context.model.redirectUrl;
+                        }
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        });
+
+
+        bareaapp.mount("app",
+        {
+           model: { userName: "", password: "", resultCode: "INIT", returnUrl: "@Model.ReturnUrl", actionCode: "" }
+        });
+
         var app = new Vue({
             el: '#app',
             data:
