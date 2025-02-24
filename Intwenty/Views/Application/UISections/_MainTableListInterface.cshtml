@@ -42,7 +42,7 @@
 
         <div class="col-lg-7">
 
-            <button ba-click="handleFilterSettings">
+            <button ba-click="handleFilterSettings()">
                 <i class="fas fa-search"></i>
                 <span ba-if="root.model_settings.showFilter">Hide Filter</span>
                 <span ba-if="!root.model_settings.showFilter">Show Filter</span>
@@ -54,7 +54,7 @@
             <fieldset style="padding:5px; border:1px solid black; border-radius:4px" ba-if="root.model_settings.showFilter">
 
                 <div class="row">
-                    <div class="col-lg-5"><button type="button" ba-click="addFilterValue"><span class="fa fa-plus"></span> Add filter</button></div>
+                    <div class="col-lg-5"><button type="button" ba-click="addFilterValue()"><span class="fa fa-plus"></span> Add filter</button></div>
                     <div class="col-lg-5"></div>
                     <div class="col-lg-2"></div>
                 </div>
@@ -78,12 +78,12 @@
 
                     <div class="col-lg-5">
                         <div class="form-group">
-                            <input type="text" class="form-control form-control-sm" ba-bind="filteritem.value" v-on:blur="runFilter()" placeholder="Value to filter on" />
+                            <input type="text" class="form-control form-control-sm" ba-bind="filteritem.value" onblur="runFilter()" placeholder="Value to filter on" />
                         </div>
                     </div>
 
                     <div class="col-lg-2">
-                        <button type="button" class="btn btn-sm btn-danger" ba-click="deleteFilterValue"><i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" ba-click="deleteFilterValue()"><i class="fa fa-trash"></i></button>
                     </div>
 
 
@@ -160,8 +160,8 @@
 {
     <nav>
         <ul class="pagination">
-            <li class="page-item" ba-class-if="isFirstPage?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li>
-            <li class="page-item" ba-class-if="isLastPage?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li>
+            <li class="page-item" ba-class-if="isFirstPage()?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li>
+            <li class="page-item" ba-class-if="isLastPage()?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li>
         </ul>
     </nav>
 }

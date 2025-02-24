@@ -7,7 +7,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Version>2.0.4</Version>
     <Authors>Johan Filipsson</Authors>
-    <Company>Domitor Consulting AB</Company>
+    <Company></Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Domitor/Intwenty</PackageProjectUrl>
     <PackageIcon>intwenty_loggo_small.png</PackageIcon>
@@ -35,10 +35,6 @@
     </None>
   </ItemGroup>
 
-  
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Intwenty.DataClient" Version="2.0.0" />
@@ -75,8 +71,8 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
-
+  
+  
 
 </Project>
 

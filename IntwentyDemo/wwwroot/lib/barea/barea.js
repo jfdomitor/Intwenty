@@ -62,31 +62,43 @@ class BareaApp {
     #appElementDisplay="";
     #enableHideUnloaded=false;
     #appDataProxy; 
-    #eventHandlers = {};
+    #methods = {};
     #consoleLogs = [];
     #domDictionary = []; //Reference dom from paths
     #domDictionaryId=0;
     #mounted=false;
     #mountedHandler=null;
 
-    constructor(enableInternalId) {
-        //this.#appDataProxy = data;
-        this.#enableBareaId=enableInternalId;
-        this.#setConsoleLogs();
-       
+    constructor(enableInternalId) 
+    {
+        if (enableInternalId)
+            this.#enableBareaId=enableInternalId;
+
+        this.#setConsoleLogs(); 
     }
 
-    mount(element, data) 
+    mount(element, content) 
     {
         if (this.#mounted)
             return;
 
         this.#mounted=true;
 
+        if (!content){
+            console.error('Illegal use of mount, please pass a content object with data and methods');
+            return;
+        }
+
+        if (!content.data){
+            console.error('Illegal use of mount, please pass a content object with data and methods');
+            return;
+        }
+
+
         if (!element)
         {
-                console.error('Illegal use of mount, please pass an element or an element identifier');
-                return;
+            console.error('Illegal use of mount, please pass an element or an element identifier');
+            return;
         }
 
         if (typeof element === "object") 
@@ -94,7 +106,24 @@ class BareaApp {
         else
             this.#appElement = document.getElementById(element);
 
-        this.#appDataProxy = data
+        this.#appDataProxy = content.data;
+
+        //Methods
+        if (content.methods)
+        {
+            this.#methods = content.methods;
+            Object.assign(this, this.#methods);
+            Object.keys(content.methods).forEach(key => {
+                if (typeof this[key] === "function") {
+                    this[key] = this[key].bind(this);
+                }
+            }); 
+        }
+
+        if (content.mounted)
+        {
+            this.#mountedHandler = content.mounted;
+        }
 
         if (this.#enableHideUnloaded)
         {
@@ -165,7 +194,7 @@ class BareaApp {
     {
         if (typeof handlerFunction === "function")
         {
-            this.#eventHandlers[functionName] = handlerFunction;
+            this.#methods[functionName] = handlerFunction;
         } 
         else 
         {
@@ -173,17 +202,6 @@ class BareaApp {
         }
     }
 
-    addMountedHandler(handlerFunction) 
-    {
-        if (typeof handlerFunction === "function") 
-        {
-            this.#mountedHandler = handlerFunction;
-        } 
-        else 
-        {
-            console.warn("The object passed to addMountedHandler is not a function.");
-        }
-    }
 
     getPathData(path) {
         const keys = path.match(/[^.[\]]+/g);
@@ -308,11 +326,8 @@ class BareaApp {
                         return;
 
                     let ishandler=false;
-                    if (!attr.value.includes('root.'))
+                    if (this.#isValidHandlerName(attr.value))
                         ishandler=true;
-
-                    if (ishandler && !this.#isValidHandlerName(attr.value))
-                        return;
 
                     let expressions=[];
                     //A DIR_CLASS_IF expression contains both an express/handler and class name(s) 
@@ -368,6 +383,9 @@ class BareaApp {
 
                 if (DIR_CLICK === attr.name)
                 {
+                    if (!this.#isValidHandlerName(attr.value))
+                        return;
+
                     let expressions=[];
                     expressions.push(attr.value);
                     const odo = this.#createDomDictionaryObject(el,el.parentElement,null,attr.name,"", DIR_TYPE_HANDLER, true,"","",templateId, expressions);
@@ -460,24 +478,24 @@ class BareaApp {
                     if (!target)
                         return;
 
-
-                    const log = this.#getConsoleLog(3);
-                    let customhandler = item.element.getAttribute(DIR_BIND_HANDLER);
-                    if (customhandler)
+                    let attribFuncDef = item.element.getAttribute(DIR_BIND_HANDLER);
+                    if (attribFuncDef)
                     {
-                        if (customhandler.includes('('));
-                            customhandler = customhandler.split('(')[0];
-                        customhandler=customhandler.trim();
+                        attribFuncDef=attribFuncDef.trim();
 
-                        if (this.#eventHandlers[customhandler]) {
-                            this.#eventHandlers[customhandler].apply(this, [VERB_SET_DATA, item.element, target]);
+                        let pieces = this.#parseFunctionCall(attribFuncDef);
+                        let allparams =  [VERB_SET_DATA, item.element, target];
+                        allparams.push(...pieces.params);
+
+                        if (this.#methods[pieces.functionName]) {
+                            this.#methods[pieces.functionName].apply(this, allparams);
                         } else {
-                            console.warn(`Handler function '${customhandler}' not found.`);
+                            console.warn(`Handler function '${pieces.functionName}' not found.`);
                         }
                         return;
                     }
 
-
+                    const log = this.#getConsoleLog(3);
                     if (item.element.type === "checkbox") 
                     {
                         if (log.active)
@@ -511,12 +529,8 @@ class BareaApp {
                     return;
 
                 item.isnew = false;
-                let handlername = item.expressions[0];
-                handlername=handlername.trim();
-                if (!this.#isValidHandlerName(item.expressions[0]))
-                    return;
-              
-               
+                let attribFuncDef = item.expressions[0];
+                attribFuncDef=attribFuncDef.trim();
                 item.element.addEventListener("click", (event) => {
   
                     const path = this.#getClosestAttribute(event.target, META_PATH); 
@@ -526,12 +540,15 @@ class BareaApp {
                     } else {
                         data = this.#appDataProxy;
                     }
-                    const args = [event,item.element, data];
+                    let allparams = [event,item.element, data];
+                    let pieces = this.#parseFunctionCall(attribFuncDef);
+                    allparams.push(...pieces.params);
+
                     // Call the function from the handlers object
-                    if (this.#eventHandlers[handlername]) {
-                        this.#eventHandlers[handlername].apply(this, args);
+                    if (this.#methods[pieces.functionName]) {
+                        this.#methods[pieces.functionName].apply(this, allparams);
                     } else {
-                        console.warn(`Handler function '${handlername}' not found.`);
+                        console.warn(`Handler function '${pieces.functionName}' not found.`);
                     }
                 });
   
@@ -826,13 +843,18 @@ class BareaApp {
                         data = instance.#appDataProxy;
                     }
 
-                    let customhandler = t.expressions[0];
+                    let attribFuncDef = t.expressions[0];
                     let boundvalue = false;
-                    customhandler=customhandler.trim();
-                    if (instance.#eventHandlers[customhandler]) {
-                            boundvalue = instance.#eventHandlers[customhandler].apply(instance, [data]);
+                    attribFuncDef=attribFuncDef.trim();
+
+                    let allparams = [data];
+                    let pieces = instance.#parseFunctionCall(attribFuncDef);
+                    allparams.push(...pieces.params);
+
+                    if (instance.#methods[pieces.functionName]) {
+                            boundvalue = instance.#methods[pieces.functionName].apply(instance, allparams);
                     } else {
-                        console.warn(`Handler function '${customhandler}' not found.`);
+                        console.warn(`Handler function '${pieces.functionName}' not found.`);
                     }
                     
                     if (t.directive===DIR_HIDE)
@@ -949,17 +971,21 @@ class BareaApp {
                     if (bareabind.length> 1 || !instance.#isPrimitive(boundvalue))
                         boundvalue = instance.getPathData(t.path);
 
-                    let customhandler = t.element.getAttribute(DIR_BIND_HANDLER);
-                    if (customhandler)
+                    let attribFuncDef = t.element.getAttribute(DIR_BIND_HANDLER);
+                    if (attribFuncDef)
                     {
-                        customhandler=customhandler.trim();
-                        if (!instance.#isValidHandlerName(customhandler))
+                        attribFuncDef=attribFuncDef.trim();
+                        if (!instance.#isValidHandlerName(attribFuncDef))
                             return;
 
-                        if (instance.#eventHandlers[customhandler]) {
-                            instance.#eventHandlers[customhandler].apply(instance, [VERB_SET_UI, t.element, boundvalue]);
+                        let pieces = instance.#parseFunctionCall(attribFuncDef);
+                        let allparams = [VERB_SET_UI, t.element, boundvalue];
+                        allparams.push(...pieces.params);
+
+                        if (instance.#methods[pieces.functionName]) {
+                            instance.#methods[pieces.functionName].apply(instance, allparams);
                         } else {
-                            console.warn(`Handler function '${customhandler}' not found.`);
+                            console.warn(`Handler function '${pieces.functionName}' not found.`);
                         }
                         return;
                     }
@@ -985,20 +1011,7 @@ class BareaApp {
                     }                     
                 });
 
-                //Hide / Show are evaluated every time any value changes
-                // const bareahide = instance.#domDictionary.filter(p=>(p.directive===DIR_HIDE || p.directive===DIR_SHOW) && p.directivetype===DIR_TYPE_UI_SETTER && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
-                // bareahide.forEach(t=>
-                // {
-                //     let boundvalue = value;
-                //     if (bareahide.length> 1  || !instance.#isPrimitive(boundvalue))
-                //         boundvalue = instance.getPathData(t.path);
-
-                //     if (t.directive===DIR_HIDE)
-                //         t.element.style.display = boundvalue ? "none" : ""
-                //     else       
-                //         t.element.style.display = boundvalue ? "" : "none";       
-                // });
-
+                
                 const bareaclass = instance.#domDictionary.filter(p=>p.directive===DIR_CLASS && p.directivetype===DIR_TYPE_UI_SETTER && ((instance.#isPrimitive(value) && (p.path===path)) || (!instance.#isPrimitive(value) && (p.path!==""))));
                 bareaclass.forEach(t=>
                 {
@@ -1053,6 +1066,43 @@ class BareaApp {
     }
 
     /*** Internal Helpers ***/
+    #parseFunctionCall(str) {
+
+         // Convert string values to correct types
+        function convertValue(val) {
+            if (/^'.*'$|^".*"$/.test(val)) {
+                return val.slice(1, -1); // Remove quotes for strings
+            }
+            if (val === "true") return true;
+            if (val === "false") return false;
+            if (val === "null") return null;
+            if (!isNaN(val)) {
+                return val.includes(".") ? parseFloat(val) : parseInt(val, 10); // Convert numbers
+            }
+            if (/^\[.*\]$/.test(val)) {
+                return val.slice(1, -1).split(',').map(item => convertValue(item.trim())); // Convert array elements
+            }
+            return val; // Keep as a string
+        }
+
+        const match = str.match(/^(\w+)\((.*)\)$/);
+        if (!match) return null; // Invalid format
+    
+        const functionName = match[1]; // Extract function name
+        const paramsString = match[2].trim(); // Extract parameters
+    
+        // If paramsString is empty (e.g., `sayHello()`), return an empty array
+        if (paramsString === "") return { functionName, params: [] };
+    
+        // Regex to split parameters correctly while keeping quoted values intact
+        const params = [...paramsString.matchAll(/'[^']*'|"[^"]*"|[^,]+/g)]
+            .map(match => convertValue(match[0].trim())); // Convert each value properly
+    
+        return { functionName, params };
+    }
+    
+   
+    
     #hasAnyChar(str, chars) {
         return chars.some(char => str.includes(char));
     }
@@ -1077,12 +1127,16 @@ class BareaApp {
     {
         if (!handlername)
             return false;
-        if (this.#hasAnyChar(handlername,['(',',',')','.']))
-        {
-            return false;
-        }
 
-        return true;
+        if (handlername.includes('(') && handlername.includes(')'))
+            return true;
+
+        // if (this.#hasAnyChar(handlername,['(',',',')','.']))
+        // {
+        //      return false;
+        // }
+
+        return false;
     }
    
     //Get interpolation data paths from a string found in the dom

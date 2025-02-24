@@ -33,7 +33,7 @@
     },
     {
       "provider": "jsdelivr",
-      "library": "barea.js@1.1.1",
+      "library": "barea.js@1.1.2",
       "destination": "wwwroot/lib/barea/",
       "files": [
         "barea.js",

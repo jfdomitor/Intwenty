@@ -14,6 +14,8 @@ using Intwenty.WebHostBuilder;
 using IntwentyDemo.Services;
 using IntwentyDemo.Seed;
 using Intwenty.Areas.Identity.Models;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace IntwentyDemo
 {

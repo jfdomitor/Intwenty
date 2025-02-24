@@ -21,133 +21,12 @@
 
 <script>
         
-        let app = getBareaApp(false);
+        let app = getBareaApp();
 
-        app.addMountedHandler(function (data) 
-        {
-                @if (Model.IsApplicationListView())
-                {
-                    <text>
-                        this.getPage();
-                    </text>
-
-                }
-                else if (Model.IsApplicationInputView() && Model.RuntimeRequestInfo.Id > 0)
-                {
-                    <text>
-                        this.getApplication();
-                    </text>
-                }
-                else if (Model.IsApplicationInputView() && Model.RuntimeRequestInfo.Id == 0)
-                {
-                    <text>
-                        this.createNewApplication();
-                    </text>
-
-                }     
-        });
-
-        app.addHandler("handleFilterSettings", function () 
-        { 
-            let context = this.getData();
-            context.model_settings.showFilter = !context.model_settings.showFilter; 
-        });
-
-        BareaApp.prototype.addFilterValue = function (dbtablename) {
-            let context = this.getData();
-            var objname = "";
-            if (dbtablename)
-                objname = dbtablename + "_pageInfo";
-            else
-                objname = "model_pageInfo";
-
-            context[objname].filterValues.push({ "name": "", "value": "" });
-        };
-        app.addHandler(app.addFilterValue);
-
-        app.addHandler("deleteFilterValue", function (event, element, item) {
-            let context = this.getData();
-
-            var objname = "";
-            if (dbtablename)
-                objname = dbtablename + "_pageInfo";
-            else
-                objname = "model_pageInfo";
-
-            for (var i = 0; i < context[objname].filterValues.length; i++) {
-                if (context[objname].filterValues[i].name === item.name) {
-                    context[objname].filterValues.splice(i, 1);
-                    app.getPage(dbtablename);
-                    break;
-
-                }
-            }
-        });
-
-
-        BareaApp.prototype.getPage = function (dbtablename) {
-            var context = app.getData();
-
-            var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetPagedListPath";
-
-            var objname = "";
-            var ismaintable = false;
-            if (dbtablename) {
-                objname = dbtablename + "_pageInfo";
-            } else {
-                ismaintable = true;
-                objname = "model_pageInfo";
-            }
-
-            context[objname].applicationViewId = context.applicationViewId;
-            context[objname].properties = context.requestInfo;
-
-            if (!ismaintable) {
-                context[objname].dataTableDbName = dbtablename;
-                context[objname].parentId = context.instanceId;
-            } else {
-                context[objname].parentId = 0;
-            }
-
-            // Create the request payload
-            var requestData = JSON.stringify(context[objname]);
-
-            // Create and send the request using Fetch API
-            fetch(endpointurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: requestData
-            })
-                .then(response => response.json())  // Parse response as JSON
-                .then(response => {
-                    // Handle data
-                    if (ismaintable) {
-                        context.applist = response.data ? JSON.parse(response.data) : [];
-
-                        // Update current page info
-                        context.model_pageInfo = response.currentOperation;
-                        if (context.model_pageInfo.filterValues.length === 0) {
-                            app.addFilterValue();
-                        }
-                    } else {
-                        context.model[dbtablename] = response.data ? JSON.parse(response.data) : [];
-                        context[objname] = response.currentOperation;
-                        if (context[objname].filterValues.length === 0) {
-                            app.addFilterValue(dbtablename);
-                        }
-                    }
-                })
-                .catch(error => console.error("Error:", error));  // Handle any errors
-        };
-
-        
-
-
-        app.mount("app",
-        {
-                baseurl: "@Model.RuntimeRequestInfo.EndpointBasePath"
+        const content = {
+            data:
+            {
+                 baseurl: "@Model.RuntimeRequestInfo.EndpointBasePath"
                 ,requestInfo: "@Model.RuntimeRequestInfo.RequestInfo"
                 ,appMainTable: "@Model.ApplicationInfo.DbName"
                 ,appId: @Model.ApplicationInfo.Id
@@ -155,7 +34,10 @@
                 ,instanceId: @Model.RuntimeRequestInfo.Id
                 ,version:1
                 ,applist: []
-                ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig){<text>,@st.TableName:[]</text>}}
+                ,model: { @Model.ApplicationInfo.DbName: {} @foreach (var st in subtableconfig){
+                    <text>,@st.TableName:[]</text>
+                    }
+                }
                 ,validation: {}
                 ,aftersaveactionpath: '@aftersaveactionpath'
                 ,aftersaveaction: '@aftersaveaction'
@@ -163,18 +45,170 @@
                 ,idgen: -1
                 ,model_settings: { showFilter: false }
                 ,model_pageInfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId: @Model.Id, maxCount: 0, pageSize: @maintableconfig.PageSize , pageNumber: 0, filterValues: [],skipPaging:@maintableconfig.SkipPaging, properties:"", parentId:0, foreignKeyId:0,foreignKeyName:"", sortColumns:"Id", sortDirection:"ASC" }
-                 @foreach (var s in subtableconfig)
-                 {
-                     var table = s.TableName;
-                     var table_settings = s.TableName + "_settings";
-                     var table_pageinfo = s.TableName + "_pageInfo";
-                     <text>
-                     ,@table:{}
-                     ,@table_settings: { showFilter: false }
-                     ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
-                     </text>
-                 }
-        });
+                @foreach (var s in subtableconfig)
+                {
+                    var table = s.TableName;
+                    var table_settings = s.TableName + "_settings";
+                    var table_pageinfo = s.TableName + "_pageInfo";
+                    <text>
+                                 ,@table:{}
+                                 ,@table_settings: { showFilter: false }
+                                 ,@table_pageinfo: { applicationId: @Model.ApplicationInfo.Id, applicationViewId:@Model.Id, maxCount: 0, pageSize: @s.PageSize, pageNumber: 0, filterValues: [], skipPaging:@s.SkipPaging, properties: "", parentId: 0, foreignKeyId: 0, foreignKeyName: "", sortColumns: "Id", sortDirection: "ASC" }
+                    </text>
+                }
+            },
+            methods:
+            {
+                handleFilterSettings: function ()
+                {
+                    let context = this.getData();
+                    context.model_settings.showFilter = !context.model_settings.showFilter;
+                },
+                addFilterValue: function (event, element, item, dbtablename) 
+                {
+                    let context = this.getData();
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    context[objname].filterValues.push({ "name": "", "value": "" });
+                },
+                deleteFilterValue: function (event, element, item) 
+                {
+                    let context = this.getData();
+
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    for (var i = 0; i < context[objname].filterValues.length; i++) {
+                        if (context[objname].filterValues[i].name === item.name) {
+                            context[objname].filterValues.splice(i, 1);
+                            app.getPage(dbtablename);
+                            break;
+
+                        }
+                    }
+                },
+                getPage: function (dbtablename) 
+                {
+                    var context = app.getData();
+
+                    var endpointurl = "@Model.RuntimeRequestInfo.EndpointGetPagedListPath";
+
+                    var objname = "";
+                    var ismaintable = false;
+                    if (dbtablename) {
+                        objname = dbtablename + "_pageInfo";
+                    } else {
+                        ismaintable = true;
+                        objname = "model_pageInfo";
+                    }
+
+                    context[objname].applicationViewId = context.applicationViewId;
+                    context[objname].properties = context.requestInfo;
+
+                    if (!ismaintable) {
+                        context[objname].dataTableDbName = dbtablename;
+                        context[objname].parentId = context.instanceId;
+                    } else {
+                        context[objname].parentId = 0;
+                    }
+
+                    // Create the request payload
+                    var requestData = JSON.stringify(context[objname]);
+
+                    // Create and send the request using Fetch API
+                    fetch(endpointurl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: requestData
+                    })
+                        .then(response => response.json())  // Parse response as JSON
+                        .then(response => {
+                            // Handle data
+                            if (ismaintable) {
+                                context.applist = response.data ? JSON.parse(response.data) : [];
+
+                                // Update current page info
+                                context.model_pageInfo = response.currentOperation;
+                                if (context.model_pageInfo.filterValues.length === 0) 
+                                {
+                                    this.addFilterValue();
+                                }
+                            } 
+                            else {
+                                context.model[dbtablename] = response.data ? JSON.parse(response.data) : [];
+                                context[objname] = response.currentOperation;
+                                if (context[objname].filterValues.length === 0) {
+                                    this.addFilterValue(dbtablename);
+                                }
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));  // Handle any errors
+                },
+                isFirstPage: function (data, dbtablename)
+                {
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                var pageno = data[objname].pageNumber;
+
+                    return (pageno <= 0);
+                },
+                isLastPage: function (data, dbtablename)
+                {
+                    var objname = "";
+                    if (dbtablename)
+                        objname = dbtablename + "_pageInfo";
+                    else
+                        objname = "model_pageInfo";
+
+                    var pageno = data[objname].pageNumber;
+                    var pagesize = data[objname].pageSize;
+                    var maxcount = data[objname].maxCount;
+
+                    return ((pageno + 1) * pagesize) >= maxcount;
+                }
+
+            },
+            mounted: function (data)
+            {
+                @if (Model.IsApplicationListView())
+                {
+                    <text>
+                                    this.getPage();
+                    </text>
+
+                }
+                else if (Model.IsApplicationInputView() && Model.RuntimeRequestInfo.Id > 0)
+                {
+                    <text>
+                                    this.getApplication();
+                    </text>
+                }
+                else if (Model.IsApplicationInputView() && Model.RuntimeRequestInfo.Id == 0)
+                {
+                    <text>
+                                    this.createNewApplication();
+                    </text>
+
+                }
+            }
+            
+        };
+
+        app.mount("app", content);
+
 
         /*
         
