@@ -4,7 +4,6 @@
 
     var func_edit_path = "";
     var func_edit_path_requestinfo = "";
-    var func_edit_path_use_requestinfo = false;
 
     if (Model.HasEditFunction)
     {
@@ -13,7 +12,6 @@
             func_edit_path = Model.EditFunction.ActionPath;
             if (func_edit_path.Contains("{requestinfo}"))
             {
-                func_edit_path_use_requestinfo = true;
                 func_edit_path = func_edit_path.Replace("/{requestinfo}", "");
                 func_edit_path_requestinfo = Model.EditFunction.BuildRuntimeRequestInfo(Model.RuntimeRequestInfo.RequestInfo);
             }
@@ -42,7 +40,7 @@
 
         <div class="col-lg-7">
 
-            <button ba-click="handleFilterSettings()">
+            <button ba-click="handleMainTableFilterSettings()">
                 <i class="fas fa-search"></i>
                 <span ba-if="root.model_settings.showFilter">Hide Filter</span>
                 <span ba-if="!root.model_settings.showFilter">Show Filter</span>
@@ -54,7 +52,7 @@
             <fieldset style="padding:5px; border:1px solid black; border-radius:4px" ba-if="root.model_settings.showFilter">
 
                 <div class="row">
-                    <div class="col-lg-5"><button type="button" ba-click="addFilterValue()"><span class="fa fa-plus"></span> Add filter</button></div>
+                    <div class="col-lg-5"><button type="button" ba-click="addMainTableFilterValue()"><span class="fa fa-plus"></span> Add filter</button></div>
                     <div class="col-lg-5"></div>
                     <div class="col-lg-2"></div>
                 </div>
@@ -78,12 +76,12 @@
 
                     <div class="col-lg-5">
                         <div class="form-group">
-                            <input type="text" class="form-control form-control-sm" ba-bind="filteritem.value" onblur="runFilter()" placeholder="Value to filter on" />
+                            <input type="text" class="form-control form-control-sm" ba-bind="filteritem.value" onblur="runMainTableFilter()" placeholder="Value to filter on" />
                         </div>
                     </div>
 
                     <div class="col-lg-2">
-                        <button type="button" class="btn btn-sm btn-danger" ba-click="deleteFilterValue()"><i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" ba-click="deleteMainTableFilterValue()"><i class="fa fa-trash"></i></button>
                     </div>
 
 
@@ -126,24 +124,17 @@
 
         @if (Model.HasDeleteFunction)
         {
-            <td style="vertical-align:middle"><button class="btn btn-sm btn-danger" ba-click="deleteApplication(item)"><span class="fas fa-trash" title="Remove"></span></button></td>
+            <td style="vertical-align:middle"><button class="btn btn-sm btn-danger" ba-click="deleteApplication()"><span class="fas fa-trash" title="Remove"></span></button></td>
         }
         @if (Model.HasEditFunction)
         {
             @if (Model.EditFunction.IsModalAction)
             {
-                <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary" ba-click="openApplicationModal(item, '@Model.EditFunction.ActionMetaCode')"><span class="fas fa-edit" title="Edit"></span></button></td>
+                <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary" ba-click="openApplicationModal('@Model.EditFunction.ActionMetaCode')"><span class="fas fa-edit" title="Edit"></span></button></td>
             }
             else
             {
-                @if (func_edit_path_use_requestinfo)
-                {
-                    <td style="vertical-align:middle"><a ba-href="'@func_edit_path/' + item.Id + '/@func_edit_path_requestinfo'" class="btn btn-sm btn-secondary" role="button"><span class="fas fa-edit" title="Edit"></span></a></td>
-                }
-                else
-                {
-                    <td style="vertical-align:middle"><a ba-href="'@func_edit_path/' + item.Id" class="btn btn-sm btn-secondary" role="button"><span class="fas fa-edit" title="Edit"></span></a></td>
-                }
+                <td style="vertical-align:middle"><button ba-click="goToLink('@func_edit_path','@func_edit_path_requestinfo')" class="btn btn-sm btn-secondary"><span class="fas fa-edit" title="Edit"></span></button></td>
 
             }
         }
@@ -160,8 +151,8 @@
 {
     <nav>
         <ul class="pagination">
-            <li class="page-item" ba-class-if="isFirstPage()?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li>
-            <li class="page-item" ba-class-if="isLastPage()?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li>
+            <li class="page-item" ba-class-if="isMainTableFirstPage?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li>
+            <li class="page-item" ba-class-if="isMainTableLastPage?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li>
         </ul>
     </nav>
 }

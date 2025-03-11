@@ -1,13 +1,14 @@
-﻿
-getTag = function (id) { return document.getElementById(id) };
+﻿"use strict";
+
+getTag = function (id) {
+    return document.getElementById(id);
+};
 
 handleIntwentyViewMode = function (istoogle) {
     var menucontainer = getTag("main_menu_container");
     var contentcontainer = getTag("main_content_container");
-    if (!menucontainer)
-        return;
-    if (!contentcontainer)
-        return;
+    if (!menucontainer) return;
+    if (!contentcontainer) return;
 
     if (istoogle) {
 
@@ -15,7 +16,6 @@ handleIntwentyViewMode = function (istoogle) {
             menucontainer.removeClass("container-fluid");
             menucontainer.addClass("container");
             setCookie('IntwentyViewMode', 'container', 365);
-
         } else {
             menucontainer.removeClass("container");
             menucontainer.addClass("container-fluid");
@@ -29,13 +29,10 @@ handleIntwentyViewMode = function (istoogle) {
             contentcontainer.removeClass("container");
             contentcontainer.addClass("container-fluid");
         }
-    }
-    else {
+    } else {
         var cookieval = getCookie('IntwentyViewMode');
-        if (!cookieval)
-            return;
-        if (cookieval == '')
-            return;
+        if (!cookieval) return;
+        if (cookieval == '') return;
 
         if (menucontainer.hasClass("container-fluid") && cookieval == 'container') {
             menucontainer.removeClass("container-fluid");
@@ -60,18 +57,18 @@ handleIntwentyViewMode = function (istoogle) {
 };
 
 setCookie = function (cname, cvalue, exdays) {
-    const d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    let expires = "expires=" + d.toUTCString();
+    var d = new Date();
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    var expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 };
 
 getCookie = function (cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
         }
@@ -83,76 +80,64 @@ getCookie = function (cname) {
 };
 
 raiseInformationModal = function (headertext, bodytext, close_callback) {
-    getTag('msg_dlg_modal_hdr').textContent=headertext;
-    getTag('msg_dlg_modal_text').textContent=bodytext;
+    getTag('msg_dlg_modal_hdr').textContent = headertext;
+    getTag('msg_dlg_modal_text').textContent = bodytext;
     if (close_callback) {
-        const closeBtn = getTag('msg_dlg_modal_closebtn');
+        var closeBtn = getTag('msg_dlg_modal_closebtn');
         closeBtn.replaceWith(closeBtn.cloneNode(true)); // Removes all event listeners
         getTag('msg_dlg_modal_closebtn').addEventListener('click', close_callback);
     }
-    const modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
+    var modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
     modal.show();
-
 };
 
-
-raiseValidationErrorModal = function (message)
-{
-    getTag('msg_dlg_modal_hdr').textContent ='Error';
-    getTag('msg_dlg_modal_text').textContent=message;
-    const modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
+raiseValidationErrorModal = function (message) {
+    getTag('msg_dlg_modal_hdr').textContent = 'Error';
+    getTag('msg_dlg_modal_text').textContent = message;
+    var modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
     modal.show();
-
 };
 
-raiseErrorModal = function (operationresult)
-{
-    getTag('msg_dlg_modal_hdr').textContent='Error';
-    getTag('msg_dlg_modal_text').textContent=operationresult.userError;
-    const modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
+raiseErrorModal = function (operationresult) {
+    getTag('msg_dlg_modal_hdr').textContent = 'Error';
+    getTag('msg_dlg_modal_text').textContent = operationresult.userError;
+    var modal = new bootstrap.Modal(getTag('msg_dlg_modal'));
     modal.show();
-
 };
 
-raiseYesNoModal = function (headertxt, bodytext, yes_callback)
-{
-    getTag('yesno_dlg_modal_hdr').textContent=headertxt;
-    getTag('yesno_dlg_modal_text').textContent=bodytext;
-    const yesBtn = getTag('yesno_dlg_modal_yesbtn');
+raiseYesNoModal = function (headertxt, bodytext, yes_callback) {
+    getTag('yesno_dlg_modal_hdr').textContent = headertxt;
+    getTag('yesno_dlg_modal_text').textContent = bodytext;
+    var yesBtn = getTag('yesno_dlg_modal_yesbtn');
     yesBtn.replaceWith(yesBtn.cloneNode(true)); // Removes all event listeners
     getTag('yesno_dlg_modal_yesbtn').addEventListener('click', yes_callback);
 
-    const modaltag = getTag('yesno_dlg_modal');
-    const modal = new bootstrap.Modal(modaltag, {backdrop:'static',keyboard:true,focus:true});
+    var modaltag = getTag('yesno_dlg_modal');
+    var modal = new bootstrap.Modal(modaltag, { backdrop: 'static', keyboard: true, focus: true });
     modal.show();
 
     modaltag.addEventListener('hidden.bs.modal', function () {
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.querySelectorAll('.modal-backdrop').forEach(function (el) {
+            return el.remove();
+        });
         document.body.classList.remove('modal-open'); // Ensures scrolling is re-enabled
     });
-
 };
 
-hasRequiredValues = function (datalist, requiredlist)
-{
+hasRequiredValues = function (datalist, requiredlist) {
 
     for (var i = 0; i < datalist.length; i++) {
         for (var z = 0; z < requiredlist.length; z++) {
             var fld = requiredlist[z];
-            if (!datalist[i][fld])
-                return false;
-            if (!datalist[i][fld] === "")
-                return false;
-
+            if (!datalist[i][fld]) return false;
+            if (!datalist[i][fld] === "") return false;
         }
     }
 
     return true;
 };
 
-
-Array.prototype.where = function (filter)
-{
+Array.prototype.where = function (filter) {
 
     var collection = this;
 
@@ -163,29 +148,25 @@ Array.prototype.where = function (filter)
 
         case 'object':
             for (var property in filter) {
-                if (!filter.hasOwnProperty(property))
-                    continue; // ignore inherited properties
+                if (!filter.hasOwnProperty(property)) continue; // ignore inherited properties
 
                 collection = $.grep(collection, function (item) {
                     return item[property] === filter[property];
                 });
             }
-            return collection.slice(0); // copy the array 
+            return collection.slice(0); // copy the array
         // (in case of empty object filter)
 
         default:
-            throw new TypeError('func must be either a' +
-                'function or an object of properties and values to filter by');
+            throw new TypeError('func must be either a' + 'function or an object of properties and values to filter by');
     }
 };
-
 
 Array.prototype.firstOrDefault = function (func) {
     return this.where(func)[0] || null;
 };
 
-canSave = function (context)
-{
+canSave = function (context) {
     var result = true;
     $("[data-required]").each(function () {
         var required = $(this).data('required');
@@ -198,15 +179,12 @@ canSave = function (context)
             if (!context.model[dbtable][dbfield]) {
                 result = false;
                 $(this).addClass('requiredNotValid');
-
-            }
-            else if (context.model[dbtable][dbfield].length == 0) {
+            } else if (context.model[dbtable][dbfield].length == 0) {
                 result = false;
                 $(this).addClass('requiredNotValid');
-            }
-            else {
+            } else {
                 if (metatype == "EMAILBOX") {
-                    var check = context.model[dbtable][dbfield]
+                    var check = context.model[dbtable][dbfield];
                     if (check.indexOf("@") < 1) {
                         result = false;
                         $(this).addClass('requiredNotValid');
@@ -334,21 +312,19 @@ initializePropertyUI = function (context, modelitem) {
 };
 */
 
-canShowUIControl= function (uiid, tablename, columnname, context) {
+canShowUIControl = function (uiid, tablename, columnname, context) {
     return true;
 };
 
-isRequiredNotValid= function (uiid, context) {
+isRequiredNotValid = function (uiid, context) {
     return $("#" + uiid).hasClass("requiredNotValid");
 };
 
 onUserInput = function (event, context) {
-    if (!event)
-        return;
+    if (!event) return;
 
     var elementId = event.srcElement.id;
-    if (!elementId)
-        return;
+    if (!elementId) return;
 
     //Remove requiredNotValid if the input is valid
     $("[data-required]").each(function () {
@@ -357,21 +333,15 @@ onUserInput = function (event, context) {
         if (required === "True" && id === elementId) {
             var val = event.srcElement.value;
             if (val) {
-                if (val.length > 0)
-                    $("#" + elementId).removeClass('requiredNotValid');
+                if (val.length > 0) $("#" + elementId).removeClass('requiredNotValid');
             }
         }
     });
 };
 
-downloadExcel = function ()
-{
+downloadExcel = function () {};
 
-};
-
-test = function (context)
-{
+test = function (context) {
     alert(context.appId);
-
 };
 
