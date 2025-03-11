@@ -345,19 +345,16 @@ namespace Intwenty.Model
         {
             get
             {
-                //return "model";
-                
                 if (CurrentRenderContext == CurrentRenderContextOptions.View)
-                    return "model";
+                    return "root.model";
                 if (CurrentRenderContext == CurrentRenderContextOptions.ModalView)
-                    return "model";
+                    return "root.model";
                 if (CurrentRenderContext == CurrentRenderContextOptions.SubTable)
                     return string.Empty;
                 if (CurrentRenderContext == CurrentRenderContextOptions.ModalSubTable)
                     return string.Empty;
 
-                return "model";
-   
+                return "root.model";
             }
 
         }

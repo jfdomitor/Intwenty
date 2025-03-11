@@ -1748,6 +1748,8 @@ class BareaApp
     {
         let instance;
         let computedProperties = this.#computedProperties;
+        let barea = this;
+
         class UserInterfaceTracker
         {
             #dependencies = new Map();
@@ -1914,6 +1916,8 @@ class BareaApp
                 }
                 else
                 {
+                    this.#dependencies.clear();
+                    barea.#trackDirectives();
                   console.warn('UI dependency tracker was notified of an object that was not tracked', reasonobj);
                 }
               

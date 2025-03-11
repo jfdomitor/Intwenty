@@ -2,13 +2,9 @@
 
 @{
     var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"].Value);
-    var canShowUIControl = "";
-    if (Settings.Value.UIControlsEnableVueIf)
-    {
-        canShowUIControl = "v-if=\"canShowUIControl('" + Model.UIId + "', '" + Model.DataTableDbName + "', '" + Model.DataColumnDbName + "')\"";
-    }
+  
 }
-<div @if (Settings.Value.UIControlsEnableVueIf) { @Html.Raw(canShowUIControl); } class="form-group">
+<div class="form-group">
     <label class="control-label">
         @Model.LocalizedTitle @{ if (Model.Mandatory)
             { <span style="color: red"> *</span> }}
@@ -17,8 +13,7 @@
            name="@Model.UIId"
            type="email"
            class="form-control form-control-sm"
-           v-model="@Model.VueModelBinding"
-           v-on:input="onUserInput(event)"
+           ba-bind="@Model.VueModelBinding"
            data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeEmailBox"
            data-title="@Model.Title"
            data-dbtable="@Model.DataTableDbName"
@@ -27,6 +22,6 @@
            maxlength="200" />
     @if (Settings.Value.UIControlsEnableRequiredText)
     {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if=!@Model.VueModelBinding>@Html.Raw(requiredmsg)</span>
     }
 </div>

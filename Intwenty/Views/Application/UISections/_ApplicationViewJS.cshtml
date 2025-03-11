@@ -160,7 +160,9 @@
                      })
                     .then(response => response.json())  // Parse response as JSON
                     .then(response=>{
-                        rootdata.model[rootdata.appMainTable] = response.data[rootdata.appMainTable];
+                        let fetched_data = JSON.parse(response.data);
+                        let current =  rootdata.model[rootdata.appMainTable];
+                        rootdata.model[rootdata.appMainTable] = fetched_data[rootdata.appMainTable];
                      })
                      .then(response=>{
                         @foreach (var s in subtableconfig)

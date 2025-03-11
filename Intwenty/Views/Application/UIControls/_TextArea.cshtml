@@ -11,20 +11,15 @@
         }
 
     }
-    var canShowUIControl = "";
-    if (Settings.Value.UIControlsEnableVueIf)
-    {
-        canShowUIControl = "v-if=\"canShowUIControl('" + Model.UIId + "', '" + Model.DataTableDbName + "', '" + Model.DataColumnDbName + "')\"";
-    }
 }
-<div @if (Settings.Value.UIControlsEnableVueIf) { @Html.Raw(canShowUIControl); } class="form-group">
+<div class="form-group">
     <label class="control-label">
         @Model.LocalizedTitle  @{ if (Model.Mandatory)
             { <span style="color: red"> *</span> }}
     </label>
     <textarea id="@Model.UIId"
               name="@Model.UIId"
-              v-model="@Model.VueModelBinding"
+              ba-bind="@Model.VueModelBinding"
               rows="@rows"
               cols="50"
               class="form-control form-control-sm"
@@ -36,6 +31,6 @@
               data-required="@Model.Mandatory"></textarea>
       @if (Settings.Value.UIControlsEnableRequiredText)
       {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if="isRequiredNotValid('@Model.UIId')">@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-bind="!@Model.VueModelBinding">@Html.Raw(requiredmsg)</span>
       }
 </div>
