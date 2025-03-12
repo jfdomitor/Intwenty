@@ -42,6 +42,7 @@ namespace IntwentyDemo
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.AddUserSecrets("b77e8d87-d3be-4daf-9074-ec3ccd53ed21");
+                    config.AddJsonFile("intwenty.json", optional: false, reloadOnChange: true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

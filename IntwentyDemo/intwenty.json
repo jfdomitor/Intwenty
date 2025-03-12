@@ -1,14 +1,16 @@
 {
 
-	"systems": [
+	"intwentySystems": [
 		{
 			"name": "Demo",
 			"title": "The Demo System",
+			"titleLocalizationKey": "CUSTSYS",
 			"dbPrefix": "demo",
 			"applications": [
 				{
 					"name": "Customers",
 					"title": "Customers",
+					"titleLocalizationKey": "CUSTAPP",
 					"dbTableName": "Customers",
 					"dataMode": "Simple",
 					"useVersioning": true,
@@ -69,6 +71,7 @@
 						{
 							"name": "LV_CUSTOMER1",
 							"title": "Customer List",
+							"titleLocalizationKey": "CUSTLIST",
 							"requestPath": "Customers/List/{requestinfo}",
 							"filePath": "",
 							"isPrimary": true,
@@ -79,6 +82,7 @@
 									"name": "CUST_LISTVIEW",
 									"elementType": "TABLE",
 									"title": "Customer List",
+									"titleLocalizationKey": "CUSTLIST",
 									"parentElementName": "root",
 									"dbTableName": "Customers",
 									"dbColumnName": "",
@@ -94,6 +98,7 @@
 									"name": "LV_ID",
 									"elementType": "TABLETEXTCOLUMN",
 									"title": "ID",
+									"titleLocalizationKey": "",
 									"parentElementName": "CUST_LISTVIEW",
 									"dbTableName": "Customers",
 									"dbColumnName": "id",
@@ -108,6 +113,7 @@
 									"name": "LV_CUSTID",
 									"elementType": "TABLETEXTCOLUMN",
 									"title": "Customer ID",
+									"titleLocalizationKey": "CUSTID",
 									"parentElementName": "CUST_LISTVIEW",
 									"dbTableName": "Customers",
 									"dbColumnName": "CustomerId",
@@ -122,6 +128,7 @@
 									"name": "LV_CUSTNAME",
 									"elementType": "TABLETEXTCOLUMN",
 									"title": "Customer Name",
+									"titleLocalizationKey": "CUSTNAME",
 									"parentElementName": "CUST_LISTVIEW",
 									"dbTableName": "Customers",
 									"dbColumnName": "CustomerName",
@@ -160,6 +167,44 @@
 
 				}
 			]
+		}
+	],
+	"localizations": [
+		{
+			"key": "LOCKED_OUT_ACCOUNT",
+			"Culture": "en-US",
+			"Text": "This account has been locked out, please try again later."
+		},
+		{
+			"key": "LOCKED_OUT_ACCOUNT",
+			"Culture": "sv-SE",
+			"Text": "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig"
+		}
+	],
+	"Endpoints": [
+		{
+			"systemName": "Demo",
+			"applicationName": "Customer",
+			"name": "EP_CUSTOMER_GETALL",
+			"endpointType": "TABLELIST",
+			"title": "Get all customers",
+			"requestPath": "MyAPI/Customers",
+			"description": "Get all customers in the database",
+			"dbTableName": "Customer",
+			"orderNo": 0,
+			"properties": ""
+		},
+		{
+			"systemName": "Demo",
+			"applicationName": "",
+			"name": "EP_CUST_1",
+			"endpointType": "CUSTOMPOST",
+			"title": "Post Anything",
+			"requestPath": "MyAPI/PostAnyThing",
+			"description": "This endpoint must be implemented in a custom controller",
+			"dbTableName": "",
+			"orderNo": 0,
+			"properties": ""
 		}
 	]
 

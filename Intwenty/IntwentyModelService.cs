@@ -20,6 +20,8 @@ using Intwenty.Areas.Identity.Data;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Intwenty.Helpers;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 namespace Intwenty
 {
@@ -27,6 +29,7 @@ namespace Intwenty
 
     public class IntwentyModelService : IIntwentyModelService
     {
+        private MainModel Model { get; }
 
         private IDataClient Client { get; }
 
@@ -59,13 +62,17 @@ namespace Intwenty
         private static readonly string SystemModelItemCacheKey = "INTWENTYSYSTEMS";
 
 
-        public IntwentyModelService(IOptions<IntwentySettings> settings, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+        public IntwentyModelService(IConfiguration config, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
         {
+            var settings = config.GetSection("IntwentySettings").Get<IntwentySettings>();
+            var mainmodel = config.Get<MainModel>();
+
+            Model = mainmodel;
             DbLogger = dblogger;
             OrganizationManager = orgmanager;
             UserManager = usermanager;
             ModelCache = cache;
-            Settings = settings.Value;
+            Settings = settings;
             Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
             DataTypes = Client.GetDbTypeMap();
             CurrentCulture = Settings.LocalizationDefaultCulture;
@@ -230,157 +237,49 @@ namespace Intwenty
         }
 
 
-        public ExportModel GetExportModel()
-        {
+        //public ExportModel GetExportModel()
+        //{
 
-            Client.Open();
-            var t = new ExportModel();
-            var systems = Client.GetEntities<SystemItem>();
-            foreach (var a in systems)
-                t.Systems.Add(a);
-            var apps = Client.GetEntities<ApplicationItem>();
-            foreach (var a in apps)
-                t.Applications.Add(a);
-            var dbitems = Client.GetEntities<DatabaseItem>();
-            foreach (var a in dbitems)
-                t.DatabaseItems.Add(a);
-            var uiviewitems = Client.GetEntities<ViewItem>();
-            foreach (var a in uiviewitems)
-                t.ViewItems.Add(a);
-            var uiitems = Client.GetEntities<UserInterfaceItem>();
-            foreach (var a in uiitems)
-                t.UserInterfaceItems.Add(a);
-            var funcitems = Client.GetEntities<FunctionItem>();
-            foreach (var a in funcitems)
-                t.FunctionItems.Add(a);
-            var uistructitems = Client.GetEntities<UserInterfaceStructureItem>();
-            foreach (var a in uistructitems)
-                t.UserInterfaceStructureItems.Add(a);
-            var valuedomainitems = Client.GetEntities<ValueDomainItem>();
-            foreach (var a in valuedomainitems)
-                t.ValueDomains.Add(a);
-            var endpints = Client.GetEntities<EndpointItem>();
-            foreach (var a in endpints)
-                t.Endpoints.Add(a);
-            var translations = Client.GetEntities<TranslationItem>();
-            foreach (var a in translations)
-                t.Translations.Add(a);
+        //    Client.Open();
+        //    var t = new ExportModel();
+        //    var systems = Client.GetEntities<SystemItem>();
+        //    foreach (var a in systems)
+        //        t.Systems.Add(a);
+        //    var apps = Client.GetEntities<ApplicationItem>();
+        //    foreach (var a in apps)
+        //        t.Applications.Add(a);
+        //    var dbitems = Client.GetEntities<DatabaseItem>();
+        //    foreach (var a in dbitems)
+        //        t.DatabaseItems.Add(a);
+        //    var uiviewitems = Client.GetEntities<ViewItem>();
+        //    foreach (var a in uiviewitems)
+        //        t.ViewItems.Add(a);
+        //    var uiitems = Client.GetEntities<UserInterfaceItem>();
+        //    foreach (var a in uiitems)
+        //        t.UserInterfaceItems.Add(a);
+        //    var funcitems = Client.GetEntities<FunctionItem>();
+        //    foreach (var a in funcitems)
+        //        t.FunctionItems.Add(a);
+        //    var uistructitems = Client.GetEntities<UserInterfaceStructureItem>();
+        //    foreach (var a in uistructitems)
+        //        t.UserInterfaceStructureItems.Add(a);
+        //    var valuedomainitems = Client.GetEntities<ValueDomainItem>();
+        //    foreach (var a in valuedomainitems)
+        //        t.ValueDomains.Add(a);
+        //    var endpints = Client.GetEntities<EndpointItem>();
+        //    foreach (var a in endpints)
+        //        t.Endpoints.Add(a);
+        //    var translations = Client.GetEntities<TranslationItem>();
+        //    foreach (var a in translations)
+        //        t.Translations.Add(a);
 
-            Client.Close();
+        //    Client.Close();
 
-            return t;
+        //    return t;
 
-        }
+        //}
 
-        public OperationResult ImportModel(ExportModel model)
-        {
-            if (model == null)
-            {
-                var error = new OperationResult();
-                error.SetError("Import model. Model was null", "The model to import was empty, check the file !");
-                return error;
-            }
-
-            var result = new OperationResult();
-
-            try
-            {
-
-                ClearCache();
-
-                Client.Open();
-
-                var maxappid = 0;
-                var apps = Client.GetEntities<ApplicationItem>();
-                foreach (var a in apps)
-                {
-                    if (a.Id > maxappid)
-                        maxappid = a.Id;
-                }
-                var systems = Client.GetEntities<SystemItem>();
-
-
-                if (model.DeleteCurrentModel)
-                {
-                    Client.DeleteEntities(systems);
-                    Client.DeleteEntities(apps);
-                    Client.DeleteEntities(Client.GetEntities<DatabaseItem>());
-                    Client.DeleteEntities(Client.GetEntities<TranslationItem>());
-                    Client.DeleteEntities(Client.GetEntities<ViewItem>());
-                    Client.DeleteEntities(Client.GetEntities<UserInterfaceItem>());
-                    Client.DeleteEntities(Client.GetEntities<UserInterfaceStructureItem>());
-                    Client.DeleteEntities(Client.GetEntities<ValueDomainItem>());
-                    Client.DeleteEntities(Client.GetEntities<EndpointItem>());
-                    Client.DeleteEntities(Client.GetEntities<FunctionItem>());
-                }
-
-                foreach (var a in model.Systems.Where(p => !systems.Exists(x => x.MetaCode == p.MetaCode)))
-                    Client.InsertEntity(a);
-
-                foreach (var a in model.Applications.Where(p => !apps.Exists(x => x.MetaCode == p.MetaCode)))
-                {
-                    a.Id = a.Id + maxappid;
-                    Client.InsertEntity(a);
-
-                    foreach (var b in model.DatabaseItems.Where(p=>p.AppMetaCode == a.MetaCode))
-                        Client.InsertEntity(b);
-
-                    foreach (var b in model.ViewItems.Where(p => p.AppMetaCode == a.MetaCode))
-                        Client.InsertEntity(b);
-
-                    foreach (var b in model.UserInterfaceItems.Where(p => p.AppMetaCode == a.MetaCode))
-                        Client.InsertEntity(b);
-
-                    foreach (var b in model.FunctionItems.Where(p => p.AppMetaCode == a.MetaCode))
-                        Client.InsertEntity(b);
-
-                    foreach (var b in model.UserInterfaceStructureItems.Where(p => p.AppMetaCode == a.MetaCode))
-                        Client.InsertEntity(b);
-
-                }
-
-                try
-                {
-                    foreach (var b in model.Translations)
-                        Client.InsertEntity(b);
-                }
-                catch { }
-
-                try
-                {
-                    foreach (var b in model.ValueDomains)
-                        Client.InsertEntity(b);
-                }
-                catch { }
-
-                try
-                {
-                    foreach (var b in model.Endpoints)
-                        Client.InsertEntity(b);
-                }
-                catch { }
-
-
-                result.IsSuccess = true;
-                result.AddMessage(MessageCode.RESULT, "The model was imported successfully. If new or changed views (paths) were included, please restart the application.");
-
-            }
-            catch (Exception ex)
-            {
-                result.IsSuccess = false;
-                if (!model.DeleteCurrentModel)
-                    result.SetError(ex.Message, "Error importing model, this is probably due to conflict with the current model. Try to upload with the delete option.");
-                else
-                    result.SetError(ex.Message, "Error importing model");
-            }
-            finally
-            {
-                Client.Close();
-            }
-
-            return result;
-
-        }
+       
 
         #endregion
 

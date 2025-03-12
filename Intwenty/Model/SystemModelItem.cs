@@ -10,22 +10,14 @@ namespace Intwenty.Model
     {
         public static readonly string MetaTypeSystem = "SYSTEM";
 
-        public SystemModelItem()
+        public SystemModelItem(intwentySystem entity)
         {
-            MetaType = MetaTypeSystem;
-            ParentMetaCode = BaseModelItem.MetaTypeRoot;
-            SetDefaults();
-        }
-
-        public SystemModelItem(SystemItem entity)
-        {
-            Id = entity.Id;
-            Title = entity.Title;
-            LocalizedTitle = entity.Title;
-            TitleLocalizationKey = entity.TitleLocalizationKey;
-            Description = entity.Description;
-            MetaCode = entity.MetaCode;
-            DbPrefix = entity.DbPrefix;
+            //Id = entity.Id;
+            Title = entity.title;
+            LocalizedTitle = entity.title;
+            TitleLocalizationKey = entity.titleLocalizationKey;
+            MetaCode = entity.name;
+            DbPrefix = entity.dbPrefix;
             MetaType = MetaTypeSystem;
             ParentMetaCode = BaseModelItem.MetaTypeRoot;
             SetDefaults();

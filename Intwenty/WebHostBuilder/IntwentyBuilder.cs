@@ -34,6 +34,7 @@ using Intwenty.Helpers;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
+using System.IO;
 
 namespace Intwenty.WebHostBuilder
 {
@@ -58,7 +59,11 @@ namespace Intwenty.WebHostBuilder
                            where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
         {
 
+        
+
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
+
+
 
             if (settings.AllowSignalR)
             {

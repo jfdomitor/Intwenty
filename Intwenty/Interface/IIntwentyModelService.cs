@@ -72,8 +72,6 @@ namespace Intwenty.Interface
         List<IntwentyDataColumn> GetDefaultVersioningTableColumns();
         void ClearCache(string key="ALL");
         List<CachedObjectDescription> GetCachedObjectDescriptions();
-        ExportModel GetExportModel();
-        OperationResult ImportModel(ExportModel model);
         Task<List<OperationResult>> ConfigureDatabase(string tableprefix = "");
         Task<OperationResult> ConfigureDatabase(ApplicationModelItem model, List<DatabaseModelItem> databasemodel = null, string tableprefix = "");
 

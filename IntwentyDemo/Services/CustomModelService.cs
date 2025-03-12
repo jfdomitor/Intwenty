@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Intwenty.Helpers;
 using Intwenty;
+using Microsoft.Extensions.Configuration;
 
 namespace IntwentyDemo.Services
 {
@@ -32,8 +33,8 @@ namespace IntwentyDemo.Services
     {
 
 
-        public CustomModelService(IOptions<IntwentySettings> settings, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
-                : base(settings, cache, usermanager, orgmanager, dblogger)
+        public CustomModelService(IConfiguration config, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+                : base(config, cache, usermanager, orgmanager, dblogger)
         {
         }
 
