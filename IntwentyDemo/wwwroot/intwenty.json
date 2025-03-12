@@ -1,0 +1,172 @@
+{
+
+	"systems": [
+		{
+			"name": "Demo",
+			"title": "The Demo System",
+			"dbPrefix": "demo",
+			"applications": [
+				{
+					"name": "Customers",
+					"title": "Customers",
+					"dbTableName": "Customers",
+					"dataMode": "Simple",
+					"useVersioning": true,
+					"tenantIsolationLevel": "None",
+					"tenantIsolationMethod": "None",
+					"dataColumns": [
+						{
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerId",
+							"dataType": "STRING",
+							"properties": "DEFVALUE=AUTO#DEFVALUE_START=1000#DEFVALUE_PREFIX=CUST#DEFVALUE_SEED=100#UNIQUE=TRUE#MANDATORY=TRUE"
+						},
+						{
+
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerName",
+							"dataType": "STRING",
+							"properties": ""
+						},
+						{
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerPhone",
+							"dataType": "STRING",
+							"Properties": ""
+						},
+						{
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerEmail",
+							"DadataTypetaType": "STRING",
+							"properties": "MANDATORY=TRUE"
+						},
+						{
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerStatus",
+							"dataType": "STRING",
+							"properties": ""
+						},
+						{
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerTags",
+							"dataType": "STRING",
+							"properties": ""
+						},
+						{
+
+							"dbTableName": "Customers",
+							"dbColumnName": "CustomerTagsText",
+							"dataType": "TEXT",
+							"properties": ""
+						}
+					],
+					"Views": [
+						{
+							"name": "LV_CUSTOMER1",
+							"title": "Customer List",
+							"requestPath": "Customers/List/{requestinfo}",
+							"filePath": "",
+							"isPrimary": true,
+							"isPublic": false,
+							"properties": "",
+							"uiElements": [
+								{
+									"name": "CUST_LISTVIEW",
+									"elementType": "TABLE",
+									"title": "Customer List",
+									"parentElementName": "root",
+									"dbTableName": "Customers",
+									"dbColumnName": "",
+									"dbColumnName2": "",
+									"columnOrder": 0,
+									"rowOrder": 0,
+									"domain": "",
+									"properties": "",
+									"rawHTML": ""
+								},
+								{
+
+									"name": "LV_ID",
+									"elementType": "TABLETEXTCOLUMN",
+									"title": "ID",
+									"parentElementName": "CUST_LISTVIEW",
+									"dbTableName": "Customers",
+									"dbColumnName": "id",
+									"dbColumnName2": "",
+									"columnOrder": 1,
+									"rowOrder": 1,
+									"domain": "",
+									"properties": "",
+									"rawHTML": ""
+								},
+								{
+									"name": "LV_CUSTID",
+									"elementType": "TABLETEXTCOLUMN",
+									"title": "Customer ID",
+									"parentElementName": "CUST_LISTVIEW",
+									"dbTableName": "Customers",
+									"dbColumnName": "CustomerId",
+									"dbColumnName2": "",
+									"columnOrder": 2,
+									"rowOrder": 1,
+									"domain": "",
+									"properties": "",
+									"rawHTML": ""
+								},
+								{
+									"name": "LV_CUSTNAME",
+									"elementType": "TABLETEXTCOLUMN",
+									"title": "Customer Name",
+									"parentElementName": "CUST_LISTVIEW",
+									"dbTableName": "Customers",
+									"dbColumnName": "CustomerName",
+									"dbColumnName2": "",
+									"columnOrder": 3,
+									"rowOrder": 1,
+									"domain": "",
+									"properties": "",
+									"rawHTML": ""
+								}
+
+							]
+
+						},
+						{
+							"name": "INPUT_CUSTOMER1",
+							"title": "Create Customer",
+							"requestPath": "Customers/Create/{requestinfo}",
+							"filePath": null,
+							"isPrimary": false,
+							"isPublic": false,
+							"properties": ""
+						},
+						{
+
+							"name": "INPUT_CUSTOMER2",
+							"title": "Edit Customer",
+							"requestPath": "Customers/Edit/{id}/{requestinfo}",
+							"filePath": null,
+							"isPrimary": false,
+							"isPublic": false,
+							"properties": ""
+						}
+					]
+
+
+				}
+			]
+		}
+	]
+
+}
+
+
+
+
+
+
