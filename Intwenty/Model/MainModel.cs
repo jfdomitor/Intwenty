@@ -6,103 +6,133 @@ using System.Threading.Tasks;
 
 namespace Intwenty.Model
 {
+
+    public enum TenantIsolationOptions
+    {
+        None = 0  //All users can access the same data
+       , User = 1  //A user can only access owned data
+       , Organization = 2 //An organization can only access owned data
+    }
+
+    public enum TenantIsolationMethodOptions
+    {
+        None = 0
+       , ByRows = 1
+       , ByTables = 2
+       , ByDatabase = 3
+    }
+
+    public enum DataModeOptions
+    {
+        Standard = 0
+      , Simple = 1
+    }
+
     public class MainModel
     {
-        public List<IntwentySystem> intwentySystems { get; set; }
-        public List<Localization> localizations { get; set; }
-        public List<Endpoint> Endpoints { get; set; }
+        public List<IntwentySystem> Systems { get; set; }
+        public List<IntwentyLocalizationItem> Localizations { get; set; }
+        public List<IntwentyEndpoint> Endpoints { get; set; }
+        public List<IntwentyValueDomainItem> ValueDomains { get; set; }
     }
 
 
     public class IntwentySystem
     {
-        public string name { get; set; }
-        public string title { get; set; }
-        public string titleLocalizationKey { get; set; }
-        public string dbPrefix { get; set; }
-        public List<IntwentyApplication> applications { get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public string TitleLocalizationKey { get; set; }
+        public string DbPrefix { get; set; }
+        public List<IntwentyApplication> Applications { get; set; }
     }
     public class IntwentyApplication
     {
-        public string name { get; set; }
-        public string title { get; set; }
-        public string titleLocalizationKey { get; set; }
-        public string dbTableName { get; set; }
-        public string dataMode { get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public string TitleLocalizationKey { get; set; }
+        public string DbTableName { get; set; }
+        public DataModeOptions DataMode { get; set; }
         public bool useVersioning { get; set; }
-        public string tenantIsolationLevel { get; set; }
-        public string tenantIsolationMethod { get; set; }
-        public List<DataBaseColumn> dataColumns { get; set; }
-        public List<View> Views { get; set; }
+        public TenantIsolationOptions TenantIsolationLevel { get; set; }
+        public TenantIsolationMethodOptions TenantIsolationMethod { get; set; }
+        public List<IntwentyDataBaseColumn> dataColumns { get; set; }
+        public List<IntwentyView> views { get; set; }
     }
 
-    public class DataBaseColumn
+    public class IntwentyDataBaseColumn
     {
-        public string dbTableName { get; set; }
-        public string dbColumnName { get; set; }
+        public string DbTableName { get; set; }
+        public string DbColumnName { get; set; }
         public string dataType { get; set; }
         public string properties { get; set; }
         public string Properties { get; set; }
         public string DadataTypetaType { get; set; }
     }
 
-    public class View
+    public class IntwentyView
     {
-        public string name { get; set; }
-        public string title { get; set; }
-        public string titleLocalizationKey { get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public string TitleLocalizationKey { get; set; }
         public string requestPath { get; set; }
         public string filePath { get; set; }
         public bool isPrimary { get; set; }
         public bool isPublic { get; set; }
         public string properties { get; set; }
-        public List<UiElement> uiElements { get; set; }
+        public List<IntwentyUIElement> uiElements { get; set; }
     }
 
-    public class UiElement
+    public class IntwentyUIElement
     {
-        public string name { get; set; }
+        public string Name { get; set; }
         public string elementType { get; set; }
-        public string title { get; set; }
-        public string titleLocalizationKey { get; set; }
-        public string parentElementName { get; set; }
-        public string dbTableName { get; set; }
-        public string dbColumnName { get; set; }
-        public string dbColumnName2 { get; set; }
-        public int columnOrder { get; set; }
-        public int rowOrder { get; set; }
-        public string domain { get; set; }
-        public string properties { get; set; }
-        public string rawHTML { get; set; }
+        public string Title { get; set; }
+        public string TitleLocalizationKey { get; set; }
+        public string DbTableName { get; set; }
+        public string DbColumnName { get; set; }
+        public string DbColumnName2 { get; set; }
+        public int ColumnOrder { get; set; }
+        public int RowOrder { get; set; }
+        public string Domain { get; set; }
+        public string Properties { get; set; }
+        public string RawHTML { get; set; }
+        public List<IntwentyUIElement> UIElements { get; set; }
     }
 
-    public class Endpoint
+    public class IntwentyEndpoint
     {
-        public string systemName { get; set; }
-        public string applicationName { get; set; }
-        public string name { get; set; }
-        public string endpointType { get; set; }
-        public string title { get; set; }
-        public string requestPath { get; set; }
-        public string description { get; set; }
-        public string dbTableName { get; set; }
-        public int orderNo { get; set; }
-        public string properties { get; set; }
+        public string SystemName { get; set; }
+        public string ApplicationName { get; set; }
+        public string Name { get; set; }
+        public string EndpointType { get; set; }
+        public string Title { get; set; }
+        public string RequestPath { get; set; }
+        public string Description { get; set; }
+        public string DbTableName { get; set; }
+        public int OrderNo { get; set; }
+        public string Properties { get; set; }
     }
 
-    public class Localization
+    public class IntwentyLocalizationItem
     {
-        public string key { get; set; }
+        public string Key { get; set; }
         public string Culture { get; set; }
         public string Text { get; set; }
     }
 
-   
-   
+    public class IntwentyValueDomainItem
+    {
+        public string DomainName { get; set; }
+        public string Code { get; set; }
+        public string Value { get; set; }
+    }
 
-   
 
-  
+
+
+
+
+
 
 
 }

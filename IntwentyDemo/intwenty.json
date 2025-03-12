@@ -1,166 +1,161 @@
 {
 
-	"intwentySystems": [
+	"Systems": [
 		{
-			"name": "Demo",
-			"title": "The Demo System",
-			"titleLocalizationKey": "CUSTSYS",
-			"dbPrefix": "demo",
-			"applications": [
+			"Name": "Demo",
+			"Title": "The Demo System",
+			"TitleLocalizationKey": "CUSTSYS",
+			"DbPrefix": "demo",
+			"Applications": [
 				{
-					"name": "Customers",
-					"title": "Customers",
-					"titleLocalizationKey": "CUSTAPP",
-					"dbTableName": "Customers",
-					"dataMode": "Simple",
-					"useVersioning": true,
-					"tenantIsolationLevel": "None",
-					"tenantIsolationMethod": "None",
-					"dataColumns": [
+					"Name": "Customers",
+					"Title": "Customers",
+					"TitleLocalizationKey": "CUSTAPP",
+					"DbTableName": "Customers",
+					"DataMode": "Simple",
+					"UseVersioning": true,
+					"TenantIsolationLevel": "None",
+					"TenantIsolationMethod": "None",
+					"DataColumns": [
 						{
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerId",
-							"dataType": "STRING",
-							"properties": "DEFVALUE=AUTO#DEFVALUE_START=1000#DEFVALUE_PREFIX=CUST#DEFVALUE_SEED=100#UNIQUE=TRUE#MANDATORY=TRUE"
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerId",
+							"DataType": "STRING",
+							"Properties": "DEFVALUE=AUTO#DEFVALUE_START=1000#DEFVALUE_PREFIX=CUST#DEFVALUE_SEED=100#UNIQUE=TRUE#MANDATORY=TRUE"
 						},
 						{
 
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerName",
-							"dataType": "STRING",
-							"properties": ""
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerName",
+							"DataType": "STRING",
+							"Properties": ""
 						},
 						{
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerPhone",
-							"dataType": "STRING",
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerPhone",
+							"DataType": "STRING",
 							"Properties": ""
 						},
 						{
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerEmail",
-							"DadataTypetaType": "STRING",
-							"properties": "MANDATORY=TRUE"
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerEmail",
+							"DaDataTypetaType": "STRING",
+							"Properties": "MANDATORY=TRUE"
 						},
 						{
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerStatus",
-							"dataType": "STRING",
-							"properties": ""
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerStatus",
+							"DataType": "STRING",
+							"Properties": ""
 						},
 						{
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerTags",
-							"dataType": "STRING",
-							"properties": ""
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerTags",
+							"DataType": "STRING",
+							"Properties": ""
 						},
 						{
 
-							"dbTableName": "Customers",
-							"dbColumnName": "CustomerTagsText",
-							"dataType": "TEXT",
-							"properties": ""
+							"DbTableName": "Customers",
+							"DbColumnName": "CustomerTagsText",
+							"DataType": "TEXT",
+							"Properties": ""
 						}
 					],
 					"Views": [
 						{
-							"name": "LV_CUSTOMER1",
-							"title": "Customer List",
-							"titleLocalizationKey": "CUSTLIST",
-							"requestPath": "Customers/List/{requestinfo}",
-							"filePath": "",
-							"isPrimary": true,
-							"isPublic": false,
-							"properties": "",
-							"uiElements": [
+							"Name": "LV_CUSTOMER1",
+							"Title": "Customer List",
+							"TitleLocalizationKey": "CUSTLIST",
+							"RequestPath": "Customers/List/{requestinfo}",
+							"FilePath": "",
+							"IsPrimary": true,
+							"IsPublic": false,
+							"Properties": "",
+							"UIElements": [
 								{
-									"name": "CUST_LISTVIEW",
-									"elementType": "TABLE",
-									"title": "Customer List",
-									"titleLocalizationKey": "CUSTLIST",
-									"parentElementName": "root",
-									"dbTableName": "Customers",
-									"dbColumnName": "",
-									"dbColumnName2": "",
-									"columnOrder": 0,
-									"rowOrder": 0,
-									"domain": "",
-									"properties": "",
-									"rawHTML": ""
-								},
-								{
-
-									"name": "LV_ID",
-									"elementType": "TABLETEXTCOLUMN",
-									"title": "ID",
-									"titleLocalizationKey": "",
-									"parentElementName": "CUST_LISTVIEW",
-									"dbTableName": "Customers",
-									"dbColumnName": "id",
-									"dbColumnName2": "",
-									"columnOrder": 1,
-									"rowOrder": 1,
-									"domain": "",
-									"properties": "",
-									"rawHTML": ""
-								},
-								{
-									"name": "LV_CUSTID",
-									"elementType": "TABLETEXTCOLUMN",
-									"title": "Customer ID",
-									"titleLocalizationKey": "CUSTID",
-									"parentElementName": "CUST_LISTVIEW",
-									"dbTableName": "Customers",
-									"dbColumnName": "CustomerId",
-									"dbColumnName2": "",
-									"columnOrder": 2,
-									"rowOrder": 1,
-									"domain": "",
-									"properties": "",
-									"rawHTML": ""
-								},
-								{
-									"name": "LV_CUSTNAME",
-									"elementType": "TABLETEXTCOLUMN",
-									"title": "Customer Name",
-									"titleLocalizationKey": "CUSTNAME",
-									"parentElementName": "CUST_LISTVIEW",
-									"dbTableName": "Customers",
-									"dbColumnName": "CustomerName",
-									"dbColumnName2": "",
-									"columnOrder": 3,
-									"rowOrder": 1,
-									"domain": "",
-									"properties": "",
-									"rawHTML": ""
+									"Name": "CUST_LISTVIEW",
+									"ElementType": "TABLE",
+									"Title": "Customer List",
+									"TitleLocalizationKey": "CUSTLIST",
+									"DbTableName": "Customers",
+									"DbColumnName": "",
+									"DbColumnName2": "",
+									"ColumnOrder": 0,
+									"RowOrder": 0,
+									"Domain": "",
+									"Properties": "",
+									"RawHTML": "",
+									"uiElements": [
+										{
+											"Name": "LV_ID",
+											"elementType": "TABLETEXTCOLUMN",
+											"Title": "ID",
+											"TitleLocalizationKey": "",
+											"DbTableName": "Customers",
+											"DbColumnName": "id",
+											"DbColumnName2": "",
+											"ColumnOrder": 1,
+											"RowOrder": 1,
+											"Domain": "",
+											"Properties": "",
+											"RawHTML": ""
+										},
+										{
+											"Name": "LV_CUSTID",
+											"ElementType": "TABLETEXTCOLUMN",
+											"Title": "Customer ID",
+											"TitleLocalizationKey": "CUSTID",
+											"DbTableName": "Customers",
+											"DbColumnName": "CustomerId",
+											"DbColumnName2": "",
+											"ColumnOrder": 2,
+											"RowOrder": 1,
+											"Domain": "",
+											"Properties": "",
+											"RawHTML": ""
+										},
+										{
+											"Name": "LV_CUSTName",
+											"ElementType": "TABLETEXTCOLUMN",
+											"Title": "Customer Name",
+											"TitleLocalizationKey": "CUSTName",
+											"DbTableName": "Customers",
+											"DbColumnName": "CustomerName",
+											"DbColumnName2": "",
+											"ColumnOrder": 3,
+											"RowOrder": 1,
+											"Domain": "",
+											"Properties": "",
+											"RawHTML": ""
+										}
+									]
 								}
-
 							]
-
 						},
 						{
-							"name": "INPUT_CUSTOMER1",
-							"title": "Create Customer",
-							"requestPath": "Customers/Create/{requestinfo}",
-							"filePath": null,
-							"isPrimary": false,
-							"isPublic": false,
-							"properties": ""
+							"Name": "INPUT_CUSTOMER1",
+							"Title": "Create Customer",
+							"RequestPath": "Customers/Create/{requestinfo}",
+							"FilePath": null,
+							"IsPrimary": false,
+							"IsPublic": false,
+							"Properties": ""
 						},
 						{
 
-							"name": "INPUT_CUSTOMER2",
-							"title": "Edit Customer",
-							"requestPath": "Customers/Edit/{id}/{requestinfo}",
-							"filePath": null,
-							"isPrimary": false,
-							"isPublic": false,
-							"properties": ""
+							"Name": "INPUT_CUSTOMER2",
+							"Title": "Edit Customer",
+							"RequestPath": "Customers/Edit/{id}/{requestinfo}",
+							"FilePath": null,
+							"IsPrimary": false,
+							"IsPublic": false,
+							"Properties": ""
 						}
 					]
 
@@ -169,7 +164,7 @@
 			]
 		}
 	],
-	"localizations": [
+	"Localizations": [
 		{
 			"key": "LOCKED_OUT_ACCOUNT",
 			"Culture": "en-US",
@@ -183,32 +178,62 @@
 	],
 	"Endpoints": [
 		{
-			"systemName": "Demo",
-			"applicationName": "Customer",
-			"name": "EP_CUSTOMER_GETALL",
-			"endpointType": "TABLELIST",
-			"title": "Get all customers",
-			"requestPath": "MyAPI/Customers",
-			"description": "Get all customers in the database",
-			"dbTableName": "Customer",
-			"orderNo": 0,
-			"properties": ""
+			"SystemName": "Demo",
+			"ApplicationName": "Customer",
+			"Name": "EP_CUSTOMER_GETALL",
+			"EndpointType": "TABLELIST",
+			"Title": "Get all customers",
+			"RequestPath": "MyAPI/Customers",
+			"Description": "Get all customers in the database",
+			"DbTableName": "Customer",
+			"OrderNo": 0,
+			"Properties": ""
 		},
 		{
 			"systemName": "Demo",
 			"applicationName": "",
-			"name": "EP_CUST_1",
-			"endpointType": "CUSTOMPOST",
-			"title": "Post Anything",
-			"requestPath": "MyAPI/PostAnyThing",
-			"description": "This endpoint must be implemented in a custom controller",
-			"dbTableName": "",
-			"orderNo": 0,
-			"properties": ""
+			"Name": "EP_CUST_1",
+			"EndpointType": "CUSTOMPOST",
+			"Title": "Post Anything",
+			"RequestPath": "MyAPI/PostAnyThing",
+			"Description": "This endpoint must be implemented in a custom controller",
+			"DbTableName": "",
+			"OrderNo": 0,
+			"Properties": ""
+		}
+	],
+	"ValueDomains": [
+		{
+			"DomainName": "ITEMCATEGORY",
+			"Code": "PROD",
+			"Value": "Products"
+		},
+		{
+			"DomainName": "ITEMCATEGORY",
+			"Code": "SERV",
+			"Value": "Services"
+		},
+		{
+			"DomainName": "CUSTOMERTAGS",
+			"Code": "1",
+			"Value": "Tag 1"
+		}
+		,
+		{
+			"DomainName": "CUSTOMERTAGS",
+			"Code": "2",
+			"Value": "Tag 2"
+		},
+		{
+			"DomainName": "CUSTOMERTAGS",
+			"Code": "3",
+			"Value": "Tag 3"
 		}
 	]
 
 }
+
+
 
 
 
