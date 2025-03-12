@@ -11,15 +11,15 @@ namespace Intwenty.Model
     public class ViewRequestInfo
     {
         public int Id { get; set; }
-        public int ViewId { get; set; }
-        public int ParentViewId { get; set; }
-        public int ApplicationId { get; set; }
+        public string ViewId { get; set; }
+        public string ParentViewId { get; set; }
+        public string ApplicationId { get; set; }
         public string RequestInfo { get; set; }
         public string ViewPath { get; set; }
         public string ViewFilePath { get; set; }
         public string ViewRefererPath { get; set; }
         public string ViewHtmlId { get; set; }
-        public List<ViewModel> ChildViews { get; set; }
+        public List<IntwentyView> ChildViews { get; set; }
         public string EndpointBasePath { get; set; }
         public string EndpointSaveApplicationPath { get; set; }
         public string EndpointSaveLinePath { get; set; }
@@ -36,7 +36,7 @@ namespace Intwenty.Model
         {
             RequestInfo = string.Empty;
             ViewPath = string.Empty;
-            ChildViews = new List<ViewModel>();
+            ChildViews = new List<IntwentyView>();
             ViewHtmlId = "app";
         }
 

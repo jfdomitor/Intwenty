@@ -2,13 +2,14 @@
 
 	"Systems": [
 		{
-			"Name": "Demo",
+			"Id": "Demo",
 			"Title": "The Demo System",
 			"TitleLocalizationKey": "CUSTSYS",
 			"DbPrefix": "demo",
 			"Applications": [
 				{
-					"Name": "Customers",
+					"Id": "Customers",
+					"SystemId": "Demo",
 					"Title": "Customers",
 					"TitleLocalizationKey": "CUSTAPP",
 					"DbTableName": "Customers",
@@ -18,21 +19,21 @@
 					"TenantIsolationMethod": "None",
 					"DataColumns": [
 						{
-
+							"Id": "CustomerId",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerId",
 							"DataType": "STRING",
 							"Properties": "DEFVALUE=AUTO#DEFVALUE_START=1000#DEFVALUE_PREFIX=CUST#DEFVALUE_SEED=100#UNIQUE=TRUE#MANDATORY=TRUE"
 						},
 						{
-
-
+							"Id": "CustomerName",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerName",
 							"DataType": "STRING",
 							"Properties": ""
 						},
 						{
+							"Id": "CustomerPhone",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerPhone",
 							"DataType": "STRING",
@@ -40,27 +41,28 @@
 						},
 						{
 
+							"Id": "CustomerEmail",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerEmail",
 							"DaDataTypetaType": "STRING",
 							"Properties": "MANDATORY=TRUE"
 						},
 						{
-
+							"Id": "CustomerStatus",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerStatus",
 							"DataType": "STRING",
 							"Properties": ""
 						},
 						{
-
+							"Id": "CustomerTags",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerTags",
 							"DataType": "STRING",
 							"Properties": ""
 						},
 						{
-
+							"Id": "CustomerTagsText",
 							"DbTableName": "Customers",
 							"DbColumnName": "CustomerTagsText",
 							"DataType": "TEXT",
@@ -69,7 +71,9 @@
 					],
 					"Views": [
 						{
-							"Name": "LV_CUSTOMER1",
+							"Id": "LV_CUSTOMER1",
+							"SystemId": "Demo",
+							"ApplicationId": "Customer",
 							"Title": "Customer List",
 							"TitleLocalizationKey": "CUSTLIST",
 							"RequestPath": "Customers/List/{requestinfo}",
@@ -79,7 +83,7 @@
 							"Properties": "",
 							"UIElements": [
 								{
-									"Name": "CUST_LISTVIEW",
+									"Id": "CUST_LISTVIEW",
 									"ElementType": "TABLE",
 									"Title": "Customer List",
 									"TitleLocalizationKey": "CUSTLIST",
@@ -91,9 +95,9 @@
 									"Domain": "",
 									"Properties": "",
 									"RawHTML": "",
-									"uiElements": [
+									"ChildElements": [
 										{
-											"Name": "LV_ID",
+											"Id": "LV_ID",
 											"elementType": "TABLETEXTCOLUMN",
 											"Title": "ID",
 											"TitleLocalizationKey": "",
@@ -104,10 +108,11 @@
 											"RowOrder": 1,
 											"Domain": "",
 											"Properties": "",
-											"RawHTML": ""
+											"RawHTML": "",
+											"ChildElements": []
 										},
 										{
-											"Name": "LV_CUSTID",
+											"Id": "LV_CUSTID",
 											"ElementType": "TABLETEXTCOLUMN",
 											"Title": "Customer ID",
 											"TitleLocalizationKey": "CUSTID",
@@ -118,12 +123,13 @@
 											"RowOrder": 1,
 											"Domain": "",
 											"Properties": "",
-											"RawHTML": ""
+											"RawHTML": "",
+											"ChildElements": []
 										},
 										{
-											"Name": "LV_CUSTName",
+											"Id": "LV_CUSTName",
 											"ElementType": "TABLETEXTCOLUMN",
-											"Title": "Customer Name",
+											"Title": "Customer Id",
 											"TitleLocalizationKey": "CUSTName",
 											"DbTableName": "Customers",
 											"DbColumnName": "CustomerName",
@@ -132,14 +138,17 @@
 											"RowOrder": 1,
 											"Domain": "",
 											"Properties": "",
-											"RawHTML": ""
+											"RawHTML": "",
+											"ChildElements": []
 										}
 									]
 								}
 							]
 						},
 						{
-							"Name": "INPUT_CUSTOMER1",
+							"Id": "INPUT_CUSTOMER1",
+							"SystemId": "Demo",
+							"ApplicationId": "Customer",
 							"Title": "Create Customer",
 							"RequestPath": "Customers/Create/{requestinfo}",
 							"FilePath": null,
@@ -149,7 +158,9 @@
 						},
 						{
 
-							"Name": "INPUT_CUSTOMER2",
+							"Id": "INPUT_CUSTOMER2",
+							"SystemId": "Demo",
+							"ApplicationId": "Customer",
 							"Title": "Edit Customer",
 							"RequestPath": "Customers/Edit/{id}/{requestinfo}",
 							"FilePath": null,
@@ -166,21 +177,21 @@
 	],
 	"Localizations": [
 		{
-			"key": "LOCKED_OUT_ACCOUNT",
+			"Key": "LOCKED_OUT_ACCOUNT",
 			"Culture": "en-US",
 			"Text": "This account has been locked out, please try again later."
 		},
 		{
-			"key": "LOCKED_OUT_ACCOUNT",
+			"Key": "LOCKED_OUT_ACCOUNT",
 			"Culture": "sv-SE",
 			"Text": "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig"
 		}
 	],
 	"Endpoints": [
 		{
-			"SystemName": "Demo",
-			"ApplicationName": "Customer",
-			"Name": "EP_CUSTOMER_GETALL",
+			"Id": "EP_CUSTOMER_GETALL",
+			"SystemId": "Demo",
+			"ApplicationId": "Customer",
 			"EndpointType": "TABLELIST",
 			"Title": "Get all customers",
 			"RequestPath": "MyAPI/Customers",
@@ -190,9 +201,9 @@
 			"Properties": ""
 		},
 		{
-			"systemName": "Demo",
-			"applicationName": "",
-			"Name": "EP_CUST_1",
+			"Id": "EP_CUST_1",
+			"SystemId": "Demo",
+			"ApplicationID": "",
 			"EndpointType": "CUSTOMPOST",
 			"Title": "Post Anything",
 			"RequestPath": "MyAPI/PostAnyThing",

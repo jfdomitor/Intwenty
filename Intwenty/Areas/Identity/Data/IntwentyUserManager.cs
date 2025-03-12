@@ -375,17 +375,13 @@ namespace Intwenty.Areas.Identity.Data
 
 
 
-        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, ViewModel requestedview)
+        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, IntwentyView requestedview)
         {
             return await HasViewAuthorizationInternal(claimprincipal,requestedview);
         }
 
-        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, ApplicationModel application)
-        {
-            return await HasAuthorization(claimprincipal, application.Application);
-        }
 
-        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, ApplicationModelItem application)
+        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, IntwentyApplication application)
         {
             if (!claimprincipal.Identity.IsAuthenticated)
                 return false;
@@ -401,22 +397,22 @@ namespace Intwenty.Areas.Identity.Data
             var authorizations = await GetUserAuthorizationsAsync(user, Settings.ProductId);
             var list = authorizations.Select(p => new IntwentyAuthorizationVm(p)).ToList();
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == application.MetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == application.Id && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == application.SystemMetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == application.SystemId && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == application.MetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == application.Id && !p.DenyAuthorization))
             {
                 return true;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == application.SystemMetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == application.SystemId && !p.DenyAuthorization))
             {
                 return true;
             }
@@ -425,7 +421,7 @@ namespace Intwenty.Areas.Identity.Data
             return false;
         }
 
-        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, SystemModelItem system)
+        public async Task<bool> HasAuthorization(ClaimsPrincipal claimprincipal, IntwentySystem system)
         {
             if (!claimprincipal.Identity.IsAuthenticated)
                 return false;
@@ -443,13 +439,13 @@ namespace Intwenty.Areas.Identity.Data
 
           
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == system.MetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == system.Id && p.DenyAuthorization))
             {
                 return false;
             }
 
          
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == system.MetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == system.Id && !p.DenyAuthorization))
             {
                 return true;
             }
@@ -459,7 +455,7 @@ namespace Intwenty.Areas.Identity.Data
         }
 
 
-        private async Task<bool> HasViewAuthorizationInternal(ClaimsPrincipal claimprincipal, ViewModel requestedview)
+        private async Task<bool> HasViewAuthorizationInternal(ClaimsPrincipal claimprincipal, IntwentyView requestedview)
         {
             if (!claimprincipal.Identity.IsAuthenticated)
                 return false;
@@ -475,32 +471,32 @@ namespace Intwenty.Areas.Identity.Data
             var authorizations = await GetUserAuthorizationsAsync(user, Settings.ProductId);
             var list = authorizations.Select(p => new IntwentyAuthorizationVm(p)).ToList();
 
-            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.MetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.AppMetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemMetaCode && p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.MetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id && !p.DenyAuthorization))
             {
                 return true;
             }
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.AppMetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId && !p.DenyAuthorization))
             {
                 return true;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemMetaCode && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId && !p.DenyAuthorization))
             {
                 return true;
             }

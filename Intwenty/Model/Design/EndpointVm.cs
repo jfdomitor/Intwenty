@@ -11,7 +11,7 @@ namespace Intwenty.Model.Design
 
         public List<EndpointVm> Endpoints { get; set; }
 
-        public List<SystemModelItem> Systems { get; set; }
+        public List<IntwentySystem> Systems { get; set; }
 
         public List<EndpointType> EndpointTypes
         {

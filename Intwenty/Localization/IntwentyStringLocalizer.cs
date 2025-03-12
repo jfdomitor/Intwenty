@@ -14,10 +14,10 @@ namespace Intwenty.Localization
     public class IntwentyStringLocalizer : IStringLocalizer
     {
 
-        private List<TranslationModelItem> TranslationList { get; }
+        private List<IntwentyLocalizationItem> TranslationList { get; }
         private IntwentySettings Settings { get; }
 
-        public IntwentyStringLocalizer(List<TranslationModelItem> list, IntwentySettings settings)
+        public IntwentyStringLocalizer(List<IntwentyLocalizationItem> list, IntwentySettings settings)
         {
             TranslationList = list;
             Settings = settings;

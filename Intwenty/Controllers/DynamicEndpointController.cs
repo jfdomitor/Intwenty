@@ -44,7 +44,7 @@ namespace Intwenty.Controllers
             if (!id.HasValue)
                  return new JsonResult("Parameter Id must be an integer value") { StatusCode = 400 };
 
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.DbName.ToLower() == ep.DataTableInfo.DbName.ToLower() &&
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.DbName.ToLower() == ep.DbTableName.ToLower() &&
                                                                    p.Application.MetaCode == ep.AppMetaCode);
 
             if (model!= null)
@@ -186,12 +186,9 @@ namespace Intwenty.Controllers
            
       }
 
-        private EndpointModelItem GetEndpointModelFromPath() 
+        private IntwentyEndpoint GetEndpointModelFromPath() 
         {
             var path = this.Request.Path.Value;
-
-            //var epmodels = ModelRepository.GetEndpointModels();
-
             var ep = ModelRepository.GetEndpointModels().Find(p => path.ToUpper().Contains((p.Path + p.Action).ToUpper()));
             return ep;
 

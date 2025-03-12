@@ -50,7 +50,7 @@ namespace Intwenty
 
         #region Create
 
-        public virtual DataResult New(ApplicationModel model)
+        public virtual DataResult New(IntwentyApplication model)
         {
             return CreateNewInternal(model);
         }

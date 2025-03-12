@@ -87,7 +87,7 @@ namespace Intwenty
 
         }
 
-        public virtual ViewModel GetViewToRender(int? id, string requestinfo, HttpRequest httprequest)
+        public virtual IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest)
         {
             var info = new ViewRequestInfo();
 
@@ -111,7 +111,7 @@ namespace Intwenty
             }
 
 
-            ViewModel viewtorender = null;
+            IntwentyView viewtorender = null;
             if (viewid > 0)
             {
                 viewtorender = GetLocalizedViewModelById(viewid);
@@ -126,8 +126,7 @@ namespace Intwenty
 
             info.Id = instanceid;
             info.ViewId = viewtorender.Id;
-            if (viewtorender.HasApplicationInfo)
-                info.ApplicationId = viewtorender.ApplicationInfo.Id;
+            info.ApplicationId = viewtorender.ApplicationId;
 
             info.ViewPath = httprequest.Path.Value;
             if (httprequest.Headers.ContainsKey("Referer"))
@@ -144,14 +143,12 @@ namespace Intwenty
                 info.RequestInfo = requestinfo;
 
             viewtorender.RuntimeRequestInfo = info;
-            foreach (var ui in viewtorender.UserInterface)
-                ui.RuntimeRequestInfo = info;
-
+           
             return viewtorender;
 
         }
 
-        public virtual void AddChildViewsToRender(ViewModel view)
+        public virtual void AddChildViewsToRender(IntwentyView view)
         {
 
         }
@@ -168,45 +165,6 @@ namespace Intwenty
                 result.AddRange(descriptions);
             }
 
-            List<ApplicationModel> applicationmodels = null;
-            if (ModelCache.TryGetValue(AppModelCacheKey, out applicationmodels))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", AppModelCacheKey) { ObjectCount = applicationmodels.Count, Title = "Complete application models" });
-            }
-
-            List<ApplicationModelItem> applicationmodelitems = null;
-            if (ModelCache.TryGetValue(AppModelItemsCacheKey, out applicationmodelitems))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", AppModelItemsCacheKey) { ObjectCount = applicationmodelitems.Count, Title = "Application models" });
-            }
-
-            List<ValueDomainModelItem> valuedomains = null;
-            if (ModelCache.TryGetValue(ValueDomainsCacheKey, out valuedomains))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", ValueDomainsCacheKey) { ObjectCount = valuedomains.Count, Title = "Value Domains" });
-            }
-
-            List<TranslationModelItem> translations = null;
-            if (ModelCache.TryGetValue(TranslationsCacheKey, out translations))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", TranslationsCacheKey) { ObjectCount = translations.Count, Title = "Localizations" });
-            }
-
-            List<EndpointModelItem> endpoints = null;
-            if (ModelCache.TryGetValue(EndpointsCacheKey, out endpoints))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", EndpointsCacheKey) { ObjectCount = endpoints.Count, Title = "Endpoints" });
-            }
-
-         
-
-            List<IntwentyDataColumn> defcolumns = null;
-            if (ModelCache.TryGetValue(DefaultVersioningTableColumnsCacheKey, out defcolumns))
-            {
-                result.Add(new CachedObjectDescription("CACHEDMODEL", DefaultVersioningTableColumnsCacheKey) { ObjectCount = defcolumns.Count, Title = "Default Intwenty Columns" });
-            }
-
-
             return result;
         }
         public void ClearCache(string key = "ALL")
@@ -220,13 +178,8 @@ namespace Intwenty
 
             if (clearall)
             {
-                ModelCache.Remove(SystemModelItemCacheKey);
-                ModelCache.Remove(AppModelCacheKey);
-                ModelCache.Remove(AppModelItemsCacheKey);
-                ModelCache.Remove(DefaultVersioningTableColumnsCacheKey);
-                ModelCache.Remove(ValueDomainsCacheKey);
-                ModelCache.Remove(TranslationsCacheKey);
-                ModelCache.Remove(EndpointsCacheKey);
+                ModelCache.Remove("TRANSACTIONCACHE");
+             
             }
             else
             {
@@ -236,106 +189,30 @@ namespace Intwenty
 
         }
 
-
-        //public ExportModel GetExportModel()
-        //{
-
-        //    Client.Open();
-        //    var t = new ExportModel();
-        //    var systems = Client.GetEntities<SystemItem>();
-        //    foreach (var a in systems)
-        //        t.Systems.Add(a);
-        //    var apps = Client.GetEntities<ApplicationItem>();
-        //    foreach (var a in apps)
-        //        t.Applications.Add(a);
-        //    var dbitems = Client.GetEntities<DatabaseItem>();
-        //    foreach (var a in dbitems)
-        //        t.DatabaseItems.Add(a);
-        //    var uiviewitems = Client.GetEntities<ViewItem>();
-        //    foreach (var a in uiviewitems)
-        //        t.ViewItems.Add(a);
-        //    var uiitems = Client.GetEntities<UserInterfaceItem>();
-        //    foreach (var a in uiitems)
-        //        t.UserInterfaceItems.Add(a);
-        //    var funcitems = Client.GetEntities<FunctionItem>();
-        //    foreach (var a in funcitems)
-        //        t.FunctionItems.Add(a);
-        //    var uistructitems = Client.GetEntities<UserInterfaceStructureItem>();
-        //    foreach (var a in uistructitems)
-        //        t.UserInterfaceStructureItems.Add(a);
-        //    var valuedomainitems = Client.GetEntities<ValueDomainItem>();
-        //    foreach (var a in valuedomainitems)
-        //        t.ValueDomains.Add(a);
-        //    var endpints = Client.GetEntities<EndpointItem>();
-        //    foreach (var a in endpints)
-        //        t.Endpoints.Add(a);
-        //    var translations = Client.GetEntities<TranslationItem>();
-        //    foreach (var a in translations)
-        //        t.Translations.Add(a);
-
-        //    Client.Close();
-
-        //    return t;
-
-        //}
-
-       
-
         #endregion
 
-        #region Systems
-
-        public List<SystemModelItem> GetSystemModels()
-        {
-            List<SystemModelItem> res = null;
-
-            if (ModelCache.TryGetValue(SystemModelItemCacheKey, out res))
-            {
-                return res;
-            }
-
-            res = new List<SystemModelItem>();
-
-            Client.Open();
-            var systems = Client.GetEntities<SystemItem>();
-            Client.Close();
-
-            if (!systems.Exists(p => p.MetaCode == "INTWENTYDEFAULTSYS"))
-                res.Add(new SystemModelItem() { Id = 9999, DbPrefix = "def", Title = "Default", MetaCode = "INTWENTYDEFAULTSYS" });
-
-            foreach (var s in systems)
-            {
-                res.Add(new SystemModelItem(s));
-            }
-
-
-
-            ModelCache.Set(SystemModelItemCacheKey, res);
-
-            return res;
-        }
-
-
-        #endregion
+   
 
         #region Localization
 
-        public ViewModel GetLocalizedViewModelById(int id)
+        public IntwentyView GetLocalizedViewModelById(string id)
         {
 
-            if (id < 1)
+            if (string.IsNullOrEmpty(id))
                 return null;
 
-            var appmodels = GetApplicationModels();
-            foreach (var app in appmodels)
+            foreach (var sys in this.Model.Systems)
             {
-                foreach (var view in app.Views)
+                foreach (var app in sys.Applications)
                 {
-                    if (view.Id == id)
+                    foreach (var view in app.Views)
                     {
-                        LocalizeViewModel(view);
-                        return view;
+                        if (view.Id == id)
+                        {
+                            LocalizeViewModel(view);
+                            return view;
 
+                        }
                     }
                 }
             }
@@ -343,43 +220,24 @@ namespace Intwenty
             return null;
         }
 
-        public ViewModel GetLocalizedViewModelByMetaCode(string metacode)
-        {
-
-            if (string.IsNullOrEmpty(metacode))
-                return null;
-
-            var appmodels = GetApplicationModels();
-            foreach (var app in appmodels)
-            {
-                foreach (var view in app.Views)
-                {
-                    if (view.MetaCode == metacode)
-                    {
-                        LocalizeViewModel(view);
-                        return view;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public ViewModel GetLocalizedViewModelByPath(string path)
+     
+        public IntwentyView GetLocalizedViewModelByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return null;
 
-            var appmodels = GetApplicationModels();
-            foreach (var app in appmodels)
+            foreach (var sys in this.Model.Systems)
             {
-                foreach (var view in app.Views)
+                foreach (var app in sys.Applications)
                 {
-                    if (view.IsOnPath(path))
+                    foreach (var view in app.Views)
                     {
-                        LocalizeViewModel(view);
-                        return view;
+                        if (view.IsOnPath(path))
+                        {
+                            LocalizeViewModel(view);
+                            return view;
 
+                        }
                     }
                 }
             }
@@ -415,43 +273,25 @@ namespace Intwenty
             
         }
 
-        private void LocalizeViewModel(ViewModel model)
+        private void LocalizeViewModel(IntwentyView model)
         {
-            LocalizeTitle(model.ApplicationInfo);
             LocalizeTitle(model);
-            LocalizeDescription(model);
-            foreach (var func in model.Functions)
-            {
-                LocalizeTitle(func);
-            }
 
-            foreach (var ui in model.UserInterface)
-            {
-                foreach (var func in ui.Functions)
-                {
-                    LocalizeTitle(func);
-                }
 
-                foreach (var sect in ui.Sections)
+            foreach (var root in model.UIElements)
+            {
+                LocalizeTitle(root);
+                foreach (var lvl1 in root.ChildElements)
                 {
-                    LocalizeTitle(sect);
-                    foreach (var pnl in sect.LayoutPanels)
+                    LocalizeTitle(lvl1);
+                    foreach (var lvl2 in lvl1.ChildElements)
                     {
-                        LocalizeTitle(pnl);
-                        foreach (var uiitem in pnl.Controls)
-                        {
-                            LocalizeTitle(uiitem);
-                        }
-                    }
-                }
+                        LocalizeTitle(lvl2);
 
-                LocalizeTitle(ui.Table);
-                foreach (var col in ui.Table.Columns)
-                {
-                    LocalizeTitle(col);
+                    }
+
                 }
             }
-
         }
 
 
@@ -1271,66 +1111,19 @@ namespace Intwenty
 
         #region Value Domains
 
-        public void SaveValueDomains(List<ValueDomainModelItem> model)
+
+        public List<IntwentyValueDomainItem> GetValueDomains()
         {
-            ModelCache.Remove(ValueDomainsCacheKey);
-
-            Client.Open();
-            foreach (var vd in model)
-            {
-                if (!vd.IsValid)
-                    throw new InvalidOperationException("Missing required information on value domain, can't save.");
-
-                if (vd.Id < 1)
-                {
-                    Client.InsertEntity(new ValueDomainItem() { DomainName = vd.DomainName, Value = vd.Value, Code = vd.Code });
-                }
-                else
-                {
-                    var existing = Client.GetEntities<ValueDomainItem>().FirstOrDefault(p => p.Id == vd.Id);
-                    if (existing != null)
-                    {
-                        existing.Code = vd.Code;
-                        existing.Value = vd.Value;
-                        existing.DomainName = vd.DomainName;
-                        Client.UpdateEntity(existing);
-                    }
-
-                }
-
-            }
-            Client.Close();
-        }
-
-        public List<ValueDomainModelItem> GetValueDomains()
-        {
-            List<ValueDomainModelItem> res;
+            List<IntwentyValueDomainItem> res;
             if (ModelCache.TryGetValue(ValueDomainsCacheKey, out res))
             {
                 return res;
             }
 
-            Client.Open();
-            var t = Client.GetEntities<ValueDomainItem>().Select(p => new ValueDomainModelItem(p)).ToList();
-            Client.Close();
-            LocalizeTitles(t.ToList<ILocalizableTitle>());
-
-            return t;
+            return this.Model.ValueDomains;
         }
 
-        public void DeleteValueDomain(int id)
-        {
-            ModelCache.Remove(ValueDomainsCacheKey);
-            var existing = Client.GetEntities<ValueDomainItem>().FirstOrDefault(p => p.Id == id);
-            if (existing != null)
-            {
-                Client.Open();
-                Client.DeleteEntity(existing);
-                Client.Close();
-            }
-        }
-
-
+       
 
 
 

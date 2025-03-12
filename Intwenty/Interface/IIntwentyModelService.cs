@@ -19,61 +19,58 @@ namespace Intwenty.Interface
     {
         IntwentySettings Settings { get; }
 
-        ViewModel GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
-        void AddChildViewsToRender(ViewModel view);
+        IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
+        void AddChildViewsToRender(IntwentyView view);
 
-        Task<List<ViewModel>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal);
-        Task<List<ViewModel>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
-        Task<List<ApplicationModelItem>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
-        Task<List<SystemModelItem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal);
+        Task<List<IntwentyView>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal);
+        Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
+        Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
+        Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal);
 
 
 
         //APPLICATION
-        List<ApplicationModelItem> GetApplicationDescriptions();
-        List<SystemModelItem> GetSystemModels();
-        List<ApplicationModel> GetApplicationModels();
-        ApplicationModel GetApplicationModel(int applicationid);
-        ApplicationModel GetApplicationModel(string metacode);
+        List<IntwentyApplication> GetApplicationDescriptions();
+        List<IntwentySystem> GetSystemModels();
+        List<IntwentyApplication> GetApplicationModels();
+        IntwentyApplication GetApplicationModel(int applicationid);
+        IntwentyApplication GetApplicationModel(string metacode);
       
 
 
         //DATABASE
-        List<DatabaseModelItem> GetDatabaseModels();
-        DatabaseModelItem GetDatabaseColumnModel(ApplicationModel model, string columnname, string tablename="");
+        List<IntwentyDataBaseColumn> GetDatabaseModels();
+        IntwentyDataBaseColumn GetDatabaseColumnModel(IntwentyApplication model, string columnname, string tablename="");
 
 
         //UI
-        List<ViewModel> GetViewModels();
-        ViewModel GetLocalizedViewModelById(int id);
-        ViewModel GetLocalizedViewModelByMetaCode(string metacode);
-        ViewModel GetLocalizedViewModelByPath(string path);
+        List<IntwentyView> GetViewModels();
+        IntwentyView GetLocalizedViewModelById(string id);
+        IntwentyView GetLocalizedViewModelByPath(string path);
         string GetLocalizedString(string localizationkey);
 
 
         //VALUE DOMAINS
-        List<ValueDomainModelItem> GetValueDomains();
-        void SaveValueDomains(List<ValueDomainModelItem> model);
-        void DeleteValueDomain(int id);
-
+        List<IntwentyValueDomainItem> GetValueDomains();
+      
 
         //TRANSLATIONS
-        List<TranslationModelItem> GetTranslations();
+        List<IntwentyLocalizationItem> GetTranslations();
 
 
 
         //ENDPOINTS
-        List<EndpointModelItem> GetEndpointModels();
+        List<IntwentyEndpoint> GetEndpointModels();
 
 
         //MISC
         Task<List<OperationResult>> CreateTenantIsolatedTables(IntwentyUser user);
         OperationResult ValidateModel();
-        List<IntwentyDataColumn> GetDefaultVersioningTableColumns();
+        List<IntwentyDataBaseColumn> GetDefaultVersioningTableColumns();
         void ClearCache(string key="ALL");
         List<CachedObjectDescription> GetCachedObjectDescriptions();
         Task<List<OperationResult>> ConfigureDatabase(string tableprefix = "");
-        Task<OperationResult> ConfigureDatabase(ApplicationModelItem model, List<DatabaseModelItem> databasemodel = null, string tableprefix = "");
+        Task<OperationResult> ConfigureDatabase(IntwentyApplication model, List<IntwentyDataBaseColumn> databasemodel = null, string tableprefix = "");
 
 
     }

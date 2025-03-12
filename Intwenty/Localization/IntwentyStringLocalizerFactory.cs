@@ -66,9 +66,9 @@ namespace Intwenty.Localization
             return value;
         }
 
-        private List<TranslationModelItem> GetLocalizations()
+        private List<IntwentyLocalizationItem> GetLocalizations()
         {
-            List<TranslationModelItem> res;
+            List<IntwentyLocalizationItem> res;
             if (ModelCache.TryGetValue("UILOCALIZATIONS", out res))
             {
                 return res;
