@@ -1,18 +1,8 @@
 ﻿@model IntwentyUIElement
 
 <ul class="nav">
-    @if (Model.HasCreateFunction)
-    {
-        @if (Model.CreateFunction.IsModalAction)
-        {
-
-
-            <li class="nav-item">
-                <button class="nav-link btn btn-sm btn-outline-secondary" v-on:click="openSubTableModal(null,'@Model.CreateFunction.ActionMetaCode','@Model.DataTableDbName')"><span class="fa fa-plus"></span> @Model.CreateFunction.LocalizedTitle</button>
-            </li>
-
-        }
-    }
-
+    <li class="nav-item">
+        <button class="nav-link btn btn-sm btn-outline-secondary" ba:click="openSubTableModal('@Model.DbTableName')"><span class="fa fa-plus"></span>@Localizer["Create"]</button>
+    </li>
     @await Html.PartialAsync("UISections/_ApplicationSubTableHeaderButtons", Model)
 </ul>
