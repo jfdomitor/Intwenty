@@ -1,4 +1,5 @@
 ﻿using Intwenty.DataClient;
+using Intwenty.DataClient.Model;
 using Intwenty.Interface;
 using System;
 using System.Collections.Generic;
@@ -51,6 +52,43 @@ namespace Intwenty.Model
        ,TableList = 1
        ,TableSave = 2
        ,Custom = 3
+    }
+
+    public class IntwentyDataClientTypeMap : TypeMapItem
+    {
+        public IntwentyDataType IntwentyDataTypeEnum { get; set; }
+
+        public static List<IntwentyDataClientTypeMap> GetTypeMap(List<TypeMapItem> clientmaps)
+        {
+         
+            var res = new List<IntwentyDataClientTypeMap>();
+            foreach (var item in clientmaps) 
+            {
+               var itemmap = new IntwentyDataClientTypeMap() { DataDbType = item.DataDbType, DbEngine=item.DbEngine, DBMSDataType = item.DBMSDataType, IntwentyType = item.IntwentyType, Length=item.Length, NetType= item.NetType };
+               if (itemmap.IntwentyType == "BOOLEAN")
+                   itemmap.IntwentyDataTypeEnum = IntwentyDataType.Bool;
+                if (itemmap.IntwentyType == "STRING")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.String;
+                if (itemmap.IntwentyType == "TEXT")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.Text;
+                if (itemmap.IntwentyType == "INTEGER")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.Int;
+                if (itemmap.IntwentyType == "DATETIME")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.DateTime;
+                if (itemmap.IntwentyType == "1DECIMAL")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.OneDecimal;
+                if (itemmap.IntwentyType == "2DECIMAL")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.TwoDecimal;
+                if (itemmap.IntwentyType == "3DECIMAL")
+                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.ThreeDecimal;
+
+                res.Add(itemmap);
+
+            }
+            return res;
+        }
+
+
     }
 
 
@@ -112,7 +150,7 @@ namespace Intwenty.Model
         }
         public IntwentyDataBaseColumn(bool isframeworkcolumn)
         {
-            p_IsFrameworkColumn = true;
+            p_IsFrameworkColumn = isframeworkcolumn;
         }
 
 
@@ -148,12 +186,30 @@ namespace Intwenty.Model
 
     public class IntwentyDataBaseTable 
     {
+        private bool p_IsAppMainTable = false;
         public string Id { get; set; }
         public string SystemId { get; set; }
         public string ApplicationId { get; set; }
         public string DbTableName { get; set; }
         public string Properties { get; set; }
         public List<IntwentyDataBaseColumn> DataColumns { get; set; }
+
+        public IntwentyDataBaseTable()
+        {
+        }
+        public IntwentyDataBaseTable(bool is_app_main_table)
+        {
+            p_IsAppMainTable = is_app_main_table;
+        }
+
+
+        public bool IsAppMainTable
+        {
+            get
+            {
+                return p_IsAppMainTable;
+            }
+        }
     }
 
     public class IntwentyView : ILocalizableTitle

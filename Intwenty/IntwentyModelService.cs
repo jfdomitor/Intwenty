@@ -47,7 +47,7 @@ namespace Intwenty
 
         private string CurrentCulture { get; }
 
-        private List<TypeMapItem> DataTypes { get; set; }
+        private List<IntwentyDataClientTypeMap> DataTypes { get; set; }
 
         private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
 
@@ -62,7 +62,7 @@ namespace Intwenty
             ModelCache = cache;
             Settings = settings.Value;
             Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-            DataTypes = Client.GetDbTypeMap();
+            DataTypes = IntwentyDataClientTypeMap.GetTypeMap(Client.GetDbTypeMap());
             CurrentCulture = Settings.LocalizationDefaultCulture;
             if (Settings.LocalizationMethod == LocalizationMethods.UserLocalization)
             {
@@ -392,7 +392,7 @@ namespace Intwenty
             if (user == null)
                 return res;
 
-            var systems = GetSystemModels();
+            var systems = Model.Systems;
             if (await UserManager.IsInRoleAsync(user, IntwentyRoles.RoleSuperAdmin))
                 return systems;
 
@@ -405,20 +405,19 @@ namespace Intwenty
             foreach (var sys in systems)
             {
 
-                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == sys.MetaCode))
+                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == sys.Id))
                     continue;
 
                 foreach (var p in list)
                 {
 
-                    if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == sys.MetaCode && !p.DenyAuthorization)
+                    if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == sys.Id && !p.DenyAuthorization)
                     {
                         res.Add(sys);
                     }
                 }
 
             }
-
 
             return res;
 
@@ -539,65 +538,9 @@ namespace Intwenty
         #endregion
 
         #region Endpoints
-        public List<EndpointModelItem> GetEndpointModels()
+        public List<IntwentyEndpoint> GetEndpointModels()
         {
-
-            List<EndpointModelItem> res;
-
-
-            if (ModelCache.TryGetValue(EndpointsCacheKey, out res))
-            {
-                return res;
-            }
-
-            var appmodels = GetApplicationDescriptions();
-            var dbmodels = GetDatabaseModels();
-
-            Client.Open();
-            res = Client.GetEntities<EndpointItem>().Select(p => new EndpointModelItem(p)).ToList();
-            Client.Close();
-
-            foreach (var ep in res)
-            {
-                if (ep.Path.Length > 0)
-                {
-                    ep.Path.Trim();
-                    if (ep.Path[0] != '/')
-                        ep.Path = "/" + ep.Path;
-                    if (ep.Path[ep.Path.Length - 1] != '/')
-                        ep.Path = ep.Path + "/";
-
-                }
-
-                if ((ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave)
-                    && !string.IsNullOrEmpty(ep.AppMetaCode) && !string.IsNullOrEmpty(ep.DataMetaCode))
-                {
-
-                    var appmodel = appmodels.Find(p => p.MetaCode == ep.AppMetaCode);
-                    if (appmodel != null && ep.DataMetaCode == appmodel.MetaCode)
-                        ep.DataTableInfo = new DatabaseModelItem(DatabaseModelItem.MetaTypeDataTable) { AppMetaCode = appmodel.MetaCode, Id = 0, DbName = appmodel.DbName, TableName = appmodel.DbName, MetaCode = appmodel.MetaCode, ParentMetaCode = "ROOT", Title = appmodel.DbName, IsFrameworkItem = true }; ;
-
-                    if (ep.DataTableInfo == null && appmodel != null)
-                    {
-                        var table = dbmodels.Find(p => p.IsMetaTypeDataTable && p.MetaCode == ep.DataMetaCode);
-                        if (table != null)
-                            ep.DataTableInfo = table;
-                    }
-                }
-
-               
-
-                if (ep.IsMetaTypeCustomPost)
-                {
-                    ep.AppMetaCode = "";
-                    ep.DataMetaCode = "";
-                }
-
-            }
-
-            ModelCache.Set(EndpointsCacheKey, res);
-
-            return res;
+            return Model.Endpoints;
         }
 
 
@@ -605,319 +548,16 @@ namespace Intwenty
 
         #region UI
 
-
-
-
-
-        public List<ViewModel> GetViewModels()
+        public List<IntwentyView> GetViewModels()
         {
-
-            var dbmodelitems = GetDatabaseModels();
-            var apps = GetApplicationDescriptions();
-
-            Client.Open();
-            var application_views = Client.GetEntities<ViewItem>().Select(p => new ViewModel(p)).ToList();
-            var userinterfaces = Client.GetEntities<UserInterfaceItem>().Select(p => new UserInterfaceModelItem(p)).ToList();
-            var userinterfacestructures = Client.GetEntities<UserInterfaceStructureItem>().Select(p => new UserInterfaceStructureModelItem(p)).ToList();
-            var functions = Client.GetEntities<FunctionItem>().Select(p => new FunctionModelItem(p)).ToList();
-            Client.Close();
-
-
-
-            foreach (var app in apps)
-            {
-                foreach (var appview in application_views.Where(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode))
-                {
-                    appview.ApplicationInfo = app;
-                    appview.SystemInfo = app.SystemInfo;
-                    appview.BuildPropertyList();
-
-                    foreach (var function in functions.Where(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.OwnerMetaCode == appview.MetaCode && p.OwnerMetaType == appview.MetaType))
-                    {
-                        function.ApplicationInfo = app;
-                        function.SystemInfo = app.SystemInfo;
-                        function.BuildPropertyList();
-                        appview.Functions.Add(function);
-
-                        //SaveFuction, NavigateFunction, etc function owned by the view. Add ActionInfo (Info regarding which view is this function executed in)
-                        if (!string.IsNullOrEmpty(function.ActionMetaCode) && function.ActionMetaType == ViewModel.MetaTypeUIView)
-                        {
-                            var actionview = application_views.Find(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.MetaCode == function.ActionMetaCode);
-                            if (actionview != null)
-                            {
-                                function.ActionViewId = actionview.Id;
-                                function.ActionPath = actionview.Path;
-                            }
-                        }
-
-                        //If no actionpath, assume that this function is executed in the view
-                        if (string.IsNullOrEmpty(function.ActionPath))
-                        {
-                            function.ActionViewId = appview.Id;
-                            function.ActionPath = appview.Path;
-                            function.ActionMetaCode = appview.MetaCode;
-                            function.ActionMetaType = ViewModel.MetaTypeUIView;
-                        }
-
-                        if (function.MetaType == FunctionModelItem.MetaTypeSave && function.HasProperty("GOTOVIEWPATH"))
-                        {
-                            var gtvp = function.GetPropertyValue("GOTOVIEWPATH");
-                            if (gtvp.Contains("{requestinfo}"))
-                            {
-                                var view = application_views.Find(av => av.IsOnPath(gtvp));
-                                if (view != null)
-                                    function.ActionViewId = view.Id;
-                            }
-
-                        }
-
-                    }
-
-                    foreach (var userinterface in userinterfaces.Where(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.ViewMetaCode == appview.MetaCode))
-                    {
-                        userinterface.ApplicationInfo = app;
-                        userinterface.SystemInfo = app.SystemInfo;
-                        userinterface.ViewPath = appview.Path;
-
-                        foreach (var function in functions.Where(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.OwnerMetaCode == userinterface.MetaCode && p.OwnerMetaType == userinterface.MetaType))
-                        {
-                            function.ApplicationInfo = app;
-                            function.SystemInfo = app.SystemInfo;
-                            function.BuildPropertyList();
-                            userinterface.Functions.Add(function);
-
-                            //ADD MODAL SUB UI:s to this UI
-                            if (function.IsModalAction && !string.IsNullOrEmpty(function.ActionMetaCode) && function.ActionMetaType == UserInterfaceModelItem.MetaTypeInputInterface)
-                            {
-                                var modalactionui = userinterfaces.Find(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.MetaCode == function.ActionMetaCode && p.IsMetaTypeInputInterface);
-                                if (modalactionui!=null && !userinterface.ModalInterfaces.Exists(p=> p.Id == modalactionui.Id))
-                                    userinterface.ModalInterfaces.Add(modalactionui);
-                            }
-
-                            if (!function.IsModalAction)
-                            {
-                                //Create, Edit, Delete, Paging etc etc function owned by the UI. Add ActionInfo (Info regarding which view is this function executed in)
-                                if (!string.IsNullOrEmpty(function.ActionMetaCode) && function.ActionMetaType == ViewModel.MetaTypeUIView)
-                                {
-                                    var actionview = application_views.Find(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.MetaCode == function.ActionMetaCode);
-                                    if (actionview != null)
-                                    {
-                                        function.ActionViewId = actionview.Id;
-                                        function.ActionPath = actionview.Path;
-                                    }
-                                }
-
-                                //If no actionpath, assume that this function is executed in the ui
-                                if (string.IsNullOrEmpty(function.ActionPath))
-                                {
-                                    function.ActionViewId = appview.Id;
-                                    function.ActionPath = appview.Path;
-                                    function.ActionMetaCode = userinterface.MetaCode;
-                                    function.ActionMetaType = userinterface.MetaType;
-                                }
-                            }
-                        }
-
-                      
-
-                        if (!string.IsNullOrEmpty(userinterface.DataTableMetaCode))
-                        {
-                            if (userinterface.DataTableMetaCode == app.MetaCode)
-                            {
-                                userinterface.DataTableMetaCode = app.MetaCode;
-                                userinterface.DataTableInfo = new DatabaseModelItem(DatabaseModelItem.MetaTypeDataTable) { AppMetaCode = app.MetaCode, Id = 0, DbName = app.DbName, TableName = app.DbName, MetaCode = app.MetaCode, ParentMetaCode = "ROOT", Title = app.DbName, IsFrameworkItem = true };
-                            }
-                            else
-                            {
-                                var dinf = dbmodelitems.Find(p => p.MetaCode == userinterface.DataTableMetaCode && p.AppMetaCode == app.MetaCode && p.IsMetaTypeDataTable);
-                                if (dinf != null)
-                                {
-                                    userinterface.DataTableInfo = dinf;
-                                    userinterface.DataTableMetaCode = dinf.MetaCode;
-                                }
-                            }
-                        }
-
-                        //ADD UI CONNECTED TO THE VIEW
-                        appview.UserInterface.Add(userinterface);
-
-                        foreach (var item in userinterfacestructures.Where(p => p.SystemMetaCode == app.SystemMetaCode && p.AppMetaCode == app.MetaCode && p.UserInterfaceMetaCode == userinterface.MetaCode).OrderBy(p => p.RowOrder).ThenBy(p => p.ColumnOrder))
-                        {
-                            userinterface.UIStructure.Add(item);
-
-                            item.ApplicationInfo = app;
-                            item.SystemInfo = app.SystemInfo;
-                            item.DataTableInfo = userinterface.DataTableInfo;
-                            item.DataTableMetaCode = userinterface.DataTableMetaCode;
-                            item.DataTableDbName = userinterface.DataTableInfo.DbName;
-
-                          
-
-                            if (!string.IsNullOrEmpty(item.DataColumn1MetaCode))
-                            {
-                                var dinf = dbmodelitems.Find(p => p.MetaCode == item.DataColumn1MetaCode && p.AppMetaCode == app.MetaCode && p.IsMetaTypeDataColumn);
-                                if (dinf != null)
-                                {
-                                    item.DataColumn1Info = dinf;
-                                    item.DataColumn1DbName = dinf.DbName;
-                                }
-
-                                if (item.DataColumn1Info != null && item.DataTableInfo == null)
-                                {
-                                    if (!item.DataColumn1Info.IsRoot)
-                                    {
-                                        dinf = dbmodelitems.Find(p => p.MetaCode == item.DataColumn1Info.ParentMetaCode && p.AppMetaCode == app.MetaCode && p.IsMetaTypeDataTable);
-                                        if (dinf != null)
-                                        {
-                                            item.DataTableInfo = dinf;
-                                            item.DataTableMetaCode = dinf.MetaCode;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        item.DataTableMetaCode = app.MetaCode;
-                                        item.DataTableInfo = new DatabaseModelItem(DatabaseModelItem.MetaTypeDataTable) { AppMetaCode = app.MetaCode, Id = 0, DbName = app.DbName, TableName = app.DbName, MetaCode = app.MetaCode, ParentMetaCode = "ROOT", Title = app.DbName, IsFrameworkItem = true };
-                                    }
-                                }
-                            }
-
-                            if (!string.IsNullOrEmpty(item.DataColumn2MetaCode))
-                            {
-                                var dinf = dbmodelitems.Find(p => p.MetaCode == item.DataColumn2MetaCode && p.AppMetaCode == app.MetaCode && p.IsMetaTypeDataColumn);
-                                if (dinf != null)
-                                {
-                                    item.DataColumn2Info = dinf;
-                                    item.DataColumn2DbName = dinf.DbName;
-                                }
-                            }
-
-                            if (item.IsMetaTypeSection)
-                            {
-                                var sect = new UISection() { Id = item.Id, Title = item.Title, MetaCode = item.MetaCode, ParentMetaCode = "ROOT", RowOrder = item.RowOrder, ColumnOrder = 1, TitleLocalizationKey = item.TitleLocalizationKey };
-                                sect.Collapsible = item.HasPropertyWithValue("COLLAPSIBLE", "TRUE");
-                                sect.StartExpanded = item.HasPropertyWithValue("STARTEXPANDED", "TRUE");
-                                sect.ExcludeOnRender = item.HasPropertyWithValue("EXCLUDEONRENDER", "TRUE");
-                                userinterface.Sections.Add(sect);
-
-                                //UI Name used in designer
-                                if (string.IsNullOrEmpty(userinterface.Title))
-                                {
-                                    if (string.IsNullOrEmpty(sect.Title))
-                                    {
-                                        userinterface.Title = string.Format("Input UI {0} - {1}", sect.Id, userinterface.DataTableDbName);
-                                    }
-                                    else
-                                    {
-                                        userinterface.Title = string.Format("Input UI {0} - {1} ({2})", sect.Id, sect.Title, userinterface.DataTableDbName);
-                                    }
-                                }
-                            }
-
-                            if (item.IsMetaTypeTable && userinterface.IsMetaTypeListInterface)
-                            {
-                                userinterface.Table.Id = item.Id;
-                                userinterface.Table.Title = item.Title;
-                                userinterface.Table.MetaCode = item.MetaCode;
-                                userinterface.Table.ParentMetaCode = BaseModelItem.MetaTypeRoot;
-                                userinterface.Table.TitleLocalizationKey = item.TitleLocalizationKey;
-
-
-                                //UI Name used in designer
-                                if (string.IsNullOrEmpty(userinterface.Title))
-                                {
-                                    if (string.IsNullOrEmpty(userinterface.Table.Title))
-                                    {
-                                        userinterface.Title = string.Format("List UI {0} - {1}", userinterface.Table.Id, userinterface.DataTableDbName);
-                                    }
-                                    else
-                                    {
-                                        userinterface.Title = string.Format("List UI {0} - {1} ({2})", userinterface.Table.Id, userinterface.Table.Title, userinterface.DataTableDbName);
-                                    }
-                                }
-                            }
-
-                            if (item.IsMetaTypeTableTextColumn && userinterface.IsMetaTypeListInterface)
-                            {
-                                userinterface.Table.Columns.Add(item);
-                            }
-                        }
-
-
-                        foreach (var section in userinterface.Sections)
-                        {
-
-                            foreach (var uicomp in userinterface.UIStructure.OrderBy(p => p.RowOrder).ThenBy(p => p.ColumnOrder))
-                            {
-                                if (uicomp.ParentMetaCode == section.MetaCode || section.Id == 0)
-                                {
-
-                                    if (uicomp.IsMetaTypePanel)
-                                    {
-                                        var pnl = new UIPanel() { Id = uicomp.Id, ColumnOrder = uicomp.ColumnOrder, RowOrder = 1, MetaCode = uicomp.MetaCode, Title = uicomp.Title, ParentMetaCode = section.MetaCode, Properties = uicomp.Properties, TitleLocalizationKey = uicomp.TitleLocalizationKey };
-                                        pnl.BuildPropertyList();
-                                        section.LayoutPanels.Add(pnl);
-                                        foreach (var uic in userinterface.UIStructure.OrderBy(p => p.RowOrder).ThenBy(p => p.ColumnOrder))
-                                        {
-
-                                            if (uic.ParentMetaCode != pnl.MetaCode)
-                                                continue;
-
-                                           
-                                            uic.ColumnOrder = pnl.ColumnOrder;
-
-                                            pnl.Controls.Add(uic);
-
-                                            LayoutRow lr = section.LayoutRows.Find(p => p.RowOrder == uic.RowOrder);
-                                            if (lr == null)
-                                            {
-                                                lr = new LayoutRow() { RowOrder = uic.RowOrder };
-                                                section.LayoutRows.Add(lr);
-
-                                            }
-
-                                            uic.BuildPropertyList();
-                                            lr.UserInputs.Add(uic);
-
-
-                                        }
-                                    }
-
-
-                                }
-                            }
-
-                            section.LayoutPanelCount = userinterface.UIStructure.Count(p => p.IsMetaTypePanel && p.ParentMetaCode == section.MetaCode);
-                        }
-
-
-
-
-
-                        //--------------------------------------------------
-
-                    }
-                }
-
-
-            }
-
-
-
-            return application_views;
+            return Model.Systems.SelectMany(p=> p.Applications.SelectMany(c=> c.Views)).ToList();
         }
-
-
-
-
-
-
-
 
         #endregion
 
         #region Database
 
-        public List<IntwentyDataBaseTable> GetSystemDatabaseStructure()
+        public List<IntwentyDataBaseTable> GetDatabaseTableModels()
         {
           
 
@@ -927,7 +567,7 @@ namespace Intwenty
             {
                 foreach (var app in sys.Applications)
                 {
-                    var table = new IntwentyDataBaseTable() { Id=app.DbTableName, DataColumns=new List<IntwentyDataBaseColumn>(), DbTableName = app.DbTableName, ApplicationId=app.Id, SystemId=sys.Id };
+                    var table = new IntwentyDataBaseTable(true) { Id=app.DbTableName, DataColumns=new List<IntwentyDataBaseColumn>(), DbTableName = app.DbTableName, ApplicationId=app.Id, SystemId=sys.Id };
 
                     table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName=table.DbTableName, DbColumnName="Id" });
                     table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = table.DbTableName, DbColumnName = "Version" });
@@ -952,7 +592,7 @@ namespace Intwenty
 
                     foreach (var t in app.DataTables)
                     {
-                        var subtable = new IntwentyDataBaseTable() { Id = t.DbTableName, DataColumns = new List<IntwentyDataBaseColumn>(), DbTableName = t.DbTableName, ApplicationId = app.Id, SystemId = sys.Id };
+                        var subtable = new IntwentyDataBaseTable(false) { Id = t.DbTableName, DataColumns = new List<IntwentyDataBaseColumn>(), DbTableName = t.DbTableName, ApplicationId = app.Id, SystemId = sys.Id };
                         subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Id" });
                         subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Version" });
                         subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ApplicationId" });
@@ -969,7 +609,7 @@ namespace Intwenty
                             if (subtable.DataColumns.Exists(p => p.DbColumnName.ToUpper() == column.DbColumnName.ToUpper()))
                                 continue;
 
-                            table.DataColumns.Add(column);
+                            subtable.DataColumns.Add(column);
                         }
 
                         res.Add(subtable);
@@ -984,7 +624,29 @@ namespace Intwenty
             return res;
         }
 
-      
+        public IntwentyDataBaseColumn GetDatabaseColumnModel(IntwentyApplication model, string columnname, string tablename = "")
+        {
+            var apptables = GetDatabaseTableModels().Where(p=> p.ApplicationId==model.Id);
+            if (apptables == null) return null;
+            if (string.IsNullOrEmpty(tablename))
+            {
+                var maintable = apptables.FirstOrDefault(p=> p.IsAppMainTable);
+                if (maintable != null)
+                    return maintable.DataColumns.FirstOrDefault(p=> p.DbColumnName.ToLower()==columnname.ToLower());
+            }
+
+            foreach (var table in apptables)
+            {
+                foreach (var column in table.DataColumns)
+                {
+                    if (column.DbColumnName.ToLower() == columnname.ToLower()))
+                        return column;
+                }
+            }
+
+            return null;
+        }
+
 
         #endregion
 
@@ -993,38 +655,17 @@ namespace Intwenty
 
         public List<IntwentyValueDomainItem> GetValueDomains()
         {
-            List<IntwentyValueDomainItem> res;
-            if (ModelCache.TryGetValue(ValueDomainsCacheKey, out res))
-            {
-                return res;
-            }
-
             return this.Model.ValueDomains;
         }
-
-       
-
-
 
         #endregion
 
         #region Translations
 
 
-        public List<TranslationModelItem> GetTranslations()
+        public List<IntwentyLocalizationItem> GetTranslations()
         {
-            List<TranslationModelItem> res;
-            if (ModelCache.TryGetValue(TranslationsCacheKey, out res))
-            {
-                return res;
-            }
-            Client.Open();
-            var t = Client.GetEntities<TranslationItem>().Select(p => new TranslationModelItem(p)).ToList();
-            Client.Close();
-
-            ModelCache.Set(TranslationsCacheKey, t);
-
-            return t;
+            return Model.Localizations;
         }
 
 
@@ -1057,20 +698,20 @@ namespace Intwenty
 
                 usertableprefix = user.TablePrefix;
 
-                var dbmodels = GetSystemDatabaseStructure();
+                var dbmodels = GetDatabaseTableModels();
 
                 foreach (var app in isolatedapps)
                 {
                     //USER
                     if (app.TenantIsolationLevel == TenantIsolationOptions.User && !string.IsNullOrEmpty(usertableprefix))
                     {
-                        var t = await ConfigureDatabase(app, dbmodels, usertableprefix);
+                        var t = await ConfigureDatabase(app, usertableprefix);
                         result.Add(t);
                     }
                     //ORGANIZATION
                     if (app.TenantIsolationLevel == TenantIsolationOptions.Organization && !string.IsNullOrEmpty(orgtableprefix))
                     {
-                        var t = await ConfigureDatabase(app, dbmodels, orgtableprefix);
+                        var t = await ConfigureDatabase(app, orgtableprefix);
                         result.Add(t);
                     }
 
@@ -1087,6 +728,7 @@ namespace Intwenty
 
         public async Task<List<OperationResult>> ConfigureDatabase(string tableprefix = "")
         {
+            var res = new List<OperationResult>();
             foreach (var sys in Model.Systems)
             {
                 foreach (var app in sys.Applications)
@@ -1112,55 +754,43 @@ namespace Intwenty
 
                 try
                 {
-
-                    var maintable_default_cols = databasemodel.Where(p => p.IsMetaTypeDataColumn && p.IsRoot && p.IsFrameworkItem && p.AppMetaCode == model.MetaCode).ToList();
-                    if (maintable_default_cols == null)
-                        throw new InvalidOperationException("Found application without main table default columns " + model.DbName);
-                    if (maintable_default_cols.Count == 0)
-                        throw new InvalidOperationException("Found application without main table default columns " + model.DbName);
-
-
-                    if (string.IsNullOrEmpty(model.DbName) || !databasemodel.Exists(p => p.IsMetaTypeDataColumn && p.IsRoot && !p.IsFrameworkItem && p.AppMetaCode == model.MetaCode))
+                    var dbmodels = GetDatabaseTableModels().Where(p=> p.ApplicationId== model.Id).ToList();
+                    if (!dbmodels.Exists(p => p.IsAppMainTable && p.DataColumns.Count > 0))
                     {
                         res = new OperationResult(true, MessageCode.RESULT, string.Format("No datamodel found for application {0}", model.Title));
                         return;
                     }
 
-                    CreateMainTable(model, maintable_default_cols, res, tableprefix);
+                    var maintable = dbmodels.First(p => p.IsAppMainTable);
+                    CreateMainTable(model, maintable.DataColumns.Where(p=> p.IsFrameworkColumn).ToList(), res, tableprefix);
                     if (model.UseVersioning)
                         CreateApplicationVersioningTable(model, res, tableprefix);
 
 
 
-                    foreach (var t in databasemodel)
+                    foreach (var table in dbmodels)
                     {
-                        if (t.AppMetaCode != model.MetaCode)
-                            continue;
-
-                        if (t.IsMetaTypeDataColumn && t.IsRoot && !t.IsFrameworkItem)
+                     
+                        if (table.IsAppMainTable)
                         {
-                            CreateDBColumn(t, model, res, tableprefix);
+                            foreach (var column in table.DataColumns)
+                            {
+                                if (!column.IsFrameworkColumn)
+                                    CreateDBColumn(column, table, res, tableprefix);
+                            } 
                         }
 
-                        if (t.IsMetaTypeDataTable)
+                        if (!table.IsAppMainTable)
                         {
-                            var subtable_default_cols = databasemodel.Where(p => p.IsMetaTypeDataColumn && !p.IsRoot && p.IsFrameworkItem && t.AppMetaCode == model.MetaCode && p.ParentMetaCode == t.MetaCode).ToList();
-                            if (subtable_default_cols == null)
-                                throw new InvalidOperationException("Found application subtable without default columns");
-                            if (subtable_default_cols.Count == 0)
-                                throw new InvalidOperationException("Found application subtable without default columns");
-
-
-                            CreateDBTable(model, t, subtable_default_cols, res, tableprefix);
-                            foreach (var col in databasemodel)
+      
+                            CreateDBTable(model, table, table.DataColumns.Where(p => p.IsFrameworkColumn).ToList(), res, tableprefix);
+                            foreach (var col in table.DataColumns)
                             {
-                                if (col.IsFrameworkItem || col.AppMetaCode != model.MetaCode || col.IsRoot || col.ParentMetaCode != t.MetaCode)
-                                    continue;
-
-                                CreateDBColumn(col, t, res, tableprefix);
+                                if (!col.IsFrameworkColumn)
+                                    CreateDBColumn(col, table, res, tableprefix);
                             }
 
-                            CreateSubtableIndexes(t, res, tableprefix);
+                            CreateSubtableIndexes(table, res, tableprefix);
 
 
                         }
@@ -1207,7 +837,7 @@ namespace Intwenty
             {
                 if (string.IsNullOrEmpty(sys.Title))
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system with Id: {0} has no [Title].", a.Id));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system with Id: {0} has no [Title].", sys.Id));
                     return res;
                 }
 
@@ -1362,7 +992,6 @@ namespace Intwenty
                 return res;
             }
 
-
             var DefaultVersioningTableColumns = new List<IntwentyDataBaseColumn>();
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Id" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Version" });
@@ -1371,7 +1000,6 @@ namespace Intwenty
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "MetaType" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.DateTime, Id = "ChangedDate" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "ParentId" });
-
 
             ModelCache.Set(DefaultVersioningTableColumnsCacheKey, DefaultVersioningTableColumns);
 
@@ -1382,7 +1010,7 @@ namespace Intwenty
 
 
 
-        private void CreateMainTable(IntwentyApplication model, OperationResult result, string tableprefix = "")
+        private void CreateMainTable(IntwentyApplication model, List<IntwentyDataBaseColumn> frameworkcolumns, OperationResult result, string tableprefix = "")
         {
 
             var tablename = "";
@@ -1400,7 +1028,7 @@ namespace Intwenty
             else
             {
 
-                string create_sql = GetCreateTableStmt(model, model.DataColumns, tablename, false);
+                string create_sql = GetCreateTableStmt(model, frameworkcolumns, tablename, false);
                 Client.RunCommand(create_sql);
                 result.AddMessage(MessageCode.INFO, "Main table: " + tablename + " for application: " + model.Title + "  was created successfully");
 
@@ -1409,7 +1037,7 @@ namespace Intwenty
             Client.Close();
         }
 
-        private void CreateDBTable(IntwentyApplication model, IntwentyDataBaseTable table, OperationResult result, string tableprefix = "")
+        private void CreateDBTable(IntwentyApplication model, IntwentyDataBaseTable table, List<IntwentyDataBaseColumn> frameworkcolumns, OperationResult result, string tableprefix = "")
         {
 
             var tablename = "";
@@ -1428,7 +1056,7 @@ namespace Intwenty
             else
             {
 
-                string create_sql = GetCreateTableStmt(model, table.DataColumns, tablename, true);
+                string create_sql = GetCreateTableStmt(model, frameworkcolumns, tablename, true);
                 Client.RunCommand(create_sql);
                 result.AddMessage(MessageCode.INFO, "Subtable: " + tablename + " in application: " + model.Title + "  was created successfully");
 
@@ -1475,10 +1103,10 @@ namespace Intwenty
             }
             else
             {
-                var coldt = DataTypes.Find(p => p.IntwentyType == column.DataType && p.DbEngine == Client.Database);
-                string create_sql = "ALTER TABLE " + tablename + " ADD " + column.DbName + " " + coldt.DBMSDataType;
+                var coldt = DataTypes.Find(p => p.IntwentyDataTypeEnum == column.DataType && p.DbEngine == Client.Database);
+                string create_sql = "ALTER TABLE " + tablename + " ADD " + column.DbColumnName + " " + coldt.DBMSDataType;
                 Client.RunCommand(create_sql);
-                result.AddMessage(MessageCode.INFO, "Column: " + column.DbName + " (" + coldt.DBMSDataType + ") was created successfully in table: " + tablename);
+                result.AddMessage(MessageCode.INFO, "Column: " + column.DbColumnName + " (" + coldt.DBMSDataType + ") was created successfully in table: " + tablename);
 
             }
 
@@ -1486,51 +1114,17 @@ namespace Intwenty
 
         }
 
-        private void CreateDBColumn(DatabaseModelItem column, ApplicationModelItem table, OperationResult result, string tableprefix = "")
-        {
+      
 
-            if (!column.IsMetaTypeDataColumn)
-            {
-                result.AddMessage(MessageCode.SYSTEMERROR, "Invalid MetaType when configuring column");
-                return;
-            }
-
-            var tablename = "";
-            if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, table.DbName);
-            else
-                tablename = table.DbName;
-
-
-            var colexist = Client.ColumnExists(tablename, column.DbName);
-            if (colexist)
-            {
-                result.AddMessage(MessageCode.INFO, "Column: " + column.DbName + " in table: " + tablename + " is already present.");
-            }
-            else
-            {
-                var coldt = DataTypes.Find(p => p.IntwentyType == column.DataType && p.DbEngine == Client.Database);
-                string create_sql = "ALTER TABLE " + tablename + " ADD " + column.DbName + " " + coldt.DBMSDataType;
-                Client.RunCommand(create_sql);
-                result.AddMessage(MessageCode.INFO, "Column: " + column.DbName + " (" + coldt.DBMSDataType + ") was created successfully in table: " + tablename);
-
-            }
-
-            Client.Close();
-
-        }
-
-
-
-        private void CreateMainTableIndexes(ApplicationModelItem model, OperationResult result, string tableprefix = "")
+        private void CreateMainTableIndexes(IntwentyApplication model, OperationResult result, string tableprefix = "")
         {
 
 
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, model.DbName);
+                tablename = string.Format("{0}_{1}", tableprefix, model.DbTableName);
             else
-                tablename = model.DbName;
+                tablename = model.DbTableName;
 
             try
             {
@@ -1569,17 +1163,14 @@ namespace Intwenty
 
         }
 
-        private void CreateSubtableIndexes(DatabaseModelItem model, OperationResult result, string tableprefix = "")
+        private void CreateSubtableIndexes(IntwentyDataBaseTable table, OperationResult result, string tableprefix = "")
         {
-
-            if (!model.IsMetaTypeDataTable)
-                return;
 
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, model.DbName);
+                tablename = string.Format("{0}_{1}", tableprefix, table.DbTableName);
             else
-                tablename = model.DbName;
+                tablename = table.DbTableName;
 
 
             try
@@ -1605,7 +1196,7 @@ namespace Intwenty
 
         }
 
-        private string GetCreateTableStmt(ApplicationModelItem model, List<DatabaseModelItem> columns, string tablename, bool issubtable)
+        private string GetCreateTableStmt(IntwentyApplication model, List<IntwentyDataBaseColumn> columns, string tablename, bool issubtable)
         {
             var res = string.Format("CREATE TABLE {0}", tablename) + " (";
             var sep = "";
@@ -1614,16 +1205,16 @@ namespace Intwenty
             foreach (var c in columns)
             {
                 TypeMapItem dt;
-                if (c.DataType == DatabaseModelItem.DataTypeString)
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Short);
-                else if (c.DataType == DatabaseModelItem.DataTypeText)
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Long);
+                if (c.DataType == IntwentyDataType.String)
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Short);
+                else if (c.DataType == IntwentyDataType.Text)
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Long);
                 else
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database);
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database);
 
                 if (!issubtable)
                 {
-                    if (c.DbName.ToUpper() == "ID" && model.DataMode == DataModeOptions.Simple)
+                    if (c.DbColumnName.ToUpper() == "ID" && model.DataMode == DataModeOptions.Simple)
                     {
                         if (Client.Database == DBMS.MSSqlServer)
                         {
@@ -1659,7 +1250,7 @@ namespace Intwenty
                 else
                 {
 
-                    if (c.DbName.ToUpper() == "ID" && !model.UseVersioning)
+                    if (c.DbColumnName.ToUpper() == "ID" && !model.UseVersioning)
                     {
                         if (Client.Database == DBMS.MSSqlServer)
                         {
@@ -1707,7 +1298,7 @@ namespace Intwenty
 
         }
 
-        private string GetCreateVersioningTableStmt(List<IntwentyDataColumn> columns, string tablename)
+        private string GetCreateVersioningTableStmt(List<IntwentyDataBaseColumn> columns, string tablename)
         {
             var res = string.Format("CREATE TABLE {0}", tablename) + " (";
             var sep = "";
@@ -1715,12 +1306,12 @@ namespace Intwenty
             {
 
                 TypeMapItem dt;
-                if (c.DataType == DatabaseModelItem.DataTypeString)
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Short);
-                else if (c.DataType == DatabaseModelItem.DataTypeText)
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Long);
+                if (c.DataType ==  IntwentyDataType.String)
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Short);
+                else if (c.DataType == IntwentyDataType.Text)
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database && p.Length == StringLength.Long);
                 else
-                    dt = DataTypes.Find(p => p.IntwentyType == c.DataType && p.DbEngine == Client.Database);
+                    dt = DataTypes.Find(p => p.IntwentyDataTypeEnum == c.DataType && p.DbEngine == Client.Database);
 
                 res += sep + string.Format("{0} {1} not null", c.Name, dt.DBMSDataType);
                 sep = ", ";

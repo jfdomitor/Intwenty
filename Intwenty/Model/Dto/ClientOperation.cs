@@ -30,9 +30,9 @@ namespace Intwenty.Model.Dto
 
         public int Version { get; set; }
 
-        public int ApplicationId { get; set; }
+        public string ApplicationId { get; set; }
 
-        public int ApplicationViewId { get; set; }
+        public string ApplicationViewId { get; set; }
 
         [JsonIgnore]
         public ApplicationData Data { get; set; }

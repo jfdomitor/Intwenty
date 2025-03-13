@@ -19,6 +19,8 @@ namespace Intwenty.Interface
     {
         IntwentySettings Settings { get; }
 
+        IntwentyModel Model { get; }
+
         IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
         void AddChildViewsToRender(IntwentyView view);
 
@@ -30,16 +32,15 @@ namespace Intwenty.Interface
 
 
         //APPLICATION
-        List<IntwentyApplication> GetApplicationDescriptions();
         List<IntwentySystem> GetSystemModels();
         List<IntwentyApplication> GetApplicationModels();
         IntwentyApplication GetApplicationModel(int applicationid);
         IntwentyApplication GetApplicationModel(string metacode);
-      
+
 
 
         //DATABASE
-        List<IntwentyDataBaseColumn> GetDatabaseModels();
+        List<IntwentyDataBaseTable> GetDatabaseTableModels();
         IntwentyDataBaseColumn GetDatabaseColumnModel(IntwentyApplication model, string columnname, string tablename="");
 
 
