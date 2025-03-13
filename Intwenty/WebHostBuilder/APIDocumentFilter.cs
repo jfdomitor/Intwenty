@@ -47,12 +47,12 @@ namespace Intwenty.WebHostBuilder
             foreach (var ep in epmodels)
             {
 
-                if (ep.IsMetaTypeTableGet && ep.IsDataTableConnected)
+                if ((ep.EndpointType== IntwentyEndpointType.TableGet) && ep.IsDataTableConnected)
                 {
                     var path = new OpenApiPathItem();
                     var op = new OpenApiOperation() { Description = ep.Description };
                     if (string.IsNullOrEmpty(ep.Title))
-                        op.Summary = string.Format("Retrieve data from the {0} table", ep.DataTableInfo.DbName);
+                        op.Summary = string.Format("Retrieve data from the {0} table", ep.DbTableName);
                     else
                         op.Summary = ep.Title;
                     op.Tags.Add(endpoinggroup);
@@ -65,15 +65,15 @@ namespace Intwenty.WebHostBuilder
                     resp = new OpenApiResponse() { Description = "UNAUTHORIZED" };
                     op.Responses.Add("401", resp);
                     path.AddOperation(OperationType.Get, op);
-                    swaggerDoc.Paths.Add(ep.Path + ep.Action + "/{id}", path);
+                    swaggerDoc.Paths.Add(ep.RequestPath + ep.Method + "/{id}", path);
                 }
 
-                if (ep.IsMetaTypeTableList && ep.IsDataTableConnected)
+                if ((ep.EndpointType == IntwentyEndpointType.TableList) && ep.IsDataTableConnected)
                 {
                     var path = new OpenApiPathItem();
                     var op = new OpenApiOperation() { Description = ep.Description };
                     if (string.IsNullOrEmpty(ep.Title))
-                        op.Summary = string.Format("Retrieve data from the {0} table", ep.DataTableInfo.DbName);
+                        op.Summary = string.Format("Retrieve data from the {0} table", ep.DbTableName);
                     else
                         op.Summary = ep.Title;
                     
@@ -93,10 +93,10 @@ namespace Intwenty.WebHostBuilder
                     resp = new OpenApiResponse() { Description = "UNAUTHORIZED" };
                     op.Responses.Add("401", resp);
                     path.AddOperation(OperationType.Post, op);
-                    swaggerDoc.Paths.Add(ep.Path + ep.Action, path);
+                    swaggerDoc.Paths.Add(ep.RequestPath + ep.Method, path);
                 }
 
-                if (ep.IsMetaTypeTableSave && ep.DataTableInfo.MetaCode == ep.AppMetaCode)
+                if (ep.EndpointType == IntwentyEndpointType.TableSave)
                 {
                     var path = new OpenApiPathItem();
                     var op = new OpenApiOperation() { Description = ep.Description, Summary = ep.Title };
@@ -115,12 +115,12 @@ namespace Intwenty.WebHostBuilder
                     resp = new OpenApiResponse() { Description = "UNAUTHORIZED" };
                     op.Responses.Add("401", resp);
                     path.AddOperation(OperationType.Post, op);
-                    swaggerDoc.Paths.Add(ep.Path + ep.Action, path);
+                    swaggerDoc.Paths.Add(ep.RequestPath + ep.Method, path);
 
                 }
 
 
-                if (ep.IsMetaTypeCustomPost)
+                if (ep.EndpointType == IntwentyEndpointType.Custom && ep.Method.ToUpper()=="POST")
                 {
                     var path = new OpenApiPathItem();
                     var op = new OpenApiOperation() { Description = ep.Description, Summary = ep.Title };
@@ -139,11 +139,11 @@ namespace Intwenty.WebHostBuilder
                     resp = new OpenApiResponse() { Description = "UNAUTHORIZED" };
                     op.Responses.Add("401", resp);
                     path.AddOperation(OperationType.Post, op);
-                    swaggerDoc.Paths.Add(ep.Path, path);
+                    swaggerDoc.Paths.Add(ep.RequestPath, path);
 
                 }
 
-                if (ep.IsMetaTypeCustomGet)
+                if (ep.EndpointType == IntwentyEndpointType.Custom && ep.Method.ToUpper() == "GET")
                 {
                     var path = new OpenApiPathItem();
                     var op = new OpenApiOperation() { Description = ep.Description, Summary = ep.Title };
@@ -156,7 +156,7 @@ namespace Intwenty.WebHostBuilder
                     resp = new OpenApiResponse() { Description = "UNAUTHORIZED" };
                     op.Responses.Add("401", resp);
                     path.AddOperation(OperationType.Get, op);
-                    swaggerDoc.Paths.Add(ep.Path, path);
+                    swaggerDoc.Paths.Add(ep.RequestPath, path);
                 }
 
 
@@ -167,7 +167,7 @@ namespace Intwenty.WebHostBuilder
 
         }
 
-        private OpenApiString GetListSchema(EndpointModelItem epitem)
+        private OpenApiString GetListSchema(IntwentyEndpoint epitem)
         {
 
             var sb = new StringBuilder();
@@ -181,66 +181,65 @@ namespace Intwenty.WebHostBuilder
 
         }
 
-        private OpenApiString GetSaveUpdateSchema(EndpointModelItem epitem)
+        private OpenApiString GetSaveUpdateSchema(IntwentyEndpoint epitem)
         {
 
 
             try
             {
 
-                if (string.IsNullOrEmpty(epitem.AppMetaCode))
+                if (string.IsNullOrEmpty(epitem.ApplicationId))
                     return new OpenApiString("");
 
                 var models = _modelservice.GetApplicationModels();
-                var model = models.Find(p => p.Application.MetaCode == epitem.AppMetaCode);
+                var model = models.Find(p => p.Id == epitem.ApplicationId);
                 if (model == null)
                     return new OpenApiString("");
 
                 var sep = "";
                 var sb = new StringBuilder();
                 sb.Append("{");
-                sb.Append("\"" + model.Application.DbName + "\":{");
+                sb.Append("\"" + model.DbTableName + "\":{");
 
-                foreach (var col in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && p.IsRoot))
+                foreach (var col in model.DataColumns)
                 {
-                    if (col.DbName.ToUpper() == "APPLICATIONID")
+                    if (col.DbColumnName.ToUpper() == "APPLICATIONID")
                         continue;
                     //sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, model.Application.Id));
                     else if (col.IsNumeric)
-                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, 0));
+                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, 0));
                     else if (col.IsDateTime)
-                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
+                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
                     else
-                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, "string"));
+                        sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, "string"));
 
                     sep = ",";
                 }
 
                 sb.Append("}");
 
-                foreach (var dbtbl in model.DataStructure)
+                foreach (var dbtbl in model.DataTables)
                 {
-                    if (dbtbl.IsMetaTypeDataTable && dbtbl.IsRoot)
-                    {
-                        sb.Append(",\"" + dbtbl.DbName + "\":[{");
+                  
+                        sb.Append(",\"" + dbtbl.DbTableName + "\":[{");
                         sep = "";
-                        foreach (var col in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && !p.IsRoot && p.ParentMetaCode == dbtbl.MetaCode))
+                        foreach (var col in dbtbl.DataColumns)
                         {
-                            if (col.DbName.ToUpper() == "APPLICATIONID")
+                            if (col.DbColumnName.ToUpper() == "APPLICATIONID")
                                 continue;
                             //sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, model.Application.Id));
                             else if (col.IsNumeric)
-                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, 0));
+                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, 0));
                             else if (col.IsDateTime)
-                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, DateTime.Now.AddYears((DateTime.Now.Year - 1973) * -1).ToString("yyyy-MM-dd HH:mm:ss")));
+                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, DateTime.Now.AddYears((DateTime.Now.Year - 1973) * -1).ToString("yyyy-MM-dd HH:mm:ss")));
                             else
-                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbName, "string"));
+                                sb.Append(sep + DBHelpers.GetJSONValue(col.DbColumnName, "string"));
 
                             sep = ",";
                         }
 
                         sb.Append("}]");
-                    }
+                    
                 }
 
                 sb.Append("}");

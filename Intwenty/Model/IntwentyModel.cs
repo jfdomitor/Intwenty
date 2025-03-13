@@ -117,6 +117,7 @@ namespace Intwenty.Model
         public string Title { get; set; }
         public string LocalizedTitle { get; set; }
         public string TitleLocalizationKey { get; set; }
+        public string Description { get; set; }
         public string DbTableName { get; set; }
         public DataModeOptions DataMode { get; set; }
         public bool UseVersioning { get; set; }

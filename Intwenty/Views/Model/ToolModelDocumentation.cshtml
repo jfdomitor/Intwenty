@@ -1,4 +1,4 @@
-﻿@model List<Intwenty.Model.ApplicationModel>
+﻿@model List<Intwenty.Model.IntwentyApplication>
 
 @{
     ViewData["Title"] = "Model documentation";
@@ -25,8 +25,8 @@
      @foreach (var app in Model)
     {
         <div class="card">
-            <div class="card-header"><h4>(@app.Application.Id) @app.Application.Title</h4></div>
-            <div class="card-body">@app.Application.Description</div>
+            <div class="card-header"><h4>(@app.Id) @app.Title</h4></div>
+            <div class="card-body">@app.Description</div>
         </div>
 
         <br />
@@ -42,7 +42,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>@app.Application.DbName</td>
+                        <td>@app.DbTableName</td>
                     </tr>
                     <tr>
                         <td>
@@ -57,35 +57,22 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var data in app.DataStructure.Where(p => p.IsMetaTypeDataColumn && p.IsRoot))
+                                    @foreach (var data in app.DataColumns)
                                     {
-                                    <tr>
-                                        <td>@data.DbName</td>
-                                        <td>@data.DataType</td>
-                                        <td>
-                                            @if (data.HasProperty("DBDATATYPE"))
+                                        <tr>
+                                            <td>@data.DbColumnName</td>
+                                            <td>@data.DataType</td>
+                                            <td>@data.NativeDataType</td>
+                                            @if (data.IsFrameworkColumn)
                                             {
-                                                <span>@data.GetPropertyValue("DBDATATYPE")</span>
+                                                <td>Intwenty system column</td>
                                             }
                                             else
                                             {
-                                                <span>-</span>
+                                                <td>-</td>
                                             }
-                                        </td>
-                                        <td>@data.Mandatory</td>
-
-                                        @if (data.HasProperty("INTWENTYDEFAULTCOLUMN"))
-                                        {
-                                            <td>Intwenty system column</td>
-                                        }
-                                        else
-                                        {
-                                            <td>-</td>
-                                        }
-
-
-                                    </tr>
-                                       }
+                                        </tr>
+                                     }
                                 </tbody>
                             </table>
                         </td>
@@ -106,7 +93,7 @@
                     {
                     <tr>
                         <td>@ui.Title</td>
-                        <td>@ui.Path</td>
+                        <td>@ui.RequestPath</td>
                     </tr>
                     }
                 </tbody>

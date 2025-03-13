@@ -1,9 +1,4 @@
-﻿@model ApplicationModel
-@{
-    ViewData["ISVUE3"] = "TRUE";
-}
-
-@await Html.PartialAsync("_Modals")
+﻿@model IntwentyApplication
 
 <div id="app">
     <div>
@@ -13,304 +8,36 @@
         <div class="card">
             <div class="card-header"><h2>Manage UI</h2></div>
             <div class="card-body">
-                Create and manage views for application <b>@Model.Application.Title</b>
+                Available views for application <b>@Model.Title</b>
                 <br />
                 <br />
                 <div class="alert alert-primary" role="alert">
                     <i class="far fa-question-circle"></i>
-                    First you define one or more views and then you create and connect user interfaces to the views. Views can share user interfaces among them. For example a view used to create entities may share a user interface with a view to edit an entity.
-                    <br />
-                    <br />
-                    View paths specifies URL to your view. A path must have the form <strong>[app path]/[view path]</strong>. A path may also contain parameters.
-                    <br />
-                    Allowed parameters are: <b>{id}</b>, and <b>{requestinfo}</b> which is a special base64 encoded property string.
-                    <br />
-                    <b>Examples</b>
-                    <br />
-                    <i>products/list, products/edit/{id}, products/edit/{id}/{requestinfo}</i>
+                    You define your views in the json file intwenty.json
                 </div>
                 <a asp-action="ApplicationList" asp-controller="Model" role="button" class="btn btn-sm btn-outline-secondary" style="margin:10px"><span class="far fa-hand-point-left" style="font-size:large"></span> Back to list</a>
                 <br />
             </div>
         </div>
-        <br />
-        <br />
-
-        <button class="btn btn-primary" v-on:click="openCreateViewDlg()"><span class="fa fa-plus"></span> New View</button>
-
-        <br />
-        <br />
-
+       
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th style="width:95%">Application Views</th>
                 </tr>
             </thead>
-            <tr v-for="item in datalist">
+            <tr ba-foreach="item in root.datalist">
                 <td>
 
                     <div class="row">
                         <div class="col-md-6">
-                            <b>{{item.title}}</b> (Path: {{item.path}})
-                        </div>
-                        <div class="col-md-4"></div>
-                        <div class="col-md-1">
-                            <a href="#" role="button" class="btn btn-sm btn-danger" v-on:click="deleteView(item)"><i class="fa fa-trash"></i></a>
-                        </div>
-                        <div class="col-md-1">
-                            <a href="#" role="button" class="btn btn-sm btn-secondary" v-on:click="openEditViewDlg(item)"><i class="fa fa-edit"></i></a>
+                            <b>{{item.title}}</b> (Path: {{item.requestPath}})
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <table class="table" style="margin-top:8px">
-                                <thead class=".thead-light">
-                                    <tr>
-                                        <th colspan="4">
-                                            <a href="#" role="button" class="btn btn-sm btn-primary" v-on:click="openCreateUIDlg(item)"><i class="fa fa-plus"></i></a> User interfaces
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tr v-for="ui in item.userInterface">
-                                    <td style="width:10%"><a href="#" role="button" class="btn btn-sm btn-danger" v-on:click="deleteUI(ui)"><i class="fa fa-trash"></i></a></td>
-                                    <td style="width:20%" v-if="ui.isMetaTypeInputInterface"><a v-bind:href="'/Model/UserInterfaceInputDesign/@Model.Application.Id/' + ui.metaCode" role="button" class="btn btn-sm btn-secondary"><i class="fa fa-edit"></i> Design</a></td>
-                                    <td style="width:20%" v-if="ui.isMetaTypeListInterface"><a v-bind:href="'/Model/UserInterfaceListDesign/@Model.Application.Id/' + ui.metaCode" role="button" class="btn btn-sm btn-secondary"><i class="fa fa-edit"></i> Design</a></td>
-                                    <td style="width:70%">{{ui.description}}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-
                 </td>
-
-            
-                <!--
-                <td>
-                    <a href="#" role="button" class="btn btn-sm btn-primary" v-on:click="openAddFunctionDlg(item)"><i class="fa fa-plus"></i> Add Function</a>
-                    <hr />
-                    <table class="table table-borderless">
-                        <tr v-for="func in item.functions">
-                            <td style="width:10%"><a href="#" role="button" class="btn btn-sm btn-danger" v-on:click="deleteFunction(func)"><i class="fa fa-trash"></i></a></td>
-                            <td style="width:10%"><a href="#" role="button" class="btn btn-sm btn-secondary" v-on:click="openEditFunctionDlg(func)"><i class="fa fa-edit"></i></a></td>
-                            <td style="width:80%">{{func.title}}</td>
-                        </tr>
-                    </table>
-                </td>
-                -->
             </tr>
         </table>
 
-    </div>
-
-
-    <div class="modal" data-bs-backdrop="static" id="create_app_view_modal" role="dialog">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="yesno_dlg_modal_hdr" class="modal-title">Application View</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="mainpanel">
-
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-viewsettingss-tab" data-bs-toggle="tab" href="#nav-viewsettings" role="tab" aria-controls="nav-viewsettings" aria-selected="true">View</a>
-                                <a class="nav-item nav-link" id="nav-viewproperties-tab" data-bs-toggle="tab" href="#nav-viewproperties" role="tab" aria-controls="nav-viewproperties" aria-selected="false">Properties</a>
-                            </div>
-                        </nav>
-
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-viewsettings" role="tabpanel" aria-labelledby="nav-viewsettings-tab">
-                                <div class="form-group">
-                                    <label class="control-label">Title<span style="color: red"> *</span></label>
-                                    <input id="viewtitle" type="text" class="form-control form-control-sm" v-model="model.title" />
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="control-label">Path<span style="color: red"> *</span></label>
-                                    <input id="viewpath" type="text" class="form-control form-control-sm" v-model="model.path" />
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="control-label">File Path<span style="color: red"> *</span></label>
-                                    <br /><i style="font-size:x-small">To override the default view use: Views/Application/[App Name]/ViewName.cshtml</i><br />
-                                    <input id="viewfilepath" type="text" class="form-control form-control-sm" v-model="model.filePath" />
-                                </div>
-
-                                <input type="checkbox" v-model="model.isPrimary" /> Is Primary
-                                <input type="checkbox" v-model="model.isPublic" /> Is Public
-                                <br />
-                                <input type="checkbox" v-model="model.saveFunction" /> Save Function
-                                <div class="form-group" v-if="model.saveFunction">
-                                    <input id="savebtntitle" type="text" class="form-control form-control-sm" v-model="model.saveFunctionTitle" placeholder="Button Title" />
-                                </div>
-                                <br v-if="!model.saveFunction" />
-                                <input type="checkbox" v-model="model.navigateFunction" /> Navigate Function
-                                <div class="form-group" v-if="model.navigateFunction">
-                                    <input id="navbtntitle" type="text" class="form-control form-control-sm" v-model="model.navigateFunctionTitle" placeholder="Button Title" />
-                                </div>
-
-
-                                <div class="form-group" v-if="model.navigateFunction">
-                                    <label class="control-label">Navigation View</label>
-                                    <select class="form-control form-control-sm" v-model="model.navigateFunctionActionMetaCode">
-                                        <option value="NONE">Select</option>
-                                        <option v-for="view in datalist" v-bind:value="view.metaCode">{{view.title}}</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" v-if="model.navigateFunction && ((!model.navigateFunctionActionMetaCode) || model.navigateFunctionActionMetaCode=='NONE')">
-                                    <input id="navpath" type="text" class="form-control form-control-sm" v-model="model.navigateFunctionPath" placeholder="Navigation Path" />
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="nav-viewproperties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
-                                <propertytool id="appvieprops" v-model:propobject="model" v-bind:propcollection="propertyCollection"></propertytool>
-                            </div>
-
-                        </div>
-
-                    </div>
-                   
-
-                </div>
-                <div class="modal-footer">
-                    <button id="create_app_view_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="(model.title=='' || model.path=='')">Save</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" data-bs-backdrop="static" id="create_ui_modal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="yesno_dlg_modal_hdr" class="modal-title">Create UI</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <input type="radio" name="createmethod" v-model="uisettings.method" value="new" /> New UI
-                    <input type="radio" name="createmethod" v-model="uisettings.method" value="reuse" /> Reuse UI from other view
-                    <br />
-                    <br />
-                    <div v-if="uisettings.method=='new'">
-                        <div class="form-group">
-                            <label class="control-label">UI Type<span style="color: red"> *</span></label>
-                            <select class="form-control form-control-sm" v-model="uisettings.uiType">
-                                <option value="1">List UI</option>
-                                <option value="2">Input UI</option>
-                            </select>
-                        </div>
-                        <br />
-                        <div class="form-group">
-                            <label class="control-label">Data Table<span style="color: red"> *</span></label>
-                            <select class="form-control form-control-sm" v-model="uisettings.dataTableMetaCode">
-                                <option v-for="item in datatables" v-bind:value="item.metaCode">{{item.dbName}}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" v-if="uisettings.method=='reuse'">
-                        <label class="control-label">Select Current UI<span style="color: red"> *</span></label>
-                        <select class="form-control form-control-sm" v-model="uisettings.metaCode">
-                            <option v-for="item in currentuilist" v-bind:value="item.metaCode">{{item.description}}</option>
-                        </select>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button id="create_ui_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="!canCreateUI()">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" data-bs-backdrop="static" id="create_edit_function_modal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="yesno_dlg_modal_hdr" class="modal-title">{{functionsettings.dlgHeader}}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <div class="mainpanel">
-
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-home-tab" data-bs-toggle="tab" href="#nav-functions" role="tab" aria-controls="nav-functions" aria-selected="true">Function</a>
-                                <a class="nav-item nav-link" id="nav-profile-tab" data-bs-toggle="tab" href="#nav-properties" role="tab" aria-controls="nav-properties" aria-selected="false">Properties</a>
-                            </div>
-                        </nav>
-
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-functions" role="tabpanel" aria-labelledby="nav-functions-tab">
-                                <br />
-                                <div class="alert alert-primary" v-if="functionsettings.metaType!=''">{{getFunctionDescription()}}</div>
-                                <div class="form-group">
-                                    <label class="control-label">Function Type<span style="color: red"> *</span></label>
-                                    <select class="form-control form-control-sm" v-model="functionsettings.metaType" :disabled="functionsettings.id>0">
-                                        <option v-for="item in functions" v-bind:value="item.metaCode">{{item.title}}</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group" v-if="functionHasButtonText()">
-                                    <label class="control-label">Button Text<span style="color: red"> *</span></label>
-                                    <input id="functitle" type="text" class="form-control form-control-sm" v-model="functionsettings.title" />
-                                </div>
-
-
-                                <div class="form-group" v-if="functionHasPath()">
-                                    <label class="control-label">Path</label>
-                                    <input id="funcpath" type="text" class="form-control form-control-sm" v-model="functionsettings.actionPath" />
-                                </div>
-
-                            </div>
-                            <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-viewproperties-tab">
-                                <propertytool id="appvieprops" v-model:propobject="functionsettings" v-bind:propcollection="propertyCollection"></propertytool>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button id="create_edit_function_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-                    </div>
-                </div>
-
-    <div class="modal" data-bs-backdrop="static" id="delete_ui_modal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="yesno_dlg_modal_hdr" class="modal-title">Delete UI ?</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>This userinterface is used in more than one view. Would you like to delete it just for this view or from all views ?</p>
-                </div>
-                <div class="modal-footer">
-                    <button id="delete_ui_modal_one" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Only this</button>
-                    <button id="delete_ui_modal_all" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">All</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
     </div>
 
 </div>
@@ -319,497 +46,34 @@
 @section Scripts
 {
 
-    <script type="module">
+    <script>
 
-        import { propertytool } from '../../js/vuecomponents.js'
-
-        const app = Vue.createApp({
+        const app = getBareaApp();
+        const content =
+        {
             data: function () 
             {
-                return {  datalist:[],model:{propertyList:[]},uisettings:{},currentuilist:[],functionsettings:{},propertyCollection:[] };
+                return {  datalist:[] };
             },
             methods:
             {
-                getFunctionDescription: function ()
-                {
-                    var context = this;
-
-                    if (context.functionsettings.metaType == 'NAVIGATE')
-                        return "Adds a button to the view that navigates the user to the [path]";
-
-                    if (context.functionsettings.metaType == 'SAVE')
-                        return "Adds a button to the view that triggers the application save operation";
-
-
-                    return "";
-                },
-                functionHasPath: function () {
-                    var context = this;
-
-                    if (context.functionsettings.metaType == 'CREATE')
-                        return true;
-                    if (context.functionsettings.metaType == 'EDIT')
-                        return true;
-                    if (context.functionsettings.metaType == 'NAVIGATE')
-                        return true;
-
-
-                    return false;
-                },
-                functionHasButtonText: function () {
-                    var context = this;
-
-                    if (context.functionsettings.metaType == 'FILTER')
-                        return false;
-                    if (context.functionsettings.metaType == 'PAGING')
-                        return false;
-
-                    return true;
-                },
-                openAddFunctionDlg: function (item)
-                {
-                    var context = this;
-
-                    context.functionsettings = { id: 0, applicationId:@Model.Application.Id, ownerMetaCode: item.metaCode, dlgHeader: "Add Function", metaType: "", actionPath: "", title: "",  metaCode: "", propertyList: item.propertyList, currentProperty: {} };
-
-
-                    var yesfunc = function ()
-                    {
-                       var baseurl = '@Url.Content("~/Model/API/")';
-                       var endpointurl = baseurl + "CreateFunction";
-
-                        if (context.functionsettings.metaType == "PAGING")
-                            context.functionsettings.title = "Paging";
-                        if (context.functionsettings.metaType == "FILTER")
-                            context.functionsettings.title = "Filter";
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.functionsettings),
-                            success: function (response)
-                            {
-                                context.datalist = response;
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-
-                    }
-
-                    $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
-                    $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_edit_function_modal").modal('show');
-
-
-                },
-                openEditFunctionDlg: function (item)
-                {
-                    var context = this;
-
-                    context.functionsettings = {
-                        id: item.id, applicationId:@Model.Application.Id, ownerMetaCode: item.ownerMetaCode, dlgHeader: "Edit Function", metaType: item.metaType, actionPath: item.actionPath, title: item.title, metaCode: item.metaCode, propertyList: item.propertyList, currentProperty: {} };
-
-                    var yesfunc = function ()
-                    {
-                         var baseurl = '@Url.Content("~/Model/API/")';
-                       var endpointurl = baseurl + "EditFunction";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.functionsettings),
-                            success: function (response)
-                            {
-                                context.datalist = response;
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-
-                    }
-
-                    $('#create_edit_function_modal_yesbtn').off('click', yesfunc);
-                    $('#create_edit_function_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_edit_function_modal").modal('show');
-
-
-                },
-                deleteFunction: function (item)
-                {
-                    var context = this;
-
-                    var yesfunc = function ()
-                    {
-                         var senddata = { id:item.id, applicationId:@Model.Application.Id, ownerMetaCode: item.viewMetaCode, metaCode: item.metaCode };
-                        var baseurl = '@Url.Content("~/Model/API/")';
-                        var endpointurl = baseurl + "DeleteFunction";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(senddata),
-                            success: function (response) {
-                                context.datalist = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                         });
-                    }
-
-                    raiseYesNoModal("Delete function ?", "The function will be removed from the view, continue ?", yesfunc);
-
-
-                },
-                canCreateUI: function ()
-                {
-                    var context = this;
-
-                    if (context.uisettings.method == '')
-                        return false;
-                    if (context.uisettings.method == 'new' && context.uisettings.uiType=="0")
-                        return false;
-                    if (context.uisettings.method == 'new' && context.uisettings.dataTableMetaCode=='')
-                        return false;
-                    if (context.uisettings.method == 'reuse' && context.uisettings.metaCode=='')
-                        return false;
-
-                    return true;
-                },
-                openCreateUIDlg: function (item)
-                {
-
-                    var context = this;
-
-                    context.uisettings = { applicationId:@Model.Application.Id, viewMetaCode: item.metaCode, method: "new", uiType: "0", dataTableMetaCode: "", metaCode:"" };
-                    context.currentuilist = context.getCurrentUIList(item);
-
-                    var yesfunc = function ()
-                    {
-                        var senddata = context.uisettings;
-
-                       var baseurl = '@Url.Content("~/Model/API/")';
-                        var endpointurl = baseurl + "CreateUserinterface";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(senddata),
-                            success: function (response)
-                            {
-                                context.datalist = response;
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-
-                    }
-
-
-                    $('#create_ui_modal_yesbtn').off('click', yesfunc);
-                    $('#create_ui_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_ui_modal").modal('show');
-
-                },
-                openCreateViewDlg: function ()
-                {
-                    var context = this;
-
-                    context.model = { id: 0, metaType: "UIVIEW", applicationId:@Model.Application.Id, metaCode: "", path: "", filePath: "", title: "", isPublic: false, isPrimary: false, saveFunction: false, saveFunctionTitle: "Save", navigateFunction: false, navigateFunctionPath: "Referer", navigateFunctionTitle: "", navigateFunctionActionMetaCode:"", propertyList: [], currentProperty: {} };
-
-                    var yesfunc = function ()
-                    {
-
-                        if (context.model.navigateFunction)
-                        {
-                            if (context.model.navigateFunctionPath == "" && context.model.navigateFunctionActionMetaCode == "")
-                            {
-
-                            }
-
-                        }
-
-                       var baseurl = '@Url.Content("~/Model/API/")';
-                       var endpointurl = baseurl + "CreateApplicationView";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.model),
-                            success: function (response)
-                            {
-                                context.datalist = response;
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-                    }
-
-                    $('#create_app_view_modal_yesbtn').off('click', yesfunc);
-                    $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_app_view_modal").modal('show');
-
-
-                },
-                openEditViewDlg: function (item)
-                {
-                    var context = this;
-
-                    context.model = { id: item.id, metaType: "UIVIEW", applicationId:@Model.Application.Id, metaCode: item.metaCode, path: item.path, filePath: item.filePath, title: item.title, isPublic: item.isPublic, isPrimary: item.isPrimary, propertyList: [], currentProperty: {} };
-                    for (var i = 0; i < item.functions.length; i++)
-                    {
-                        var f = item.functions[i];
-                        if (f.isMetaTypeSave)
-                        {
-                            context.model.saveFunction = true;
-                            context.model.saveFunctionTitle = f.title;
-                            context.model.propertyList = f.propertyList;
-                        }
-                        if (f.isMetaTypeNavigate)
-                        {
-                            context.model.navigateFunction = true;
-                            context.model.navigateFunctionTitle = f.title;
-                            context.model.navigateFunctionPath = f.actionPath;
-                            context.model.navigateFunctionActionMetaCode = f.actionMetaCode;
-                            context.model.navigateFunctionActionMetaType = f.actionMetaType;
-                        }
-
-                    }
-
-                    for (var i = 0; i < item.propertyList.length; i++)
-                    {
-                        context.model.propertyList.push(item.propertyList[i]);
-                    }
-
-                    var yesfunc = function ()
-                    {
-
-                       var test = context.model;
-                       var baseurl = '@Url.Content("~/Model/API/")';
-                       var endpointurl = baseurl + "EditApplicationView";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.model),
-                            success: function (response)
-                            {
-                                context.datalist = response;
-                            },
-                            error: function (response)
-                            {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-                    }
-
-                    $('#create_app_view_modal_yesbtn').off('click', yesfunc);
-                    $('#create_app_view_modal_yesbtn').off().on('click', yesfunc);
-                    $("#create_app_view_modal").modal('show');
-
-
-                },
+              
+             
                 getList: function ()
                 {
                     var context = this;
                     var baseurl = '@Url.Content("~/Model/API/")';
-                    var endpointurl = baseurl + "GetApplicationViews/@Model.Application.Id";
-                    $.get(endpointurl, function (response)
+                    var endpointurl = baseurl + "GetApplicationViews/@Model.Id";
+                    fetch(endpointurl, function (response)
                     {
                         context.datalist = response;
-                         var endpointurl = baseurl + "GetAllProperties";
-                         $.get(endpointurl, function (response)
-                         {
-                             context.propertyCollection = response;
-                         });
+                        
                     });
-                },
-                deleteUI: function (item)
-                {
-                    var context = this;
-                    var existsonmultiple = false;
-                    for (var i = 0; i < context.datalist.length; i++)
-                    {
-                        var view = context.datalist[i];
-                        for (var z = 0; z < view.userInterface.length; z++)
-                        {
-                            var ui = view.userInterface[z];
-                            if (ui.metaCode == item.metaCode && ui.id != item.id)
-                                existsonmultiple = true;
-                        }
-                    }
-
-                    var deleteone = function ()
-                    {
-
-                        var baseurl = '@Url.Content("~/Model/API/")';
-                        var endpointurl = baseurl + "DeleteUserinterface";
-                        var senddata = {  applicationId:@Model.Application.Id, method: "ONE", viewMetaCode: item.viewMetaCode, metaCode:item.metaCode };
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(senddata),
-                            success: function (response) {
-                                context.datalist = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                         });
-
-                    };
-
-                    var deleteall = function ()
-                    {
-
-                        var baseurl = '@Url.Content("~/Model/API/")';
-                        var endpointurl = baseurl + "DeleteUserinterface";
-                        var senddata = {  applicationId:@Model.Application.Id, method: "ALL", viewMetaCode: item.viewMetaCode, metaCode: item.metaCode };
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(senddata),
-                            success: function (response) {
-                                context.datalist = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                        });
-
-                    };
-
-                    if (existsonmultiple) {
-                        $('#delete_ui_modal_one').off('click', deleteone);
-                        $('#delete_ui_modal_one').off().on('click', deleteone);
-                        $('#delete_ui_modal_all').off('click', deleteall);
-                        $('#delete_ui_modal_all').off().on('click', deleteall);
-                        $("#delete_ui_modal").modal('show');
-                    } else {
-
-                        raiseYesNoModal("Delete UI ?", "This will delete the userinterface and can not be undone, continue ?", deleteone);
-                    }
-
-                },
-                deleteView: function (item)
-                {
-                    var context = this;
-
-                    var deletemodel = { id: item.id, metaType: "UIVIEW", applicationId:@Model.Application.Id, metaCode: item.metaCode }
-
-                    var yesfunc = function ()
-                    {
-
-
-                        var baseurl = '@Url.Content("~/Model/API/")';
-                        var endpointurl = baseurl + "DeleteApplicationView";
-
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(deletemodel),
-                            success: function (response) {
-                                context.datalist = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
-                            }
-                         });
-                    }
-
-                    raiseYesNoModal("Delete application view ?", "This will delete the view and can not be undone, continue ?", yesfunc);
-
-
-                },
-                getCurrentUIList: function (item)
-                {
-                    var context = this;
-                    var res = [];
-
-                    for (var i = 0; i < context.datalist.length; i++)
-                    {
-                        var view = context.datalist[i];
-                        for (var z = 0; z < view.userInterface.length; z++) {
-                            var ui = view.userInterface[z];
-                            if (ui.viewMetaCode != item.metaCode)
-                            {
-                                var exists = false;
-                                for (var y = 0; y < res.length; y++)
-                                {
-                                    var current = res[y];
-                                    if (ui.metaCode == current.metaCode)
-                                    {
-                                        exists = true;
-                                    }
-
-                                }
-                                if (!exists)
-                                    res.push(ui);
-
-                            }
-                        }
-                    }
-
-                    return res;
-                },
-                selectablePropList: function (object)
-                {
-                    return selectableProperties(this, object);
-                },
-                addProp: function (object)
-                {
-                    return addProperty(this, object);
-                },
-                propertyChanged: function () 
-                {
-                    this.$forceUpdate();
                 }
+
             },
-            computed: {
-
-                datatables: function ()
-                {
-                    var res = [{ dbName: "@Model.Application.DbName", metaCode: "@Model.Application.MetaCode" }];
-                    @foreach (var t in Model.DataStructure.Where(p => p.IsMetaTypeDataTable))
-                    {
-                        <text>res.push({ dbName: "@t.DbName", metaCode: "@t.MetaCode" });</text>
-                    }
-
-                    return res;
-                },
-                functions: function ()
-                {
-                    var res = [];
-                    res.push({ title: "Navigate", metaCode: "NAVIGATE" });
-                    res.push({ title: "Save", metaCode: "SAVE" });
-                    return res;
-                }
+            computed: 
+            {
 
             },
             mounted: function ()
@@ -819,10 +83,9 @@
                 context.getList();
 
             }
-        });
+        };
 
-        app.component('propertytool', propertytool);
-        const mountedapp = app.mount("#app");
+       app.mount("app", content);
 
     </script>
 
