@@ -57,11 +57,11 @@ namespace Intwenty
 
         public virtual DataResult New(ClientOperation state)
         {
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == state.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == state.ApplicationId);
             return CreateNewInternal(model);
         }
 
-        private DataResult CreateNewInternal(ApplicationModel model)
+        private DataResult CreateNewInternal(IntwentyApplication model)
         {
 
             if (model == null)
@@ -74,7 +74,7 @@ namespace Intwenty
 
                 var sb = new StringBuilder();
                 sb.Append("{");
-                sb.Append("\"" + model.Application.DbName + "\":{");
+                sb.Append("\"" + model.DbTableName + "\":{");
 
                 var sep = "";
                 var defval = GetDefaultValues(model);
@@ -88,12 +88,9 @@ namespace Intwenty
                 }
                 sb.Append("}");
 
-                foreach (var dbtbl in model.DataStructure)
+                foreach (var dbtbl in model.DataTables)
                 {
-                    if (dbtbl.IsMetaTypeDataTable && dbtbl.IsRoot)
-                    {
-                        sb.Append(",\"" + dbtbl.DbName + "\":[]");
-                    }
+                    sb.Append(",\"" + dbtbl.DbTableName + "\":[]");
                 }
 
                 sb.Append("}");
@@ -115,7 +112,7 @@ namespace Intwenty
             return result;
         }
 
-        protected virtual List<DefaultValue> GetDefaultValues(ApplicationModel model)
+        protected virtual List<DefaultValue> GetDefaultValues(IntwentyApplication model)
         {
             var res = new List<DefaultValue>();
             if (model == null)
@@ -124,10 +121,9 @@ namespace Intwenty
             var client = GetDataClient();
             client.Open();
 
-            foreach (var dbcol in model.DataStructure)
+            foreach (var dbcol in model.DataColumns)
             {
-                if (dbcol.IsMetaTypeDataColumn && dbcol.IsRoot)
-                {
+              
                     if (dbcol.HasPropertyWithValue("DEFVALUE", "AUTO"))
                     {
                         var start = dbcol.GetPropertyValue("DEFVALUE_START");
@@ -137,12 +133,12 @@ namespace Intwenty
                         int iseed = Convert.ToInt32(seed);
 
                         var result = client.GetEntities<DefaultValue>();
-                        var current = result.Find(p => p.ApplicationId == model.Application.Id && p.ColumnName == dbcol.DbName);
+                        var current = result.Find(p => p.ApplicationId == model.Id && p.ColumnName == dbcol.DbColumnName);
                         if (current == null)
                         {
 
                             var firstval = string.Format("{0}{1}", prefix, (istart));
-                            current = new DefaultValue() { ApplicationId = model.Application.Id, ColumnName = dbcol.DbName, GeneratedDate = DateTime.Now, TableName = model.Application.DbName, Count = istart, LatestValue = firstval };
+                            current = new DefaultValue() { ApplicationId = model.Id, ColumnName = dbcol.DbColumnName, GeneratedDate = DateTime.Now, TableName = model.DbTableName, Count = istart, LatestValue = firstval };
                             client.InsertEntity(current);
                             res.Add(current);
 
@@ -156,7 +152,7 @@ namespace Intwenty
                         }
                     }
 
-                }
+                
 
             }
 
@@ -171,24 +167,24 @@ namespace Intwenty
         #region Save
 
 
-        public ModifyResult Save(ClientOperation state, ApplicationModel model)
+        public ModifyResult Save(ClientOperation state, IntwentyApplication model)
         {
             return SaveInternal(state, model);
         }
 
         public ModifyResult Save(ClientOperation state)
         {
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == state.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == state.ApplicationId);
             return SaveInternal(state, model);
         }
 
-        private ModifyResult SaveInternal(ClientOperation state, ApplicationModel model)
+        private ModifyResult SaveInternal(ClientOperation state, IntwentyApplication model)
         {
 
             if (state == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "No client state found when performing save application.");
 
-            if (state.ApplicationId < 1)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Parameter state must contain a valid ApplicationId");
 
             if (!state.HasData)
@@ -197,7 +193,7 @@ namespace Intwenty
             if (model == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Coluld not find the requested application model");
 
-            if (model.Application.Id != state.ApplicationId)
+            if (model.Id != state.ApplicationId)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from state.applicationid");
 
 
@@ -207,7 +203,7 @@ namespace Intwenty
 
             try
             {
-                result = new ModifyResult(true, MessageCode.RESULT, string.Format("Saved application {0}", model.Application.Title), state.Id, state.Version);
+                result = new ModifyResult(true, MessageCode.RESULT, string.Format("Saved application {0}", model.Title), state.Id, state.Version);
 
                 var validation = Validate(model, state);
                 if (validation.IsSuccess)
@@ -223,12 +219,12 @@ namespace Intwenty
 
                     state.Data.InferModel(model);
 
-                    if (model.Application.DataMode == DataModeOptions.Standard)
+                    if (model.DataMode == DataModeOptions.Standard)
                     {
 
                         if (state.Id < 1)
                         {
-                            state.Id = GetNewInstanceId(model.Application.Id, "APPLICATION", model.Application.MetaCode, state, client);
+                            state.Id = GetNewInstanceId(model.Id, "APPLICATION", state, client);
                             result.Status = LifecycleStatus.NEW_NOT_SAVED;
 
                             if (state.HasProperty("FOREIGNKEYID") && state.HasProperty("FOREIGNKEYNAME"))
@@ -236,13 +232,13 @@ namespace Intwenty
                                 var columnname = state.GetPropertyValue("FOREIGNKEYNAME");
                                 if (!string.IsNullOrEmpty(columnname))
                                 {
-                                    var colmodel = model.DataStructure.Find(p=>p.DbName.ToLower()==columnname.ToLower() && p.IsMetaTypeDataColumn);
+                                    var colmodel = model.DataColumns.Find(p=>p.DbColumnName.ToLower()==columnname.ToLower());
                                     if (colmodel!= null)
                                         state.Data.SetValue(colmodel, state.GetAsInt("FOREIGNKEYID"));
                                 }
                             }
 
-                            if (model.Application.UseVersioning)
+                            if (model.UseVersioning)
                                 state.Version = CreateVersionRecord(model, state, client);
                             else
                                 state.Version = 1;
@@ -254,7 +250,7 @@ namespace Intwenty
                                 HandleSubTables(model, state, client);
                             result.Status = LifecycleStatus.NEW_SAVED;
                         }
-                        else if (state.Id > 0 && model.Application.UseVersioning)
+                        else if (state.Id > 0 && model.UseVersioning)
                         {
                             if (!IdExists(model, state, client))
                                 throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Application.Title));
@@ -270,7 +266,7 @@ namespace Intwenty
 
                             result.Status = LifecycleStatus.EXISTING_SAVED;
                         }
-                        else if (state.Id > 0 && !model.Application.UseVersioning)
+                        else if (state.Id > 0 && !model.UseVersioning)
                         {
                             if (!IdExists(model, state, client))
                                 throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Application.Title));
@@ -300,7 +296,7 @@ namespace Intwenty
                                 var columnname = state.GetPropertyValue("FOREIGNKEYNAME");
                                 if (!string.IsNullOrEmpty(columnname))
                                 {
-                                    var colmodel = model.DataStructure.Find(p => p.DbName.ToLower() == columnname.ToLower() && p.IsMetaTypeDataColumn);
+                                    var colmodel = model.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
                                     if (colmodel != null)
                                         state.Data.SetValue(colmodel, state.GetAsInt("FOREIGNKEYID"));
                                 }
@@ -355,7 +351,7 @@ namespace Intwenty
 
         }
 
-        public virtual ModifyResult SaveSubTableLine(ClientOperation state, ApplicationModel model, ApplicationTableRow row)
+        public virtual ModifyResult SaveSubTableLine(ClientOperation state, IntwentyApplication model, ApplicationTableRow row)
         {
 
          
@@ -371,13 +367,13 @@ namespace Intwenty
             if (state == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "No client state found when saving sub table row.");
 
-            if (state.ApplicationId < 1)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Parameter state must contain a valid ApplicationId");
 
             if (row.ParentId < 1)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "The sub table row must have a valid parent id");
 
-            var modelitem = model.DataStructure.Find(p => p.DbName.ToLower() == row.Table.DbName.ToLower() && p.IsMetaTypeDataTable);
+            var modelitem = model.DataTables.Find(p => p.DbTableName.ToLower() == row.Table.DbName.ToLower());
             if (modelitem == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "The tablename did not match any sub tables in the application");
 
@@ -403,9 +399,9 @@ namespace Intwenty
                 if (row.Id < 1)
                 {
                     BeforeInsertSubTableRow(model, row, client);
-                    if (model.Application.UseVersioning)
+                    if (model.UseVersioning)
                     {
-                        var rowid = GetNewInstanceId(model.Application.Id, DatabaseModelItem.MetaTypeDataTable, row.Table.Model.MetaCode, state, client);
+                        var rowid = GetNewInstanceId(model.Id, "DATATABLE", row.Table.Model.MetaCode, state, client);
                         if (rowid < 1)
                             throw new InvalidOperationException("Could not get a new row id for table " + row.Table.DbName);
 
@@ -424,7 +420,7 @@ namespace Intwenty
                 {
                     //CURRENT ROW
                     //VERSIONING = CREATE ROW WITH NEW VERSION, BUT SAME ID
-                    if (model.Application.UseVersioning)
+                    if (model.UseVersioning)
                     {
                         BeforeInsertSubTableRow(model, row, client);
                         InsertVersionedTableRow(model, row, state, client);
@@ -460,50 +456,50 @@ namespace Intwenty
             return result;
         }
 
-        protected virtual void BeforeSave(ApplicationModel model, ClientOperation state, IDataClient client)
+        protected virtual void BeforeSave(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
 
         }
 
-        protected virtual void BeforeSaveNew(ApplicationModel model, ClientOperation state, IDataClient client)
+        protected virtual void BeforeSaveNew(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
 
         }
 
-        protected virtual void BeforeSaveUpdate(ApplicationModel model, ClientOperation state, IDataClient client)
+        protected virtual void BeforeSaveUpdate(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
 
         }
 
-        protected virtual void AfterSave(ApplicationModel model, ClientOperation state, IDataClient client)
+        protected virtual void AfterSave(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
 
         }
 
-        protected virtual void BeforeSaveSubTableRow(ApplicationModel model, ApplicationTableRow row, IDataClient client)
+        protected virtual void BeforeSaveSubTableRow(IntwentyApplication model, ApplicationTableRow row, IDataClient client)
         {
 
         }
 
-        protected virtual void AfterSaveSubTableRow(ApplicationModel model, ApplicationTableRow row, IDataClient client)
+        protected virtual void AfterSaveSubTableRow(IntwentyApplication model, ApplicationTableRow row, IDataClient client)
         {
 
         }
 
-        protected virtual void BeforeInsertSubTableRow(ApplicationModel model, ApplicationTableRow row, IDataClient client)
+        protected virtual void BeforeInsertSubTableRow(IntwentyApplication model, ApplicationTableRow row, IDataClient client)
         {
 
         }
 
-        protected virtual void BeforeUpdateSubTableRow(ApplicationModel model, ApplicationTableRow row, IDataClient client)
+        protected virtual void BeforeUpdateSubTableRow(IntwentyApplication model, ApplicationTableRow row, IDataClient client)
         {
 
         }
 
-        private int GetNewInstanceId(int applicationid, string metatype, string metacode, ClientOperation state, IDataClient client)
+        private int GetNewInstanceId(string applicationid, string metatype, ClientOperation state, IDataClient client)
         {
-            var m = new InstanceId() { ApplicationId = applicationid, GeneratedDate = DateTime.Now, MetaCode = metacode, MetaType = metatype, Properties = state.Properties, ParentId = 0 };
-            if (metatype == DatabaseModelItem.MetaTypeDataTable)
+            var m = new InstanceId() { ApplicationId = applicationid, GeneratedDate = DateTime.Now, MetaType = metatype, Properties = state.Properties, ParentId = 0 };
+            if (metatype == "DATATABLE")
             {
                 m.ParentId = state.Id;
             }
@@ -526,7 +522,7 @@ namespace Intwenty
 
         }
 
-        private void InsertMainTable(ApplicationModel model, ClientOperation state, IDataClient client)
+        private void InsertMainTable(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
             var valuelist = new List<ApplicationValue>();
 
@@ -535,15 +531,15 @@ namespace Intwenty
 
             var sql_insert = new StringBuilder();
             var sql_insert_value = new StringBuilder();
-            sql_insert.Append("INSERT INTO " + GetTenantTableName(model.Application, state) + " (");
+            sql_insert.Append("INSERT INTO " + GetTenantTableName(model, state) + " (");
             sql_insert_value.Append(" VALUES (");
             char sep = ' ';
 
 
-            foreach (var t in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && p.IsRoot && p.IsFrameworkItem))
+            foreach (var t in model.DataColumns.Where(p => p.IsFrameworkColumn))
             {
-                sql_insert.Append(sep + t.DbName);
-                sql_insert_value.Append(sep + "@" + t.DbName);
+                sql_insert.Append(sep + t.DbColumnName);
+                sql_insert_value.Append(sep + "@" + t.DbColumnName);
                 sep = ',';
             }
 
@@ -577,7 +573,7 @@ namespace Intwenty
             var parameters = new List<IIntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter("@Id", state.Id));
             parameters.Add(new IntwentySqlParameter("@Version", state.Version));
-            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Application.Id));
+            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Id));
             parameters.Add(new IntwentySqlParameter("@CreatedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@ChangedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@OwnedBy", state.User.UserName));
@@ -591,12 +587,12 @@ namespace Intwenty
 
         }
 
-        private void UpdateMainTable(ApplicationModel model, ClientOperation state, IDataClient client)
+        private void UpdateMainTable(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
             var paramlist = new List<ApplicationValue>();
 
             StringBuilder sql_update = new StringBuilder();
-            sql_update.Append("UPDATE " + GetTenantTableName(model.Application, state));
+            sql_update.Append("UPDATE " + GetTenantTableName(model, state));
             sql_update.Append(" set ChangedDate=@ChangedDate");
             sql_update.Append(",ChangedBy=@ChangedBy");
 
@@ -634,20 +630,20 @@ namespace Intwenty
 
         }
 
-        private void InsertAutoIncrementalMainTable(ApplicationModel model, ClientOperation state, IDataClient client)
+        private void InsertAutoIncrementalMainTable(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
             var valuelist = new List<ApplicationValue>();
             var sql_insert = new StringBuilder();
             var sql_insert_value = new StringBuilder();
-            sql_insert.Append("INSERT INTO " + GetTenantTableName(model.Application, state) + " (");
+            sql_insert.Append("INSERT INTO " + GetTenantTableName(model, state) + " (");
             sql_insert_value.Append(" VALUES (");
             char sep = ' ';
 
 
-            foreach (var t in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && p.IsRoot && p.IsFrameworkItem && p.DbName.ToUpper() != "ID"))
+            foreach (var t in model.DataColumns.Where(p => p.IsFrameworkColumn && p.DbColumnName.ToUpper() != "ID"))
             {
-                sql_insert.Append(sep + t.DbName);
-                sql_insert_value.Append(sep + "@" + t.DbName);
+                sql_insert.Append(sep + t.DbColumnName);
+                sql_insert_value.Append(sep + "@" + t.DbColumnName);
                 sep = ',';
             }
 
@@ -678,7 +674,7 @@ namespace Intwenty
 
             var parameters = new List<IIntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter("@Version", state.Version));
-            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Application.Id));
+            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Id));
             parameters.Add(new IntwentySqlParameter("@CreatedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@ChangedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@OwnedBy", state.User.UserName));
@@ -714,7 +710,7 @@ namespace Intwenty
 
 
 
-        private void HandleSubTables(ApplicationModel model, ClientOperation state, IDataClient client)
+        private void HandleSubTables(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
             foreach (var table in state.Data.SubTables)
             {
@@ -729,9 +725,9 @@ namespace Intwenty
                     if (row.Id < 1)
                     {
                         BeforeInsertSubTableRow(model, row, client);
-                        if (model.Application.UseVersioning)
+                        if (model.UseVersioning)
                         {
-                            var rowid = GetNewInstanceId(model.Application.Id, DatabaseModelItem.MetaTypeDataTable, table.Model.MetaCode, state, client);
+                            var rowid = GetNewInstanceId(model.Id, "DATATABLE", table.Model.MetaCode, state, client);
                             if (rowid < 1)
                                 throw new InvalidOperationException("Could not get a new row id for table " + table.DbName);
 
@@ -750,7 +746,7 @@ namespace Intwenty
                     {
                         //CURRENT ROW
                         //VERSIONING = CREATE ROW WITH NEW VERSION, BUT SAME ID
-                        if (model.Application.UseVersioning)
+                        if (model.UseVersioning)
                         {
                             BeforeInsertSubTableRow(model, row, client);
                             InsertVersionedTableRow(model, row, state, client);
@@ -779,22 +775,23 @@ namespace Intwenty
 
 
 
-        private void InsertVersionedTableRow(ApplicationModel model, ApplicationTableRow row, ClientOperation state, IDataClient client)
+        private void InsertVersionedTableRow(IntwentyApplication model, ApplicationTableRow row, ClientOperation state, IDataClient client)
         {
             var paramlist = new List<ApplicationValue>();
 
 
             var sql_insert = new StringBuilder();
             var sql_insert_value = new StringBuilder();
-            sql_insert.Append("INSERT INTO " + GetTenantTableName(model.Application, row.Table.DbName, state) + " (");
+            sql_insert.Append("INSERT INTO " + GetTenantTableName(model, row.Table.DbName, state) + " (");
             sql_insert_value.Append(" VALUES (");
             char sep = ' ';
 
-
-            foreach (var t in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && !p.IsRoot && p.IsFrameworkItem && p.ParentMetaCode == row.Table.Model.MetaCode))
+            var table = model.DataTables.FirstOrDefault(p => p.Id == row.Table.Model.Id);
+            
+            foreach (var t in table.DataColumns.Where(p => p.IsFrameworkColumn))
             {
-                sql_insert.Append(sep + t.DbName);
-                sql_insert_value.Append(sep + "@" + t.DbName);
+                sql_insert.Append(sep + t.DbColumnName);
+                sql_insert_value.Append(sep + "@" + t.DbColumnName);
                 sep = ',';
             }
 
@@ -804,7 +801,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 sql_insert.Append("," + t.DbName);
@@ -828,7 +825,7 @@ namespace Intwenty
             var parameters = new List<IIntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter("@Id", row.Id));
             parameters.Add(new IntwentySqlParameter("@Version", state.Version));
-            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Application.Id));
+            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Id));
             parameters.Add(new IntwentySqlParameter("@CreatedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@ChangedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@OwnedBy", state.User.UserName));
@@ -843,25 +840,27 @@ namespace Intwenty
 
         }
 
-        private void InsertAutoIncrementalTableRow(ApplicationModel model, ApplicationTableRow row, ClientOperation state, IDataClient client)
+        private void InsertAutoIncrementalTableRow(IntwentyApplication model, ApplicationTableRow row, ClientOperation state, IDataClient client)
         {
             var paramlist = new List<ApplicationValue>();
 
-            var rowid = GetNewInstanceId(model.Application.Id, DatabaseModelItem.MetaTypeDataTable, row.Table.Model.MetaCode, state, client);
+            var rowid = GetNewInstanceId(model.Id, "DATATABLE", state, client);
             if (rowid < 1)
                 throw new InvalidOperationException("Could not get a new row id for table " + row.Table.DbName);
 
             var sql_insert = new StringBuilder();
             var sql_insert_value = new StringBuilder();
-            sql_insert.Append("INSERT INTO " + GetTenantTableName(model.Application, row.Table.DbName, state) + " (");
+            sql_insert.Append("INSERT INTO " + GetTenantTableName(model, row.Table.DbName, state) + " (");
             sql_insert_value.Append(" VALUES (");
             char sep = ' ';
 
+            var table = model.DataTables.FirstOrDefault(p => p.Id == row.Table.Model.Id);
 
-            foreach (var t in model.DataStructure.Where(p => p.IsMetaTypeDataColumn && !p.IsRoot && p.IsFrameworkItem && p.ParentMetaCode == row.Table.Model.MetaCode && p.DbName.ToUpper() != "ID"))
+
+            foreach (var t in table.DataColumns.Where(p => p.IsFrameworkColumn &&  p.DbColumnName.ToUpper() != "ID"))
             {
-                sql_insert.Append(sep + t.DbName);
-                sql_insert_value.Append(sep + "@" + t.DbName);
+                sql_insert.Append(sep + t.DbColumnName);
+                sql_insert_value.Append(sep + "@" + t.DbColumnName);
                 sep = ',';
             }
 
@@ -871,7 +870,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 sql_insert.Append("," + t.DbName);
@@ -894,7 +893,7 @@ namespace Intwenty
 
             var parameters = new List<IIntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter("@Version", state.Version));
-            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Application.Id));
+            parameters.Add(new IntwentySqlParameter("@ApplicationId", model.Id));
             parameters.Add(new IntwentySqlParameter("@CreatedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@ChangedBy", state.User.UserName));
             parameters.Add(new IntwentySqlParameter("@OwnedBy", state.User.UserName));
@@ -909,13 +908,13 @@ namespace Intwenty
 
         }
 
-        private void UpdateTableRow(ApplicationTableRow row, ClientOperation state, IDataClient client)
+        private void UpdateTableRow(IntwentyApplication model, ApplicationTableRow row, ClientOperation state, IDataClient client)
         {
             var paramlist = new List<ApplicationValue>();
 
             int rowid = 0;
             StringBuilder sql_update = new StringBuilder();
-            sql_update.Append("UPDATE " + GetTenantTableName(row.Table.Model.ApplicationInfo, row.Table.DbName, state));
+            sql_update.Append("UPDATE " + GetTenantTableName(model, row.Table.DbName, state));
             sql_update.Append(" set ChangedDate='" + this.ApplicationSaveTimeStamp.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "'");
             sql_update.Append(",ChangedBy=@ChangedBy");
 
@@ -2271,7 +2270,8 @@ namespace Intwenty
 
         }
 
-        protected string GetTenantTableName(ApplicationModelItem model, ClientOperation state)
+       
+        protected string GetTenantTableName(IntwentyApplication model, ClientOperation state)
         {
             if (model.TenantIsolationMethod == TenantIsolationMethodOptions.ByTables && model.TenantIsolationLevel == TenantIsolationOptions.User)
             {
@@ -2279,7 +2279,7 @@ namespace Intwenty
                     throw new InvalidOperationException("GetTenantTableName() - no user table prefix found.");
 
                 if (string.IsNullOrEmpty(state.DataTableDbName))
-                    return string.Format("{0}_{1}", state.User.UserTablePrefix, model.DbName);
+                    return string.Format("{0}_{1}", state.User.UserTablePrefix, model.DbTableName);
                 else
                     return string.Format("{0}_{1}", state.User.UserTablePrefix, state.DataTableDbName);
             }
@@ -2289,51 +2289,22 @@ namespace Intwenty
                     throw new InvalidOperationException("GetTenantTableName() - no organization table prefix found.");
 
                 if (string.IsNullOrEmpty(state.DataTableDbName))
-                    return string.Format("{0}_{1}", state.User.OrganizationTablePrefix, model.DbName);
+                    return string.Format("{0}_{1}", state.User.OrganizationTablePrefix, model.DbTableName);
                 else
                     return string.Format("{0}_{1}", state.User.OrganizationTablePrefix, state.DataTableDbName);
             }
             else
             {
                 if (string.IsNullOrEmpty(state.DataTableDbName))
-                    return model.DbName;
+                    return model.DbTableName;
                 else
                     return state.DataTableDbName;
             }
 
         }
 
-     
 
-        protected string GetTenantTableName(DatabaseModelItem model, ClientOperation state)
-        {
-            if (!model.IsMetaTypeDataTable)
-                throw new InvalidOperationException("GetTenantTableName() - model is not a table model");
-            if (model.ApplicationInfo == null)
-                throw new InvalidOperationException("GetTenantTableName() - model has no application info");
-
-            if (model.ApplicationInfo.TenantIsolationMethod == TenantIsolationMethodOptions.ByTables && model.ApplicationInfo.TenantIsolationLevel == TenantIsolationOptions.User)
-            {
-                if (string.IsNullOrEmpty(state.User.UserTablePrefix))
-                    throw new InvalidOperationException("GetTenantTableName() - no user table prefix found.");
-
-                return string.Format("{0}_{1}", state.User.UserTablePrefix, model.DbName);
-            }
-            else if (model.ApplicationInfo.TenantIsolationMethod == TenantIsolationMethodOptions.ByTables && model.ApplicationInfo.TenantIsolationLevel == TenantIsolationOptions.Organization)
-            {
-                if (string.IsNullOrEmpty(state.User.OrganizationTablePrefix))
-                    throw new InvalidOperationException("GetTenantTableName() - no organization table prefix found.");
-
-                return string.Format("{0}_{1}", state.User.OrganizationTablePrefix, model.DbName);
-            }
-            else
-            {
-                return model.DbName;
-            }
-
-        }
-
-        protected string GetTenantTableName(ApplicationModelItem model, string tablename, ClientOperation state)
+        protected string GetTenantTableName(IntwentyApplication model, string tablename, ClientOperation state)
         {
 
 

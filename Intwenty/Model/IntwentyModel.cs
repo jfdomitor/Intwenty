@@ -134,7 +134,7 @@ namespace Intwenty.Model
         }
     }
 
-    public class IntwentyDataBaseColumn : IIntwentyResultColumn
+    public class IntwentyDataBaseColumn : HashTagPropertyObject, IIntwentyResultColumn
     {
         private bool p_IsFrameworkColumn = false;
         public string Id { get; set; }

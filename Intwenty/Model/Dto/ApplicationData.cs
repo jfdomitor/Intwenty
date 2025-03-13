@@ -286,7 +286,7 @@ namespace Intwenty.Model.Dto
 
         public object Value { get; set; }
 
-        public DatabaseModelItem Model { get; set; }
+        public IntwentyDataBaseColumn Model { get; set; }
 
         public ApplicationValue()
         {
@@ -375,7 +375,7 @@ namespace Intwenty.Model.Dto
 
         public List<ApplicationTableRow> Rows { get; set; }
 
-        public DatabaseModelItem Model { get; set; }
+        public IntwentyDataBaseTable Model { get; set; }
 
         public bool HasModel
         {
@@ -482,7 +482,7 @@ namespace Intwenty.Model.Dto
             Values = new List<ApplicationValue>();
         }
 
-        public void InferModel(ApplicationModel model)
+        public void InferModel(IntwentyApplication model)
         {
             if (Table == null)
                 return;
