@@ -16,7 +16,6 @@ using Intwenty.Areas.Identity.Models;
 using Intwenty.Areas.Identity.Entity;
 using Intwenty.Areas.Identity.Data;
 using Microsoft.Extensions.Options;
-using Intwenty.Model.Design;
 using Intwenty.DataClient;
 using System.Xml;
 using System.Xml.Serialization;
@@ -177,7 +176,7 @@ namespace Intwenty.Controllers
         /// Get application views for an application
         /// </summary>
         [HttpGet("/Model/API/GetApplicationViews/{applicationid}")]
-        public IActionResult GetApplicationViews(int applicationid)
+        public IActionResult GetApplicationViews(string applicationid)
         {
             if (!User.Identity.IsAuthenticated)
                 return Forbid();

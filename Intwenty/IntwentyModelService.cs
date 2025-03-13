@@ -31,7 +31,7 @@ namespace Intwenty
 
     public class IntwentyModelService : IIntwentyModelService
     {
-        private IntwentyModel Model { get; }
+        public IntwentyModel Model { get; }
 
         private IDataClient Client { get; }
 
@@ -47,7 +47,7 @@ namespace Intwenty
 
         private string CurrentCulture { get; }
 
-        private List<IntwentyDataClientTypeMap> DataTypes { get; set; }
+        public List<IntwentyDataClientTypeMap> DataTypes { get; }
 
         private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
 
@@ -359,6 +359,11 @@ namespace Intwenty
 
         #region Application
 
+        public IntwentyModel GetModel()
+        {
+            return this.Model;
+        }
+
         public IntwentyApplication GetApplicationModel(string applicationid)
         {
             var t = GetApplicationModels();
@@ -639,7 +644,7 @@ namespace Intwenty
             {
                 foreach (var column in table.DataColumns)
                 {
-                    if (column.DbColumnName.ToLower() == columnname.ToLower()))
+                    if (column.DbColumnName.ToLower() == columnname.ToLower())
                         return column;
                 }
             }

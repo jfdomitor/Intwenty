@@ -141,6 +141,7 @@ namespace Intwenty.Model
         public string Name { get => DbColumnName; }
         public string DbTableName { get; set; }
         public string DbColumnName { get; set; }
+        public string NativeDataType { get; set; }
         public IntwentyDataType DataType { get; set; }
         public string Properties { get; set; }
 

@@ -204,6 +204,37 @@ namespace Intwenty.Model
 
         }
 
+        public string GetPropertyValue(string propertyname)
+        {
+            if (string.IsNullOrEmpty(Properties) && PropertyList.Count == 0)
+                return string.Empty;
+
+            if (string.IsNullOrEmpty(propertyname))
+                return string.Empty;
+
+            if (!string.IsNullOrEmpty(Properties))
+            {
+                var arr = Properties.Split("#".ToCharArray());
+
+                foreach (var pair in arr)
+                {
+                    if (pair != string.Empty)
+                    {
+                        var keyval = pair.Split("=".ToCharArray());
+                        if (keyval.Length < 2)
+                            return string.Empty;
+
+                        if (keyval[0].ToUpper() == propertyname.ToUpper())
+                            return keyval[1];
+                    }
+                }
+            }
+
+
+            return GetPropertyListValue(propertyname);
+        }
+
+
         public int GetAsInt(string propertyname)
         {
             try

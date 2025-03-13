@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Intwenty.Model.Design;
 using Intwenty.Model;
 using Microsoft.AspNetCore.Authorization;
 using Intwenty.Model.Dto;
@@ -42,32 +41,9 @@ namespace Intwenty.Controllers
             return View();
         }
 
-        [HttpGet("/Model/ApplicationCreate")]
-        public IActionResult ApplicationCreate()
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            return View();
-        }
-
-
-        [HttpGet("/Model/ApplicationEdit/{applicationid}")]
-        public IActionResult ApplicationEdit(int applicationid)
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            ViewBag.SystemId = Convert.ToString(applicationid);
-            return View();
-        }
-
+       
         [HttpGet("/Model/ApplicationViewList/{applicationid}")]
-        public IActionResult ApplicationViewList(int applicationid)
+        public IActionResult ApplicationViewList(string applicationid)
         {
             if (!User.Identity.IsAuthenticated)
                 return Forbid();
@@ -75,7 +51,6 @@ namespace Intwenty.Controllers
                 return Forbid();
 
             var model = ModelRepository.GetApplicationModel(applicationid);
-
 
             return View(model);
         }
@@ -95,49 +70,6 @@ namespace Intwenty.Controllers
 
 
 
-
-
-        [HttpGet("/Model/UserInterfaceInputDesign/{applicationid}/{uimetacode}")]
-        public IActionResult UserInterfaceInputDesign(int applicationid, string uimetacode)
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            var appmodel = ModelRepository.GetApplicationModel(applicationid);
-            if (appmodel == null)
-                return BadRequest();
-
-            var model = appmodel.GetUserInterface(uimetacode);
-            if (model == null)
-                return BadRequest();
-
-
-
-            return View(model);
-        }
-
-        [HttpGet("/Model/UserInterfaceListDesign/{applicationid}/{uimetacode}")]
-        public IActionResult UserInterfaceListDesign(int applicationid, string uimetacode)
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            var appmodel = ModelRepository.GetApplicationModel(applicationid);
-            if (appmodel == null)
-                return BadRequest();
-
-            var model = appmodel.GetUserInterface(uimetacode);
-            if (model == null)
-                return BadRequest();
-
-
-            return View(model);
-        }
-
         public IActionResult EditModelTranslations()
         {
             if (!User.Identity.IsAuthenticated)
@@ -148,16 +80,7 @@ namespace Intwenty.Controllers
             return View();
         }
 
-        public IActionResult EditNonModelTranslations()
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            return View();
-        }
-
+    
         public IActionResult EditEndpoints()
         {
             if (!User.Identity.IsAuthenticated)
@@ -223,16 +146,16 @@ namespace Intwenty.Controllers
                 return Forbid();
 
             var client = DataRepository.GetDataClient();
-            var dbtypemap = client.GetDbTypeMap();
-            var res = new List<ApplicationModel>();
+            var dbtypemap = ModelRepository.DataTypes;
+            var res = new List<IntwentyApplication>();
             var appmodels = ModelRepository.GetApplicationModels();
             foreach (var app in appmodels)
             {
-                foreach (var col in app.DataStructure.Where(p => p.IsMetaTypeDataColumn))
+                foreach (var col in app.DataColumns)
                 {
-                    var dbtype = dbtypemap.Find(p => p.IntwentyType == col.DataType && p.DbEngine == client.Database);
+                    var dbtype = dbtypemap.Find(p => p.IntwentyDataTypeEnum == col.DataType && p.DbEngine == client.Database);
                     if (dbtype != null)
-                        col.AddUpdateProperty("DBDATATYPE", dbtype.DBMSDataType);
+                        col.NativeDataType= dbtype.DBMSDataType;
                 }
             }
             return View(appmodels);

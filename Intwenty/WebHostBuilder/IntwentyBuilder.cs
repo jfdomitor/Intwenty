@@ -454,12 +454,10 @@ namespace Intwenty.WebHostBuilder
 
                         foreach (var ep in epmodels)
                         {
-                            if (ep.IsMetaTypeCustomPost)
+                            if (ep.EndpointType == IntwentyEndpointType.Custom)
                                 continue;
-                            if (ep.IsMetaTypeCustomGet)
-                                continue;
-
-                            endpoints.MapControllerRoute(ep.MetaCode, ep.Path + "{action=" + ep.Action + "}/{id?}", defaults: new { controller = "DynamicEndpoint" });
+                         
+                            endpoints.MapControllerRoute(ep.Id, ep.RequestPath + "{action=" + ep.Method + "}/{id?}", defaults: new { controller = "DynamicEndpoint" });
                         }
                     }
 
@@ -472,10 +470,10 @@ namespace Intwenty.WebHostBuilder
 
                             foreach (var view in a.Views)
                             {
-                                if (string.IsNullOrEmpty(view.Path))
+                                if (string.IsNullOrEmpty(view.RequestPath))
                                     continue;
 
-                                var path = view.Path.Trim();
+                                var path = view.RequestPath.Trim();
                                 if (!path.EndsWith("/"))
                                     path = path + "/";
 
@@ -485,7 +483,7 @@ namespace Intwenty.WebHostBuilder
                                 if (lbc == lbr)
                                 {
                                     //View Paths in the model will never be mapped, so default values will be used
-                                    endpoints.MapControllerRoute("app_route_" + a.Application.MetaCode + "_" + view.MetaCode, path, defaults: new { controller = "Application", action = "View" });
+                                    endpoints.MapControllerRoute("app_route_" + a.Id + "_" + view.Id, path, defaults: new { controller = "Application", action = "View" });
                                 }
                                 else
                                 {
@@ -622,20 +620,10 @@ namespace Intwenty.WebHostBuilder
             try
             {
                 client.Open();
-                client.ModifyTable<SystemItem>();
-                client.ModifyTable<ApplicationItem>();
-                client.ModifyTable<DatabaseItem>();
                 client.ModifyTable<EventLog>();
                 client.ModifyTable<InformationStatus>();
                 client.ModifyTable<InstanceId>();
-                client.ModifyTable<ViewItem>();
-                client.ModifyTable<UserInterfaceStructureItem>();
-                client.ModifyTable<UserInterfaceItem>();
-                client.ModifyTable<FunctionItem>();
-                client.ModifyTable<ValueDomainItem>();
                 client.ModifyTable<DefaultValue>();
-                client.ModifyTable<TranslationItem>();
-                client.ModifyTable<EndpointItem>();
                 client.Close();
 
             }

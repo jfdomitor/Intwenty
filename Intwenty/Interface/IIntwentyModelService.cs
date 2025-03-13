@@ -21,6 +21,8 @@ namespace Intwenty.Interface
 
         IntwentyModel Model { get; }
 
+        List<IntwentyDataClientTypeMap> DataTypes { get; }
+
         IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
         void AddChildViewsToRender(IntwentyView view);
 
@@ -32,11 +34,9 @@ namespace Intwenty.Interface
 
 
         //APPLICATION
-        List<IntwentySystem> GetSystemModels();
+        IntwentyModel GetModel();
         List<IntwentyApplication> GetApplicationModels();
-        IntwentyApplication GetApplicationModel(int applicationid);
-        IntwentyApplication GetApplicationModel(string metacode);
-
+        IntwentyApplication GetApplicationModel(string applicationid);
 
 
         //DATABASE
@@ -71,7 +71,7 @@ namespace Intwenty.Interface
         void ClearCache(string key="ALL");
         List<CachedObjectDescription> GetCachedObjectDescriptions();
         Task<List<OperationResult>> ConfigureDatabase(string tableprefix = "");
-        Task<OperationResult> ConfigureDatabase(IntwentyApplication model, List<IntwentyDataBaseColumn> databasemodel = null, string tableprefix = "");
+        Task<OperationResult> ConfigureDatabase(IntwentyApplication model, string tableprefix = "");
 
 
     }
