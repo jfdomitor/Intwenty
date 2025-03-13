@@ -49,7 +49,9 @@ namespace Intwenty
 
         private List<TypeMapItem> DataTypes { get; set; }
 
-      
+        private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
+
+
         public IntwentyModelService(IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
         {
           
@@ -915,72 +917,62 @@ namespace Intwenty
 
         #region Database
 
-        public List<DatabaseModelItem> GetDatabaseModels()
+        public List<IntwentyDataBaseTable> GetSystemDatabaseStructure()
         {
-            var idgen = 260001;
-            var apps = GetApplicationDescriptions();
-            Client.Open();
-            var dbitems = Client.GetEntities<DatabaseItem>().Select(p => new DatabaseModelItem(p)).ToList();
-            Client.Close();
+          
 
-            var res = new List<DatabaseModelItem>();
+            var res = new List<IntwentyDataBaseTable>();
 
-            foreach (var app in apps)
+            foreach (var sys in Model.Systems)
             {
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "Id", DatabaseModelItem.DataTypeInt));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "Version", DatabaseModelItem.DataTypeInt));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "ApplicationId", DatabaseModelItem.DataTypeInt));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "CreatedBy", DatabaseModelItem.DataTypeString));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "ChangedBy", DatabaseModelItem.DataTypeString));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "OwnedBy", DatabaseModelItem.DataTypeString));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "OwnedByOrganizationId", DatabaseModelItem.DataTypeString));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "OwnedByOrganizationName", DatabaseModelItem.DataTypeString));
-                res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, app.DbName, "ChangedDate", DatabaseModelItem.DataTypeDateTime));
-
-                foreach (var column in dbitems.Where(p => p.IsMetaTypeDataColumn && p.AppMetaCode == app.MetaCode && p.IsRoot))
+                foreach (var app in sys.Applications)
                 {
-                    if (res.Exists(p => p.DbName.ToUpper() == column.DbName.ToUpper() &&
-                                        p.IsRoot &&
-                                        p.AppMetaCode == app.MetaCode &&
-                                        p.IsMetaTypeDataColumn))
-                        continue;
+                    var table = new IntwentyDataBaseTable() { Id=app.DbTableName, DataColumns=new List<IntwentyDataBaseColumn>(), DbTableName = app.DbTableName, ApplicationId=app.Id, SystemId=sys.Id };
 
-                    column.ApplicationInfo = app;
-                    column.SystemInfo = app.SystemInfo;
-                    column.TableName = app.DbName;
-                    res.Add(column);
-                }
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName=table.DbTableName, DbColumnName="Id" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = table.DbTableName, DbColumnName = "Version" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = table.DbTableName, DbColumnName = "ApplicationId" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "CreatedBy" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "ChangedBy" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedBy" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedByOrganizationId" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedByOrganizationName" });
+                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = table.DbTableName, DbColumnName = "ChangedDate" });
 
-                foreach (var table in dbitems.Where(p => p.IsMetaTypeDataTable && p.AppMetaCode == app.MetaCode))
-                {
-                    table.ApplicationInfo = app;
-                    table.SystemInfo = app.SystemInfo;
-
-                    res.Add(table);
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "Id", DatabaseModelItem.DataTypeInt, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "Version", DatabaseModelItem.DataTypeInt, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "ApplicationId", DatabaseModelItem.DataTypeInt, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "CreatedBy", DatabaseModelItem.DataTypeString, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "ChangedBy", DatabaseModelItem.DataTypeString, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "OwnedBy", DatabaseModelItem.DataTypeString, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "OwnedByOrganizationId", DatabaseModelItem.DataTypeString, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "OwnedByOrganizationName", DatabaseModelItem.DataTypeString, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "ChangedDate", DatabaseModelItem.DataTypeDateTime, table.MetaCode));
-                    res.Add(DatabaseModelItem.CreateFrameworkColumn(idgen++, app, table.DbName, "ParentId", DatabaseModelItem.DataTypeInt, table.MetaCode));
-
-                    foreach (var column in dbitems.Where(p => p.IsMetaTypeDataColumn && p.AppMetaCode == app.MetaCode && p.ParentMetaCode == table.MetaCode && !p.IsRoot))
+               
+                    foreach (var column in app.DataColumns)
                     {
-                        if (res.Exists(p => p.DbName.ToUpper() == column.DbName.ToUpper() &&
-                                            p.ParentMetaCode == table.MetaCode &&
-                                            p.AppMetaCode == app.MetaCode &&
-                                            p.IsMetaTypeDataColumn))
+                        if (table.DataColumns.Exists(p => p.DbColumnName.ToUpper() == column.DbColumnName.ToUpper()))
                             continue;
 
-                        column.ApplicationInfo = app;
-                        column.TableName = table.DbName;
-                        column.SystemInfo = app.SystemInfo;
-                        res.Add(column);
+                        table.DataColumns.Add(column);
+                    }
 
+                    res.Add(table);
+
+                    foreach (var t in app.DataTables)
+                    {
+                        var subtable = new IntwentyDataBaseTable() { Id = t.DbTableName, DataColumns = new List<IntwentyDataBaseColumn>(), DbTableName = t.DbTableName, ApplicationId = app.Id, SystemId = sys.Id };
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Id" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Version" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ApplicationId" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "CreatedBy" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "ChangedBy" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedBy" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationId" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationName" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = subtable.DbTableName, DbColumnName = "ChangedDate" });
+                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ParentId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ParentId" });
+
+                        foreach (var column in t.DataColumns)
+                        {
+                            if (subtable.DataColumns.Exists(p => p.DbColumnName.ToUpper() == column.DbColumnName.ToUpper()))
+                                continue;
+
+                            table.DataColumns.Add(column);
+                        }
+
+                        res.Add(subtable);
                     }
                 }
 
@@ -992,39 +984,7 @@ namespace Intwenty
             return res;
         }
 
-        public DatabaseModelItem GetDatabaseColumnModel(ApplicationModel model, string columnname, string tablename = "")
-        {
-            if (model == null)
-                return null;
-
-            var result = model.DataStructure.FindAll(p => p.DbName == columnname && p.IsMetaTypeDataColumn);
-            if (result.Count == 1)
-                return result[0];
-
-            if (result.Count > 1)
-            {
-
-                if (!string.IsNullOrEmpty(tablename))
-                {
-                    var tblmodel = model.DataStructure.Find(p => p.DbName == tablename && p.IsMetaTypeDataTable);
-                    if (tblmodel == null)
-                        return null;
-
-                    var tmp = result.FindAll(p => p.ParentMetaCode == tblmodel.MetaCode);
-                    if (tmp.Count == 1)
-                        return tmp[0];
-                }
-                else
-                {
-                    var tmp = result.FindAll(p => p.DbName == columnname && p.IsRoot);
-                    if (tmp.Count == 1)
-                        return tmp[0];
-
-                }
-            }
-
-            return null;
-        }
+      
 
         #endregion
 
@@ -1080,12 +1040,8 @@ namespace Intwenty
 
             try
             {
-                var client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-                await client.OpenAsync();
-                var apps = await client.GetEntitiesAsync<ApplicationItem>();
-                await client.CloseAsync();
-
-                var isolatedapps = apps.Select(p => new ApplicationModelItem(p)).Where(p => p.TenantIsolationMethod == TenantIsolationMethodOptions.ByTables);
+               
+                var isolatedapps = Model.Systems.SelectMany(p=> p.Applications.Where(p => p.TenantIsolationMethod == TenantIsolationMethodOptions.ByTables));
                 if (isolatedapps.Count() == 0)
                 {
                     result.Add(new OperationResult(true, MessageCode.RESULT, "No apps with tenant isolation by table were found"));
@@ -1101,7 +1057,7 @@ namespace Intwenty
 
                 usertableprefix = user.TablePrefix;
 
-                var dbmodels = GetDatabaseModels();
+                var dbmodels = GetSystemDatabaseStructure();
 
                 foreach (var app in isolatedapps)
                 {
@@ -1131,18 +1087,18 @@ namespace Intwenty
 
         public async Task<List<OperationResult>> ConfigureDatabase(string tableprefix = "")
         {
-            var databasemodel = GetDatabaseModels();
-            var res = new List<OperationResult>();
-            var l = GetApplicationDescriptions();
-            foreach (var model in l)
+            foreach (var sys in Model.Systems)
             {
-                res.Add(await ConfigureDatabase(model, databasemodel, tableprefix));
+                foreach (var app in sys.Applications)
+                {
+                    res.Add(await ConfigureDatabase(app, tableprefix));
+                }
             }
 
             return res;
         }
 
-        public async Task<OperationResult> ConfigureDatabase(ApplicationModelItem model, List<DatabaseModelItem> databasemodel = null, string tableprefix = "")
+        public async Task<OperationResult> ConfigureDatabase(IntwentyApplication model, string tableprefix = "")
         {
 
             OperationResult res = null;
@@ -1156,10 +1112,6 @@ namespace Intwenty
 
                 try
                 {
-
-                    if (databasemodel == null)
-                        databasemodel = GetDatabaseModels();
-
 
                     var maintable_default_cols = databasemodel.Where(p => p.IsMetaTypeDataColumn && p.IsRoot && p.IsFrameworkItem && p.AppMetaCode == model.MetaCode).ToList();
                     if (maintable_default_cols == null)
@@ -1348,8 +1300,7 @@ namespace Intwenty
 
                         if (string.IsNullOrEmpty(column.DbColumnName))
                             res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object: {0} in application {1} has no [DbColumnName].", column.Id, app.Title));
-
-                      
+     
                       
                     }
 
@@ -1375,19 +1326,14 @@ namespace Intwenty
                     res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [RequestPath]", ep.Id));
                 }
 
-                if (string.IsNullOrEmpty(ep.Method) && (ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave))
+                if (string.IsNullOrEmpty(ep.Method) && ep.EndpointType==IntwentyEndpointType.Custom)
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [Action]", ep.MetaCode));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [Method]", ep.Method));
                 }
 
-                if (!ep.IsDataTableConnected && (ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave))
+                if (!ep.IsDataTableConnected && ep.EndpointType != IntwentyEndpointType.Custom)
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object {0} has no connection to database table or an intwenty data view", (ep.Path + ep.Action)));
-                }
-
-                if (ep.IsDataTableConnected && string.IsNullOrEmpty(ep.AppMetaCode) && (ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave))
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object {0} is connected to a table but has no [AppMetaCode]", (ep.Path + ep.Action)));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object {0} has no connection to database table", (ep.Method + ' ' + ep.RequestPath)));
                 }
 
             }
@@ -1408,23 +1354,23 @@ namespace Intwenty
 
 
 
-        public List<IntwentyDataColumn> GetDefaultVersioningTableColumns()
+        public List<IntwentyDataBaseColumn> GetDefaultVersioningTableColumns()
         {
-            List<IntwentyDataColumn> res = null;
+            List<IntwentyDataBaseColumn> res = null;
             if (ModelCache.TryGetValue(DefaultVersioningTableColumnsCacheKey, out res))
             {
                 return res;
             }
 
 
-            var DefaultVersioningTableColumns = new List<IntwentyDataColumn>();
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeInt, Name = "Id" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeInt, Name = "Version" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeInt, Name = "ApplicationId" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeString, Name = "MetaCode" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeString, Name = "MetaType" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeDateTime, Name = "ChangedDate" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataColumn() { DataType = DatabaseModelItem.DataTypeInt, Name = "ParentId" });
+            var DefaultVersioningTableColumns = new List<IntwentyDataBaseColumn>();
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Id" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Version" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "ApplicationId" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "MetaCode" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "MetaType" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.DateTime, Id = "ChangedDate" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "ParentId" });
 
 
             ModelCache.Set(DefaultVersioningTableColumnsCacheKey, DefaultVersioningTableColumns);
@@ -1436,14 +1382,14 @@ namespace Intwenty
 
 
 
-        private void CreateMainTable(ApplicationModelItem model, List<DatabaseModelItem> columns, OperationResult result, string tableprefix = "")
+        private void CreateMainTable(IntwentyApplication model, OperationResult result, string tableprefix = "")
         {
 
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, model.DbName);
+                tablename = string.Format("{0}_{1}", tableprefix, model.DbTableName);
             else
-                tablename = model.DbName;
+                tablename = model.DbTableName;
 
             var table_exist = false;
             table_exist = Client.TableExists(tablename);
@@ -1454,7 +1400,7 @@ namespace Intwenty
             else
             {
 
-                string create_sql = GetCreateTableStmt(model, columns, tablename, false);
+                string create_sql = GetCreateTableStmt(model, model.DataColumns, tablename, false);
                 Client.RunCommand(create_sql);
                 result.AddMessage(MessageCode.INFO, "Main table: " + tablename + " for application: " + model.Title + "  was created successfully");
 
@@ -1463,20 +1409,14 @@ namespace Intwenty
             Client.Close();
         }
 
-        private void CreateDBTable(ApplicationModelItem model, DatabaseModelItem table, List<DatabaseModelItem> columns, OperationResult result, string tableprefix = "")
+        private void CreateDBTable(IntwentyApplication model, IntwentyDataBaseTable table, OperationResult result, string tableprefix = "")
         {
-
-            if (!table.IsMetaTypeDataTable)
-            {
-                result.AddMessage(MessageCode.SYSTEMERROR, "Invalid MetaType when configuring table");
-                return;
-            }
 
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, table.DbName);
+                tablename = string.Format("{0}_{1}", tableprefix, table.DbTableName);
             else
-                tablename = table.DbName;
+                tablename = table.DbTableName;
 
 
             var table_exist = false;
@@ -1488,7 +1428,7 @@ namespace Intwenty
             else
             {
 
-                string create_sql = GetCreateTableStmt(model, columns, tablename, true);
+                string create_sql = GetCreateTableStmt(model, table.DataColumns, tablename, true);
                 Client.RunCommand(create_sql);
                 result.AddMessage(MessageCode.INFO, "Subtable: " + tablename + " in application: " + model.Title + "  was created successfully");
 
@@ -1498,7 +1438,7 @@ namespace Intwenty
 
         }
 
-        private void CreateApplicationVersioningTable(ApplicationModelItem model, OperationResult result, string tableprefix = "")
+        private void CreateApplicationVersioningTable(IntwentyApplication model, OperationResult result, string tableprefix = "")
         {
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
@@ -1518,26 +1458,20 @@ namespace Intwenty
             Client.Close();
         }
 
-        private void CreateDBColumn(DatabaseModelItem column, DatabaseModelItem table, OperationResult result, string tableprefix = "")
+        private void CreateDBColumn(IntwentyDataBaseColumn column, IntwentyDataBaseTable table, OperationResult result, string tableprefix = "")
         {
-
-            if (!column.IsMetaTypeDataColumn)
-            {
-                result.AddMessage(MessageCode.SYSTEMERROR, "Invalid MetaType when configuring column");
-                return;
-            }
 
             var tablename = "";
             if (!string.IsNullOrEmpty(tableprefix))
-                tablename = string.Format("{0}_{1}", tableprefix, table.DbName);
+                tablename = string.Format("{0}_{1}", tableprefix, table.DbTableName);
             else
-                tablename = table.DbName;
+                tablename = table.DbTableName;
 
 
-            var colexist = Client.ColumnExists(tablename, column.DbName);
+            var colexist = Client.ColumnExists(tablename, column.DbColumnName);
             if (colexist)
             {
-                result.AddMessage(MessageCode.INFO, "Column: " + column.DbName + " in table: " + tablename + " is already present.");
+                result.AddMessage(MessageCode.INFO, "Column: " + column.DbColumnName + " in table: " + tablename + " is already present.");
             }
             else
             {

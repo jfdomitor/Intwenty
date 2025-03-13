@@ -45,7 +45,15 @@ namespace Intwenty.Model
         ,Blob = 8
     }
 
-  
+    public enum IntwentyEndpointType
+    {
+        TableGet = 0
+       ,TableList = 1
+       ,TableSave = 2
+       ,Custom = 3
+    }
+
+
     public class IntwentyModel
     {
         public List<IntwentySystem> Systems { get; set; }
@@ -79,16 +87,42 @@ namespace Intwenty.Model
         public List<IntwentyDataBaseColumn> DataColumns { get; set; }
         public List<IntwentyDataBaseTable> DataTables { get; set; }
         public List<IntwentyView> Views { get; set; }
+        public string VersioningTableName
+        {
+            get
+            {
+                return DbTableName + "_version";
+            }
+        }
     }
 
     public class IntwentyDataBaseColumn : IIntwentyResultColumn
     {
+        private bool p_IsFrameworkColumn = false;
         public string Id { get; set; }
         public string Name { get => DbColumnName; }
         public string DbTableName { get; set; }
         public string DbColumnName { get; set; }
         public IntwentyDataType DataType { get; set; }
         public string Properties { get; set; }
+
+
+        public IntwentyDataBaseColumn()
+        {
+        }
+        public IntwentyDataBaseColumn(bool isframeworkcolumn)
+        {
+            p_IsFrameworkColumn = true;
+        }
+
+
+        public bool IsFrameworkColumn 
+        {
+            get
+            {
+                return p_IsFrameworkColumn;
+            }
+        }
 
         public bool IsNumeric
         {
@@ -115,6 +149,8 @@ namespace Intwenty.Model
     public class IntwentyDataBaseTable 
     {
         public string Id { get; set; }
+        public string SystemId { get; set; }
+        public string ApplicationId { get; set; }
         public string DbTableName { get; set; }
         public string Properties { get; set; }
         public List<IntwentyDataBaseColumn> DataColumns { get; set; }
@@ -198,7 +234,8 @@ namespace Intwenty.Model
         public string Id { get; set; }
         public string SystemId { get; set; }
         public string ApplicationId { get; set; }
-        public string EndpointType { get; set; }
+        public string Method { get; set; }
+        public IntwentyEndpointType EndpointType { get; set; }
         public string Title { get; set; }
         public string RequestPath { get; set; }
         public string Description { get; set; }
