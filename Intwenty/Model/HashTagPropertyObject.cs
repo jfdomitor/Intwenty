@@ -228,7 +228,7 @@ namespace Intwenty.Model
         }
       
 
-        public string GetPropertyValue(string propertyname)
+        public string GetAsString(string propertyname)
         {
             if (string.IsNullOrEmpty(Properties) && PropertyList.Count==0)
                 return string.Empty;

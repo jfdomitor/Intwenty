@@ -48,7 +48,7 @@ namespace Intwenty.Controllers
         #region Systems
 
         /// <summary>
-        /// Get endpoints
+        /// Get systems
         /// </summary>
         [HttpGet("/Model/API/GetSystems")]
         public async Task<IActionResult> GetSystems()
@@ -63,84 +63,6 @@ namespace Intwenty.Controllers
 
         }
 
-
-        //[HttpPost("/Model/API/SaveSystem")]
-        //public async Task<IActionResult> SaveSystem([FromBody] SystemModelItem model)
-        //{
-        //    if (!User.Identity.IsAuthenticated)
-        //        return Forbid();
-        //    if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-        //        return Forbid();
-
-        //    try
-        //    {
-
-        //        ModelRepository.ClearCache();
-
-        //        model.ParentMetaCode = BaseModelItem.MetaTypeRoot;
-
-        //        if (!string.IsNullOrEmpty(model.DbPrefix))
-        //            throw new InvalidOperationException("Cant save a system withot a dbprefix");
-
-        //        if (!string.IsNullOrEmpty(model.Title))
-        //            throw new InvalidOperationException("Cant save a system withot a title");
-
-        //        var client = DataRepository.GetDataClient();
-
-        //        var current_systems = ModelRepository.GetSystemModels();
-
-
-        //        if (model.Id < 1)
-        //        {
-
-        //            if (current_systems.Exists(p => p.DbPrefix == model.DbPrefix))
-        //                throw new InvalidOperationException(string.Format("There is already a system with DbPrefix {0}", model.DbPrefix));
-
-        //            if (current_systems.Exists(p => p.Title == model.Title))
-        //                throw new InvalidOperationException(string.Format("There is already a system with the title {0}", model.Title));
-
-        //            var entity = new SystemItem();
-        //            if (string.IsNullOrEmpty(model.MetaCode))
-        //                entity.MetaCode = BaseModelItem.GetQuiteUniqueString();
-
-        //            entity.Title = model.Title;
-        //            entity.Description = model.Description;
-        //            entity.DbPrefix = model.DbPrefix;
-
-        //            client.Open();
-        //            client.InsertEntity(entity);
-        //            client.Close();
-        //        }
-        //        else
-        //        {
-        //            client.Open();
-        //            var existing = client.GetEntity<SystemItem>(model.Id);
-        //            if (existing != null)
-        //            {
-
-        //                existing.Title = model.Title;
-        //                existing.Description = model.Description;
-        //                client.UpdateEntity(existing);
-
-        //            }
-        //            client.Close();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        var r = new OperationResult();
-        //        r.SetError(ex.Message, "An error occured when saving a system.");
-        //        var jres = new JsonResult(r);
-        //        jres.StatusCode = 500;
-        //        return jres;
-        //    }
-
-        //    return await GetSystems();
-        //}
-
-
-
-
         #endregion
 
         #region Application models
@@ -149,7 +71,7 @@ namespace Intwenty.Controllers
         /// Get full model data for application with id
         /// </summary>
         [HttpGet("/Model/API/GetApplication/{applicationid}")]
-        public IActionResult GetApplication(int applicationid)
+        public IActionResult GetApplication(string applicationid)
         {
             if (!User.Identity.IsAuthenticated)
                 return Forbid();
@@ -157,7 +79,7 @@ namespace Intwenty.Controllers
                 return Forbid();
 
             var t = ModelRepository.GetApplicationModel(applicationid);
-            return new JsonResult(t.Application);
+            return new JsonResult(t);
 
         }
 

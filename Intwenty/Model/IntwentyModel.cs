@@ -45,8 +45,8 @@ namespace Intwenty.Model
         ,Blob = 8
     }
 
-
-    public class MainModel
+  
+    public class IntwentyModel
     {
         public List<IntwentySystem> Systems { get; set; }
         public List<IntwentyLocalizationItem> Localizations { get; set; }

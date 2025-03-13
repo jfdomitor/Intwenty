@@ -62,6 +62,7 @@ namespace Intwenty.WebHostBuilder
         
 
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
+            var model = configuration.Get<IntwentyModel>();
 
 
 

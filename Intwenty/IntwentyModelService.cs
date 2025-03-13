@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.Http;
 using Intwenty.Helpers;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Intwenty
 {
@@ -29,7 +31,7 @@ namespace Intwenty
 
     public class IntwentyModelService : IIntwentyModelService
     {
-        private MainModel Model { get; }
+        private IntwentyModel Model { get; }
 
         private IDataClient Client { get; }
 
@@ -47,32 +49,16 @@ namespace Intwenty
 
         private List<TypeMapItem> DataTypes { get; set; }
 
-        private string AppModelCacheKey = "APPMODELS";
-
-        private static readonly string AppModelItemsCacheKey = "APPMODELITEMS";
-
-        private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
-
-        private static readonly string ValueDomainsCacheKey = "VALUEDOMAINS";
-
-        private static readonly string TranslationsCacheKey = "TRANSLATIONS";
-
-        private static readonly string EndpointsCacheKey = "INTWENTYENDPOINTS";
-
-        private static readonly string SystemModelItemCacheKey = "INTWENTYSYSTEMS";
-
-
-        public IntwentyModelService(IConfiguration config, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+      
+        public IntwentyModelService(IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
         {
-            var settings = config.GetSection("IntwentySettings").Get<IntwentySettings>();
-            var mainmodel = config.Get<MainModel>();
-
-            Model = mainmodel;
+          
+            Model = model.Value;
             DbLogger = dblogger;
             OrganizationManager = orgmanager;
             UserManager = usermanager;
             ModelCache = cache;
-            Settings = settings;
+            Settings = settings.Value;
             Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
             DataTypes = Client.GetDbTypeMap();
             CurrentCulture = Settings.LocalizationDefaultCulture;
@@ -91,7 +77,7 @@ namespace Intwenty
         {
             var info = new ViewRequestInfo();
 
-            int viewid = 0;
+            string viewid = "";
             int instanceid = 0;
             if (id.HasValue && id.Value > 0)
                 instanceid = id.Value;
@@ -105,14 +91,14 @@ namespace Intwenty
                 if (pid > 0 && instanceid==0)
                     instanceid = pid;
 
-                var vid = props.GetAsInt("VIEWID");
-                if (vid > 0)
+                var vid = props.GetAsString("VIEWID");
+                if (!string.IsNullOrEmpty(vid))
                     viewid = vid;
             }
 
 
             IntwentyView viewtorender = null;
-            if (viewid > 0)
+            if (!string.IsNullOrEmpty(viewid))
             {
                 viewtorender = GetLocalizedViewModelById(viewid);
             }
@@ -371,53 +357,21 @@ namespace Intwenty
 
         #region Application
 
-        public ApplicationModel GetApplicationModel(int applicationid)
+        public IntwentyApplication GetApplicationModel(string applicationid)
         {
             var t = GetApplicationModels();
-            return t.Find(p => p.Application.Id == applicationid);
+            return t.Find(p => p.Id == applicationid);
         }
 
-        public ApplicationModel GetApplicationModel(string metacode)
+        public List<IntwentyApplication> GetApplicationModels()
         {
-            var t = GetApplicationModels();
-            return t.Find(p => p.Application.MetaCode == metacode);
-        }
-
-        public List<ApplicationModel> GetApplicationModels()
-        {
-            List<ApplicationModel> res = null;
-
-            if (ModelCache.TryGetValue(AppModelCacheKey, out res))
-            {
-                return res;
-            }
-
-            res = new List<ApplicationModel>();
-            var appitems = GetApplicationDescriptions();
-            var dbitems = GetDatabaseModels();
-            var views = GetViewModels();
-
-            foreach (var app in appitems)
-            {
-                var t = new ApplicationModel();
-                t.System = app.SystemInfo;
-                t.Application = app;
-                t.DataStructure = new List<DatabaseModelItem>();
-                t.Views = new List<ViewModel>();
-                t.DataStructure.AddRange(dbitems.Where(p => p.AppMetaCode == app.MetaCode && p.SystemMetaCode == app.SystemMetaCode));
-                t.Views.AddRange(views.Where(p => p.AppMetaCode == app.MetaCode && p.SystemMetaCode == app.SystemMetaCode));
-                res.Add(t);
-            }
-
-            ModelCache.Set(AppModelCacheKey, res);
-
-            return res;
+            return Model.Systems.SelectMany(sys => sys.Applications).ToList();
 
         }
 
 
 
-        public async Task<List<ViewModel>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal)
+        public async Task<List<IntwentyView>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal)
         {
 
             var all_auth_views = await GetAuthorizedViewModelsAsync(claimprincipal);
@@ -426,9 +380,9 @@ namespace Intwenty
             return all_auth_primary_views;
         }
 
-        public async Task<List<SystemModelItem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal)
+        public async Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal)
         {
-            var res = new List<SystemModelItem>();
+            var res = new List<IntwentySystem>();
             if (!claimprincipal.Identity.IsAuthenticated)
                 return res;
 
@@ -468,9 +422,9 @@ namespace Intwenty
 
         }
 
-        public async Task<List<ApplicationModelItem>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal)
+        public async Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal)
         {
-            var res = new List<ApplicationModelItem>();
+            var res = new List<IntwentyApplication>();
             if (!claimprincipal.Identity.IsAuthenticated)
                 return res;
 
@@ -478,7 +432,7 @@ namespace Intwenty
             if (user == null)
                 return res;
 
-            var apps = GetApplicationDescriptions();
+            var apps = GetApplicationModels();
             if (await UserManager.IsInRoleAsync(user, IntwentyRoles.RoleSuperAdmin))
                 return apps;
 
@@ -491,19 +445,19 @@ namespace Intwenty
             foreach (var a in apps)
             {
 
-                if (denied.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.MetaCode))
+                if (denied.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.Id))
                     continue;
-                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemMetaCode))
+                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemId))
                     continue;
 
                 foreach (var p in list)
                 {
 
-                    if (p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.MetaCode && !p.DenyAuthorization)
+                    if (p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.Id && !p.DenyAuthorization)
                     {
                         res.Add(a);
                     }
-                    else if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemMetaCode && !p.DenyAuthorization)
+                    else if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemId && !p.DenyAuthorization)
                     {
                         res.Add(a);
                     }
@@ -517,9 +471,9 @@ namespace Intwenty
 
         }
 
-        public async Task<List<ViewModel>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal)
+        public async Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal)
         {
-            var res = new List<ViewModel>();
+            var res = new List<IntwentyView>();
             if (!claimprincipal.Identity.IsAuthenticated)
                 return res;
 
@@ -529,7 +483,7 @@ namespace Intwenty
 
 
             var appmodels = GetApplicationModels();
-            var viewmodels = new List<ViewModel>();
+            var viewmodels = new List<IntwentyView>();
             foreach (var a in appmodels)
             {
                 viewmodels.AddRange(a.Views);
@@ -547,25 +501,25 @@ namespace Intwenty
             foreach (var a in viewmodels)
             {
 
-                if (denied.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == a.MetaCode))
+                if (denied.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == a.Id))
                     continue;
-                if (denied.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.AppMetaCode))
+                if (denied.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.ApplicationId))
                     continue;
-                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemMetaCode))
+                if (denied.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemId))
                     continue;
 
                 foreach (var p in list)
                 {
 
-                    if (p.IsViewAuthorization && p.AuthorizationNormalizedName == a.MetaCode && !p.DenyAuthorization)
+                    if (p.IsViewAuthorization && p.AuthorizationNormalizedName == a.Id && !p.DenyAuthorization)
                     {
                         res.Add(a);
                     }
-                    else if (p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.AppMetaCode && !p.DenyAuthorization)
+                    else if (p.IsApplicationAuthorization && p.AuthorizationNormalizedName == a.ApplicationId && !p.DenyAuthorization)
                     {
                         res.Add(a);
                     }
-                    else if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemMetaCode && !p.DenyAuthorization)
+                    else if (p.IsSystemAuthorization && p.AuthorizationNormalizedName == a.SystemId && !p.DenyAuthorization)
                     {
                         res.Add(a);
                     }
@@ -574,41 +528,6 @@ namespace Intwenty
 
             return res;
 
-        }
-
-
-
-        public List<ApplicationModelItem> GetApplicationDescriptions()
-        {
-
-            List<ApplicationModelItem> res = null;
-
-            if (ModelCache.TryGetValue(AppModelItemsCacheKey, out res))
-            {
-                return res;
-            }
-
-            res = new List<ApplicationModelItem>();
-            var systems = GetSystemModels();
-            Client.Open();
-            var apps = Client.GetEntities<ApplicationItem>();
-            Client.Close();
-
-
-
-            foreach (var a in apps)
-            {
-                var am = new ApplicationModelItem(a);
-                var sys = systems.Find(p => p.MetaCode == a.SystemMetaCode);
-                if (sys != null)
-                    am.SystemInfo = sys;
-
-                res.Add(am);
-            }
-
-            ModelCache.Set(AppModelItemsCacheKey, res);
-
-            return res;
         }
 
 
@@ -1320,287 +1239,143 @@ namespace Intwenty
         public OperationResult ValidateModel()
         {
 
-            ModelCache.Remove(AppModelCacheKey);
-
-            var systems = GetSystemModels();
-            var apps = GetApplicationModels();
+         
+     
             var endpointinfo = GetEndpointModels();
             var res = new OperationResult();
 
-            if (apps.Count == 0)
-            {
-                res.IsSuccess = false;
-                res.AddMessage(MessageCode.SYSTEMERROR, "The model doesn't seem to exist");
-            }
-
-            if (systems.Count == 0)
+          
+            if (Model.Systems.Count == 0)
             {
                 res.AddMessage(MessageCode.SYSTEMERROR, "There's no systems in the model, thre shoult be atleast one default system");
                 return res;
             }
 
-            foreach (var a in systems)
+            foreach (var sys in Model.Systems)
             {
-                if (string.IsNullOrEmpty(a.Title))
+                if (string.IsNullOrEmpty(sys.Title))
                 {
                     res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system with Id: {0} has no [Title].", a.Id));
                     return res;
                 }
 
-                if (string.IsNullOrEmpty(a.MetaCode))
+                if (string.IsNullOrEmpty(sys.Id))
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system {0} has no [MetaCode].", a.Title));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system {0} has no [Id].", sys.Title));
                     return res;
                 }
 
-                if (string.IsNullOrEmpty(a.DbPrefix))
+                if (string.IsNullOrEmpty(sys.DbPrefix))
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system {0} has no [DbPrefix].", a.Title));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The system {0} has no [DbPrefix].", sys.Title));
                     return res;
                 }
 
-            }
-
-            foreach (var a in apps)
-            {
-
-                if (string.IsNullOrEmpty(a.Application.Title))
+                foreach (var app in sys.Applications)
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application with Id: {0} has no [Title].", a.Application.Id));
-                    return res;
-                }
 
-                if (string.IsNullOrEmpty(a.Application.MetaCode))
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has no [MetaCode].", a.Application.Title));
-
-                if (string.IsNullOrEmpty(a.Application.SystemMetaCode))
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has no [SystemMetaCode].", a.Application.Title));
-                    return res;
-                }
-
-                var appsystem = systems.Find(p => p.MetaCode == a.Application.SystemMetaCode);
-                if (appsystem == null)
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has and invalid [SystemMetaCode].", a.Application.Title));
-                    return res;
-                }
-
-                if (!systems.Exists(p => p.MetaCode == a.Application.SystemMetaCode))
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has an invalid [SystemMetaCode].", a.Application.Title));
-                    return res;
-                }
-
-                if (string.IsNullOrEmpty(a.Application.DbName))
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has no [DbName].", a.Application.Title));
-
-                if (!string.IsNullOrEmpty(a.Application.DbName) && !a.Application.DbName.Contains(appsystem.DbPrefix + "_"))
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has an invalid [DbName]. The [DbPrefix] '{1}' of the system must be included", a.Application.Title, appsystem.DbPrefix));
-
-
-                if (!string.IsNullOrEmpty(a.Application.MetaCode) && (a.Application.MetaCode.ToUpper() != a.Application.MetaCode))
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has a non uppercase [MetaCode].", a.Application.Title));
-
-                if (a.DataStructure.Count == 0)
-                    res.AddMessage(MessageCode.WARNING, string.Format("The application {0} has no Database objects (DATVALUE, DATATABLE, etc.)", a.Application.Title));
-
-
-                foreach (var view in a.Views)
-                {
-                    if (string.IsNullOrEmpty(view.MetaCode))
+                    if (string.IsNullOrEmpty(app.Title))
                     {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [MetaCode].", view.Id, a.Application.Title));
+                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application with Id: {0} has no [Title].", app.Id));
                         return res;
                     }
 
-                    if (string.IsNullOrEmpty(view.MetaType))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [MetaType].", view.Id, a.Application.Title));
-                        return res;
-                    }
+                    if (string.IsNullOrEmpty(app.Id))
+                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has no [Id].", app.Title));
 
-                    if (string.IsNullOrEmpty(view.Title))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [Title].", view.Id, a.Application.Title));
-                        return res;
-                    }
+                    if (string.IsNullOrEmpty(app.DbTableName))
+                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has no [DbTableName].", app.Title));
 
-                    if (string.IsNullOrEmpty(view.Path))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [Path] and can't be routed to.", view.Title, a.Application.Title));
-                        return res;
-                    }
+                    if (!string.IsNullOrEmpty(app.DbTableName) && !app.DbTableName.Contains(sys.DbPrefix + "_"))
+                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has an invalid [DbName]. The [DbPrefix] '{1}' of the system must be included", app.Title, sys.DbPrefix));
 
-                    if (view.Path.Contains("{id}") && !view.IsApplicationInputView())
-                    {
-                        res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has an id parameter in path, but it is not an input/edit view", view.Title, a.Application.Title));
-                    }
+                    if (app.DataColumns.Count == 0)
+                        res.AddMessage(MessageCode.WARNING, string.Format("The application {0} has no DataColumns", app.Title));
 
-                    if (view.Path.Count(p=> p =='{') > 2)
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has more than 2 parameters in the path", view.Title, a.Application.Title));
-                    }
 
-                    var count = view.UserInterface.Where(p => p.IsMainApplicationTableInterface && p.IsMetaTypeListInterface).Count();
-                    if (count > 1)
+                    foreach (var view in app.Views)
                     {
-                        res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has more than one list ui defined for the main application table.", view.Title, a.Application.Title));
-                    }
-
-                    count = view.UserInterface.Where(p => p.IsMainApplicationTableInterface).Count();
-                    if (count > 1)
-                    {
-                        res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has more than one ui defined for the main application table.", view.Title, a.Application.Title));
-                    }
-
-                    foreach (var viewfunc in view.Functions)
-                    {
-                        if (viewfunc.IsMetaTypeSave && !viewfunc.HasProperty("AFTERSAVEACTION"))
+                        if (string.IsNullOrEmpty(view.Id))
                         {
-                            res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has a save function function without the property: AFTERSAVEACTION, specifying what to do after save", view.Title, a.Application.Title));
-                        }
-
-                        if (viewfunc.IsMetaTypeNavigate && viewfunc.ActionViewId < 1)
-                        {
-                            res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has a navigation function that is not mapped to a view (the view to navigate to). [ActionMetaCode]", view.Title, a.Application.Title));
-                        }
-
-                    }
-
-                    if (!view.HasSaveFunction && view.UserInterface.Exists(p=> p.IsMetaTypeInputInterface))
-                    {
-                        res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} does not have a save function, but an input userinterface", view.Title, a.Application.Title));
-                    }
-
-                    var rzp = view.GetPropertyValue("RAZORVIEWPATH");
-                    if (!string.IsNullOrEmpty(rzp))
-                    {
-                        if (!rzp.Contains("Views/Application") || rzp.StartsWith("/") || !rzp.Contains(".cshtml"))
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} points to a custom razor file, but the path is invalid, should be: Views/Application/[AppName]/View.cshtml", view.Title, a.Application.Title));
-                    }
-
-
-                    foreach (var ui in view.UserInterface)
-                    {
-                        if (!ui.IsDataTableConnected)
-                        {
-                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has an ui {2} without [DataTableMetaCode].", view.Title, a.Application.Title, ui.Title));
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [Id].", view.Title, app.Title));
                             return res;
                         }
 
-                        if (ui.IsMetaTypeListInterface && ui.Sections.Count > 0)
+       
+                        if (string.IsNullOrEmpty(view.Title))
                         {
-                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has a list interface with sections.", view.Title, a.Application.Title));
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [Title].", view.Id, app.Title));
                             return res;
                         }
 
-                        if (ui.IsMetaTypeListInterface && ui.Table.Columns.Count == 0)
+                        if (string.IsNullOrEmpty(view.RequestPath))
                         {
-                            res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has a list interface with no column definitions.", view.Title, a.Application.Title));
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} has no [RequestPath] and can't be routed to.", view.Title, app.Title));
+                            return res;
                         }
 
-                        foreach (var uistruct in ui.UIStructure)
+                       
+                        if (!string.IsNullOrEmpty(view.FilePath))
                         {
-                            if (uistruct.IsMetaTypeTableTextColumn && string.IsNullOrEmpty(uistruct.DataColumn1DbName))
-                            {
-                                res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The column {0} in view {1} ha no specified database column.", uistruct.Title, view.Title));
-                            }
+                            if (!view.FilePath.Contains("Views/Application") || view.FilePath.StartsWith("/") || !view.FilePath.Contains(".cshtml"))
+                                res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The view object {0} in application: {1} points to a custom razor file, but the path is invalid, should be: Views/Application/[AppName]/View.cshtml", view.Title, app.Title));
+                        }
+
+
+                        foreach (var ui in view.UIElements)
+                        {
+                           
 
                         }
 
-                        
-
-                        foreach (var uifunc in ui.Functions)
-                        {
-                            if (ui.IsSubTableUserInterface && uifunc.IsMetaTypeCreate && !uifunc.IsModalAction && uifunc.ActionPath != view.Path)
-                                res.AddMessage(MessageCode.WARNING, string.Format("The non modal create function in the ui {0} has a missconfigured path, should be the same as parent view", uifunc.Title));
-
-                            if (ui.IsSubTableUserInterface && uifunc.IsMetaTypeEdit && !uifunc.IsModalAction && uifunc.ActionPath != view.Path)
-                                res.AddMessage(MessageCode.WARNING, string.Format("The non modal edit function in the ui {0} has a missconfigured path, should be the same as parent view", ui.Title));
-
-                            if (ui.IsMainApplicationTableInterface)
-                            {
-                                if (uifunc.IsMetaTypeCreate && uifunc.ActionViewId < 1 && !uifunc.IsModalAction)
-                                    res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has an interface with a create function not mapped to an input view. [ActionMetaCode]", view.Title, a.Application.Title));
-                                if (uifunc.IsMetaTypeEdit && uifunc.ActionViewId < 1 && !uifunc.IsModalAction)
-                                    res.AddMessage(MessageCode.WARNING, string.Format("The view object {0} in application: {1} has an interface with an edit function not mapped to an input view. [ActionMetaCode]", view.Title, a.Application.Title));
-                            }
-
-                        }
 
                     }
 
+                    foreach (var table in app.DataTables)
+                    {
+                       
+                        if (!string.IsNullOrEmpty(table.DbTableName) && !table.DbTableName.Contains(sys.DbPrefix + "_"))
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has an invalid [DbName]. The [DbPrefix] '{1}' of the system must be included", app.Title, sys.DbPrefix));
+                    }
+
+                    foreach (var column in app.DataColumns)
+                    {
+                        if (string.IsNullOrEmpty(column.Id))
+                        {
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object with Id: {0} in application: {1} has no [Id].", column.DbColumnName, app.Title));
+                            return res;
+                        }
+
+                        if (string.IsNullOrEmpty(column.DbColumnName))
+                            res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object: {0} in application {1} has no [DbColumnName].", column.Id, app.Title));
+
+                      
+                      
+                    }
 
                 }
-
-                foreach (var db in a.DataStructure)
-                {
-                    if (string.IsNullOrEmpty(db.MetaCode))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object with Id: {0} in application: {1} has no [MetaCode].", db.Id, a.Application.Title));
-                        return res;
-                    }
-
-                    if (string.IsNullOrEmpty(db.ParentMetaCode))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object: {0} in application: {1} has no [ParentMetaCode]. (ROOT ?)", db.MetaCode, a.Application.Title));
-                        return res;
-                    }
-
-                    if (string.IsNullOrEmpty(db.MetaType))
-                    {
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object: {0} in application: {1} has no [MetaType].", db.MetaCode, a.Application.Title));
-                        return res;
-                    }
-
-                    if (string.IsNullOrEmpty(db.DbName))
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The data object: {0} in application {1} has no [DbName].", db.MetaCode, a.Application.Title));
-
-                    if (!string.IsNullOrEmpty(db.DbName) && db.DbName.ToUpper() == db.DbName && db.IsMetaTypeDataColumn)
-                        res.AddMessage(MessageCode.WARNING, string.Format("The data column: {0} in application {1} has an uppercase [DbName], ok but intwenty don't like it.", db.DbName, a.Application.Title));
-
-
-                    if (!string.IsNullOrEmpty(db.DbName) && db.DbName.ToUpper() == db.DbName && db.IsMetaTypeDataTable)
-                        res.AddMessage(MessageCode.WARNING, string.Format("The data table: {0} in application {1} has an uppercase [DbName], ok but intwenty don't like it.", db.DbName, a.Application.Title));
-
-                    if (!string.IsNullOrEmpty(db.DbName) && db.IsMetaTypeDataTable && !db.DbName.Contains(appsystem.DbPrefix + "_"))
-                        res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The application: {0} has an invalid [DbName]. The [DbPrefix] '{1}' of the system must be included", a.Application.Title, appsystem.DbPrefix));
-
-
-                }
-
             }
+
+           
 
 
            
 
-            foreach (var ep in endpointinfo)
+            foreach (var ep in Model.Endpoints)
             {
-                if (string.IsNullOrEmpty(ep.MetaCode))
+                if (string.IsNullOrEmpty(ep.Id))
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("There is an endpoint object without [MetaCode]"));
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("There is an endpoint object without [Id]"));
                     return res;
                 }
 
-                if (string.IsNullOrEmpty(ep.ParentMetaCode))
+         
+                if (string.IsNullOrEmpty(ep.RequestPath))
                 {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("There is an endpoint object without [ParentMetaCode]"));
-                    return res;
+                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [RequestPath]", ep.Id));
                 }
 
-                if (!ep.HasValidMetaType)
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0}  has no [MetaType] or the MetaType is invalid.", ep.MetaCode));
-                    return res;
-                }
-
-                if (string.IsNullOrEmpty(ep.Path))
-                {
-                    res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [Path]", ep.MetaCode));
-                }
-
-                if (string.IsNullOrEmpty(ep.Action) && (ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave))
+                if (string.IsNullOrEmpty(ep.Method) && (ep.IsMetaTypeTableGet || ep.IsMetaTypeTableList || ep.IsMetaTypeTableSave))
                 {
                     res.AddMessage(MessageCode.SYSTEMERROR, string.Format("The endpoint object with MetaCode: {0} has no [Action]", ep.MetaCode));
                 }
