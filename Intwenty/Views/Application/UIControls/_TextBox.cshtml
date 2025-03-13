@@ -2,7 +2,6 @@
 @{
     var requiredmsg = string.Format("{0} {1}", Model.LocalizedTitle, Localizer["Is Required"].Value);
     var readonlycontrol = Model.ReadOnly ? "disabled" : "";
-    var validationexpression = Model.JavaScriptObjectName + '.' + Model.DataTableDbName + "&&" + Model.VueModelBinding;
 }
 <div class="form-group">
     <label class="control-label">
@@ -14,8 +13,7 @@
                name="@Model.UIId"
                type="text"
                class="form-control form-control-sm"
-               ba-bind="@Model.VueModelBinding"
-               data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeTextBox"
+               ba-bind="@Model.ModelBinding"
                data-title="@Model.LocalizedTitle"
                data-dbtable="@Model.DataTableDbName"
                data-dbfield="@Model.DataColumnDbName"
@@ -24,7 +22,7 @@
 
         @if (Settings.Value.UIControlsEnableRequiredText)
         {
-            <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if="!@validationexpression">@Html.Raw(requiredmsg)</span>
+            <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if="!@Model.ModelBinding">@Html.Raw(requiredmsg)</span>
         }
     
    

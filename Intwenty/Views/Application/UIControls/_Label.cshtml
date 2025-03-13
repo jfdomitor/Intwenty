@@ -2,30 +2,30 @@
 
 @if (Model.HasPropertyWithValue("LABELSIZE", "H1"))
 {
-    <h3>{{@Model.VueModelBinding}}</h3>
+    <h3>{{@Model.ModelBinding}}</h3>
 }
 else if (Model.HasPropertyWithValue("LABELSIZE", "H2"))
 {
-<h2>{{@Model.VueModelBinding}}</h2>
+<h2>{{@Model.ModelBinding}}</h2>
 }
 else if (Model.HasPropertyWithValue("LABELSIZE", "H3"))
 {
-<h3>{{@Model.VueModelBinding}}</h3>
+<h3>{{@Model.ModelBinding}}</h3>
 }
 else if (Model.HasPropertyWithValue("LABELSIZE", "H4"))
 {
-<h4>{{@Model.VueModelBinding}}</h4>
+<h4>{{@Model.ModelBinding}}</h4>
 }
 else if (Model.HasPropertyWithValue("LABELSIZE", "H5"))
 {
-<h5>{{@Model.VueModelBinding}}</h5>
+<h5>{{@Model.ModelBinding}}</h5>
 }
 else if (Model.HasPropertyWithValue("LABELSIZE", "H6"))
 {
-<h6>{{@Model.VueModelBinding}}</h6>
+<h6>{{@Model.ModelBinding}}</h6>
 }
 else
 {
-<b>{{@Model.VueModelBinding}}</b><br />
+<b>{{@Model.ModelBinding}}</b><br />
 }
 

@@ -31,7 +31,7 @@ namespace Intwenty.Interface
 
         string JavaScriptObjectName { get;  }
 
-        string VueModelBinding { get; }
+        string ModelBinding { get; }
 
     }
 
@@ -42,7 +42,7 @@ namespace Intwenty.Interface
 
         string DataColumn2DbName { get; }
 
-        string VueModelBinding2 { get; }
+        string ModelBinding2 { get; }
     }
 
   

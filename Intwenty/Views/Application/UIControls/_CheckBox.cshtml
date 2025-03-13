@@ -6,14 +6,13 @@
     <input type="checkbox"
            id="@Model.UIId"
            name="@Model.UIId"
-           ba-bind="@Model.VueModelBinding"
-           data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeCheckBox"
+           ba-bind="@Model.ModelBinding"
            data-title="@Model.Title"
            data-dbtable="@Model.DataTableDbName"
            data-dbfield="@Model.DataColumnDbName"
            data-required="@Model.Mandatory" /> @Model.LocalizedTitle
     @if (Settings.Value.UIControlsEnableRequiredText)
     {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if="!@Model.VueModelBinding">@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if="!@Model.ModelBinding">@Html.Raw(requiredmsg)</span>
     }
   </div>

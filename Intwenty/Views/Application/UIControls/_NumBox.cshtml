@@ -12,8 +12,7 @@
            name="@Model.UIId"
            type="number"
            class="form-control form-control-sm"
-           ba-bind="@Model.VueModelBinding"
-           data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeNumBox"
+           ba-bind="@Model.ModelBinding"
            data-title="@Model.LocalizedTitle"
            data-dbtable="@Model.DataTableDbName"
            data-dbfield="@Model.DataColumnDbName"
@@ -21,6 +20,6 @@
            autocomplete="off" />
     @if (Settings.Value.UIControlsEnableRequiredText)
     {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if=!@Model.VueModelBinding>@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-if=!@Model.ModelBinding>@Html.Raw(requiredmsg)</span>
     }
 </div>

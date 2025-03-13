@@ -19,18 +19,16 @@
     </label>
     <textarea id="@Model.UIId"
               name="@Model.UIId"
-              ba-bind="@Model.VueModelBinding"
+              ba-bind="@Model.ModelBinding"
               rows="@rows"
               cols="50"
               class="form-control form-control-sm"
-              v-on:input="onUserInput(event)"
-              data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeTextArea"
               data-title="@Model.LocalizedTitle"
               data-dbtable="@Model.DataTableDbName"
               data-dbfield="@Model.DataColumnDbName"
               data-required="@Model.Mandatory"></textarea>
       @if (Settings.Value.UIControlsEnableRequiredText)
       {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-bind="!@Model.VueModelBinding">@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" ba-bind="!@Model.ModelBinding">@Html.Raw(requiredmsg)</span>
       }
 </div>

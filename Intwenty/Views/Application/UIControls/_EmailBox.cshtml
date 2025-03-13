@@ -13,8 +13,7 @@
            name="@Model.UIId"
            type="email"
            class="form-control form-control-sm"
-           ba-bind="@Model.VueModelBinding"
-           data-metatype="@Intwenty.Model.UserInterfaceStructureModelItem.MetaTypeEmailBox"
+           ba-bind="@Model.ModelBinding"
            data-title="@Model.Title"
            data-dbtable="@Model.DataTableDbName"
            data-dbfield="@Model.DataColumnDbName"
@@ -22,6 +21,6 @@
            maxlength="200" />
     @if (Settings.Value.UIControlsEnableRequiredText)
     {
-        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if=!@Model.VueModelBinding>@Html.Raw(requiredmsg)</span>
+        <span id="invalidtxt_@Model.UIId" class="invalidInput" v-if=!@Model.ModelBinding>@Html.Raw(requiredmsg)</span>
     }
 </div>
