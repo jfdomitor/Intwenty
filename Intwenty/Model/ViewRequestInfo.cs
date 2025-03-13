@@ -59,7 +59,7 @@ namespace Intwenty.Model
             return t;
         }
 
-        public void AddChildView(ViewModel childview, string foreignkeyname, string htmlid)
+        public void AddChildView(IntwentyView childview, string foreignkeyname, string htmlid)
         {
 
             childview.RuntimeRequestInfo = this.Copy();

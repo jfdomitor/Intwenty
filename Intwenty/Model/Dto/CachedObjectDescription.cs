@@ -19,7 +19,7 @@ namespace Intwenty.Model.Dto
 
         public int DataId { get; set; }
 
-        public int ApplicationId { get; set; }
+        public string ApplicationId { get; set; }
 
         public string ObjectType { get; private set; }
 

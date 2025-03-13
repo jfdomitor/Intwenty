@@ -128,7 +128,7 @@ namespace Intwenty.Model.Dto
             var state = new ClientOperation();
             state.Data = ApplicationData.CreateFromJSON(model);
             state.ApplicationId = state.Data.ApplicationId;
-            state.ApplicationViewId = state.Data.GetAsInt("ApplicationViewId");
+            state.ApplicationViewId = state.Data.GetAsString("ApplicationViewId");
             state.Id = state.Data.Id;
             state.Version = state.Data.Version;
             state.Properties = state.Data.GetAsString("Properties");
@@ -143,7 +143,7 @@ namespace Intwenty.Model.Dto
             var state = new ClientOperation(user);
             state.Data = ApplicationData.CreateFromJSON(model);
             state.ApplicationId = state.Data.ApplicationId;
-            state.ApplicationViewId = state.Data.GetAsInt("ApplicationViewId");
+            state.ApplicationViewId = state.Data.GetAsString("ApplicationViewId");
             state.Id = state.Data.Id;
             state.Version = state.Data.Version;
             state.Properties = state.Data.GetAsString("Properties");
@@ -256,7 +256,7 @@ namespace Intwenty.Model.Dto
     }
 
 
-    public class FilterValue : IntwentyDataColumn
+    public class FilterValue : IntwentyDataBaseColumn
     {
         public string Value { get; set; }
 

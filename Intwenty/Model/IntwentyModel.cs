@@ -143,7 +143,6 @@ namespace Intwenty.Model
         public string DbColumnName { get; set; }
         public string NativeDataType { get; set; }
         public IntwentyDataType DataType { get; set; }
-        public string Properties { get; set; }
 
 
         public IntwentyDataBaseColumn()
@@ -225,7 +224,6 @@ namespace Intwenty.Model
         public string FilePath { get; set; }
         public bool IsPrimary { get; set; }
         public bool IsPublic { get; set; }
-        public string Properties { get; set; }
         public List<IntwentyUIElement> UIElements { get; set; }
         [JsonIgnore]
         public ViewRequestInfo RuntimeRequestInfo { get; set; }
@@ -278,6 +276,7 @@ namespace Intwenty.Model
         public string DbTableName { get; set; }
         public string DbColumnName { get; set; }
         public string DbColumnName2 { get; set; }
+        public bool IsMandatory { get; set; }
         public int ColumnOrder { get; set; }
         public int RowOrder { get; set; }
         public string Domain { get; set; }

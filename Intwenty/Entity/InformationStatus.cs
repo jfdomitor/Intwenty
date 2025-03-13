@@ -13,8 +13,7 @@ namespace Intwenty.Entity
     {
         public int Id { get; set; }
         public int Version { get; set; }
-        public int ApplicationId { get; set; }
-        public string MetaCode { get; set; }
+        public string ApplicationId { get; set; }
         public string CreatedBy { get; set; }
         public string ChangedBy { get; set; }
         public string OwnedBy { get; set; }

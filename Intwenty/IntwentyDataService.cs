@@ -234,7 +234,7 @@ namespace Intwenty
                                 {
                                     var colmodel = model.DataColumns.Find(p=>p.DbColumnName.ToLower()==columnname.ToLower());
                                     if (colmodel!= null)
-                                        state.Data.SetValue(colmodel, state.GetAsInt("FOREIGNKEYID"));
+                                        state.Data.SetValue(colmodel.DbColumnName, state.GetAsInt("FOREIGNKEYID"));
                                 }
                             }
 
@@ -252,8 +252,8 @@ namespace Intwenty
                         }
                         else if (state.Id > 0 && model.UseVersioning)
                         {
-                            if (!IdExists(model, state, client))
-                                throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Application.Title));
+                            if (!IdExists(state, client))
+                                throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Title));
 
                             result.Status = LifecycleStatus.EXISTING_NOT_SAVED;
                             state.Version = CreateVersionRecord(model, state, client);
@@ -268,8 +268,8 @@ namespace Intwenty
                         }
                         else if (state.Id > 0 && !model.UseVersioning)
                         {
-                            if (!IdExists(model, state, client))
-                                throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Application.Title));
+                            if (!IdExists(state, client))
+                                throw new InvalidOperationException(String.Format("Update failed, the ID {0} dows not exist for application {1}", state.Id, model.Title));
 
                             result.Status = LifecycleStatus.EXISTING_NOT_SAVED;
                             BeforeSaveUpdate(model, state, client);
@@ -286,7 +286,7 @@ namespace Intwenty
                         AfterSave(model, state, client);
 
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Simple)
+                    else if (model.DataMode == DataModeOptions.Simple)
                     {
                         if (state.Id < 1)
                         {
@@ -298,7 +298,7 @@ namespace Intwenty
                                 {
                                     var colmodel = model.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
                                     if (colmodel != null)
-                                        state.Data.SetValue(colmodel, state.GetAsInt("FOREIGNKEYID"));
+                                        state.Data.SetValue(colmodel.DbColumnName, state.GetAsInt("FOREIGNKEYID"));
                                 }
                             }
                             BeforeSaveNew(model, state, client);
@@ -401,7 +401,7 @@ namespace Intwenty
                     BeforeInsertSubTableRow(model, row, client);
                     if (model.UseVersioning)
                     {
-                        var rowid = GetNewInstanceId(model.Id, "DATATABLE", row.Table.Model.MetaCode, state, client);
+                        var rowid = GetNewInstanceId(model.Id, "DATATABLE", state, client);
                         if (rowid < 1)
                             throw new InvalidOperationException("Could not get a new row id for table " + row.Table.DbName);
 
@@ -429,7 +429,7 @@ namespace Intwenty
                     {
                         //NO VERSIONG = JUST UPDATE
                         BeforeUpdateSubTableRow(model, row, client);
-                        UpdateTableRow(row, state, client);
+                        UpdateTableRow(model, row, state, client);
                     }
 
                 }
@@ -550,7 +550,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 sql_insert.Append(sep + t.DbName);
@@ -602,7 +602,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 if (!t.HasValue)
@@ -652,7 +652,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 sql_insert.Append(sep + t.DbName);
@@ -697,7 +697,7 @@ namespace Intwenty
 
             if (client.Database == DBMS.PostgreSQL)
             {
-                state.Id = Convert.ToInt32(client.GetScalarValue(string.Format("SELECT currval('{0}')", model.Application.DbName.ToLower() + "_id_seq")));
+                state.Id = Convert.ToInt32(client.GetScalarValue(string.Format("SELECT currval('{0}')", model.DbTableName.ToLower() + "_id_seq")));
             }
 
             if (client.Database == DBMS.MariaDB || client.Database == DBMS.MySql)
@@ -727,7 +727,7 @@ namespace Intwenty
                         BeforeInsertSubTableRow(model, row, client);
                         if (model.UseVersioning)
                         {
-                            var rowid = GetNewInstanceId(model.Id, "DATATABLE", table.Model.MetaCode, state, client);
+                            var rowid = GetNewInstanceId(model.Id, "DATATABLE", state, client);
                             if (rowid < 1)
                                 throw new InvalidOperationException("Could not get a new row id for table " + table.DbName);
 
@@ -755,7 +755,7 @@ namespace Intwenty
                         {
                             //NO VERSIONG = JUST UPDATE
                             BeforeUpdateSubTableRow(model, row, client);
-                            UpdateTableRow(row, state, client);
+                            UpdateTableRow(model, row, state, client);
                         }
 
                     }
@@ -930,7 +930,7 @@ namespace Intwenty
                 if (!t.HasModel)
                     continue;
 
-                if (t.Model.IsFrameworkItem)
+                if (t.Model.IsFrameworkColumn)
                     continue;
 
                 if (!t.HasValue)
@@ -957,14 +957,14 @@ namespace Intwenty
 
         }
 
-        private int CreateVersionRecord(ApplicationModel model, ClientOperation state, IDataClient client)
+        private int CreateVersionRecord(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
 
             int newversion = 0;
             string sql = String.Empty;
-            sql = "select max(version) from " + GetTenantTableName(model.Application, model.Application.VersioningTableName, state);
+            sql = "select max(version) from " + GetTenantTableName(model, model.VersioningTableName, state);
             sql += " where ID=" + Convert.ToString(state.Id);
-            sql += " and MetaCode='" + model.Application.MetaCode + "' and MetaType='APPLICATION'";
+            sql += " and ApplicationId='" + model.Id + "' and MetaType='APPLICATION'";
 
             object obj = client.GetScalarValue(sql);
             if (obj != null && obj != DBNull.Value)
@@ -980,16 +980,15 @@ namespace Intwenty
             var getdatecmd = client.GetDbCommandMap().Find(p => p.Key == "GETDATE" && p.DbEngine == Settings.DefaultConnectionDBMS);
 
             //DefaultVersioningTableColumns
-            sql = "insert into " + GetTenantTableName(model.Application, model.Application.VersioningTableName, state);
-            sql += " (ID, Version, ApplicationId, MetaCode, MetaType, ChangedDate, ParentId)";
-            sql += " VALUES (@P1, @P2, @P3, @P4, @P5, {0}, @P6)";
+            sql = "insert into " + GetTenantTableName(model, model.VersioningTableName, state);
+            sql += " (ID, Version, ApplicationId, MetaType, ChangedDate, ParentId)";
+            sql += " VALUES (@P1, @P2, @P3, @P5, {0}, @P6)";
             sql = string.Format(sql, getdatecmd.Command);
 
             var parameters = new List<IIntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter("@P1", state.Id));
             parameters.Add(new IntwentySqlParameter("@P2", newversion));
-            parameters.Add(new IntwentySqlParameter("@P3", model.Application.Id));
-            parameters.Add(new IntwentySqlParameter("@P4", model.Application.MetaCode));
+            parameters.Add(new IntwentySqlParameter("@P3", model.Id));
             parameters.Add(new IntwentySqlParameter("@P5", "APPLICATION"));
             parameters.Add(new IntwentySqlParameter("@P6", 0));
 
@@ -999,7 +998,7 @@ namespace Intwenty
             return newversion;
         }
 
-        private bool IdExists(ApplicationModel model, ClientOperation state, IDataClient client)
+        private bool IdExists(ClientOperation state, IDataClient client)
         {
             string sql = String.Empty;
             sql = "select 1 from sysdata_InformationStatus where id={0} and ApplicationId={1}";
@@ -1014,16 +1013,15 @@ namespace Intwenty
 
         }
 
-        private void InsertInformationStatus(ApplicationModel model, ClientOperation state, IDataClient client)
+        private void InsertInformationStatus(IntwentyApplication model, ClientOperation state, IDataClient client)
         {
             var m = new Entity.InformationStatus()
             {
                 Id = state.Id,
-                ApplicationId = model.Application.Id,
+                ApplicationId = model.Id,
                 ChangedBy = state.User.UserName,
                 ChangedDate = DateTime.Now,
                 CreatedBy = state.User.UserName,
-                MetaCode = model.Application.MetaCode,
                 OwnedBy = state.User.UserName,
                 OwnedByOrganizationId = state.User.OrganizationId,
                 OwnedByOrganizationName = state.User.OrganizationName,
@@ -1055,7 +1053,7 @@ namespace Intwenty
         {
             foreach (var p in values)
             {
-                if (p.Model.IsDataTypeText || p.Model.IsDataTypeString)
+                if ((p.Model.DataType== IntwentyDataType.Text) || (p.Model.DataType == IntwentyDataType.String))
                 {
                     var val = p.GetAsString();
                     if (!string.IsNullOrEmpty(val))
@@ -1063,7 +1061,7 @@ namespace Intwenty
                     else
                         parameters.Add(new IntwentySqlParameter("@" + p.DbName, DBNull.Value));
                 }
-                else if (p.Model.IsDataTypeInt)
+                else if (p.Model.DataType == IntwentyDataType.Int)
                 {
                     var val = p.GetAsInt();
                     if (p.HasValue)
@@ -1071,7 +1069,7 @@ namespace Intwenty
                     else
                         parameters.Add(new IntwentySqlParameter("@" + p.DbName, DBNull.Value));
                 }
-                else if (p.Model.IsDataTypeBool)
+                else if (p.Model.DataType == IntwentyDataType.Bool)
                 {
                     var val = p.GetAsBool();
                     if (p.HasValue)
@@ -1079,7 +1077,7 @@ namespace Intwenty
                     else
                         parameters.Add(new IntwentySqlParameter("@" + p.DbName, DBNull.Value));
                 }
-                else if (p.Model.IsDataTypeDateTime)
+                else if (p.Model.DataType == IntwentyDataType.DateTime)
                 {
                     var val = p.GetAsDateTime();
                     if (val.HasValue)
@@ -1087,7 +1085,7 @@ namespace Intwenty
                     else
                         parameters.Add(new IntwentySqlParameter("@" + p.DbName, DBNull.Value));
                 }
-                else if (p.Model.IsDataType1Decimal || p.Model.IsDataType2Decimal || p.Model.IsDataType3Decimal)
+                else if ((p.Model.DataType == IntwentyDataType.OneDecimal) || (p.Model.DataType == IntwentyDataType.TwoDecimal) || (p.Model.DataType == IntwentyDataType.ThreeDecimal))
                 {
                     var val = p.GetAsDecimal();
                     if (p.HasValue)
@@ -1105,23 +1103,23 @@ namespace Intwenty
 
         public virtual ModifyResult Delete(ClientOperation state)
         {
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == state.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == state.ApplicationId);
             return DeleteInternal(state, model);
         }
 
-        public virtual ModifyResult Delete(ClientOperation state, ApplicationModel model)
+        public virtual ModifyResult Delete(ClientOperation state, IntwentyApplication model)
         {
             return DeleteInternal(state, model);
         }
 
-        private ModifyResult DeleteInternal(ClientOperation state, ApplicationModel model)
+        private ModifyResult DeleteInternal(ClientOperation state, IntwentyApplication model)
         {
             ModifyResult result = null;
 
             if (state == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "No client state found when deleting application.");
 
-            if (state.ApplicationId < 1)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Parameter state must contain a valid ApplicationId");
 
             if (state.Id < 1)
@@ -1130,7 +1128,7 @@ namespace Intwenty
             if (model == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Could not find the requested application model");
 
-            if (model.Application.Id != state.ApplicationId)
+            if (model.Id != state.ApplicationId)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from state.Applicationid");
 
 
@@ -1142,24 +1140,21 @@ namespace Intwenty
                 RemoveFromApplicationCache(state.ApplicationId, state.Id);
                 RemoveFromApplicationListCache(state.ApplicationId);
 
-                result = new ModifyResult(true, MessageCode.RESULT, string.Format("Deleted application {0}", model.Application.Title), state.Id, state.Version);
+                result = new ModifyResult(true, MessageCode.RESULT, string.Format("Deleted application {0}", model.Title), state.Id, state.Version);
 
                 client.Open();
 
 
-                client.RunCommand("DELETE FROM " + GetTenantTableName(model.Application, state) + " WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
-                if (model.Application.UseVersioning && model.Application.DataMode != DataModeOptions.Simple)
-                    client.RunCommand("DELETE FROM " + GetTenantTableName(model.Application, model.Application.VersioningTableName, state) + " WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
+                client.RunCommand("DELETE FROM " + GetTenantTableName(model, state) + " WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
+                if (model.UseVersioning && model.DataMode != DataModeOptions.Simple)
+                    client.RunCommand("DELETE FROM " + GetTenantTableName(model, model.VersioningTableName, state) + " WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
 
-                if (model.Application.DataMode != DataModeOptions.Simple)
+                if (model.DataMode != DataModeOptions.Simple)
                 {
-                    foreach (var table in model.DataStructure)
+                    foreach (var table in model.DataTables)
                     {
-                        if (table.IsMetaTypeDataTable)
-                        {
-                            client.RunCommand("DELETE FROM " + GetTenantTableName(table, state) + " WHERE ParentId=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
-                            client.RunCommand("DELETE FROM sysdata_InstanceId WHERE ParentId=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
-                        }
+                        client.RunCommand("DELETE FROM " + GetTenantTableName(model, table.DbTableName, state) + " WHERE ParentId=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
+                        client.RunCommand("DELETE FROM sysdata_InstanceId WHERE ParentId=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
                     }
 
                     client.RunCommand("DELETE FROM sysdata_InstanceId WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = state.Id } });
@@ -1172,7 +1167,7 @@ namespace Intwenty
                 result = new ModifyResult() { Id = state.Id, Version = state.Version };
                 result.Status = LifecycleStatus.NONE;
                 result.IsSuccess = false;
-                result.AddMessage(MessageCode.USERERROR, string.Format("Delete application {0} failed", model.Application.Title));
+                result.AddMessage(MessageCode.USERERROR, string.Format("Delete application {0} failed", model.Title));
                 result.AddMessage(MessageCode.SYSTEMERROR, ex.Message);
                 DbLogger.LogErrorAsync("IntwentyDataService.Delete: " + ex.Message);
             }
@@ -1186,7 +1181,7 @@ namespace Intwenty
         }
 
 
-        public ModifyResult DeleteSubTableLine(ClientOperation state, ApplicationModel model, ApplicationTableRow row)
+        public ModifyResult DeleteSubTableLine(ClientOperation state, IntwentyApplication model, ApplicationTableRow row)
         {
             ModifyResult result = null;
 
@@ -1202,10 +1197,10 @@ namespace Intwenty
             if (state == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "No client state found when deleting row.");
 
-            if (state.ApplicationId < 1)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "Parameter state must contain a valid ApplicationId");
 
-            var modelitem = model.DataStructure.Find(p => p.DbName.ToLower() == row.Table.DbName.ToLower() && p.IsMetaTypeDataTable);
+            var modelitem = model.DataTables.Find(p => p.DbTableName.ToLower() == row.Table.DbName.ToLower());
             if (modelitem == null)
                 return new ModifyResult(false, MessageCode.SYSTEMERROR, "The tablename did not match any sub tables in the application");
 
@@ -1229,15 +1224,15 @@ namespace Intwenty
                 }
 
 
-                if (model.Application.DataMode == DataModeOptions.Standard)
+                if (model.DataMode == DataModeOptions.Standard)
                 {
-                    client.RunCommand(string.Format("DELETE FROM {0} WHERE Id=@Id", GetTenantTableName(row.Table.Model, state)), parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = row.Id } });
+                    client.RunCommand(string.Format("DELETE FROM {0} WHERE Id=@Id", GetTenantTableName(model, row.Table.Model.DbTableName, state)), parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = row.Id } });
                     client.RunCommand("DELETE FROM sysdata_InstanceId WHERE Id=@Id", parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = row.Id } });
                     result = new ModifyResult(true, MessageCode.RESULT, string.Format("Deleted sub table row {0}", row.Table.DbName), row.Id);
                 }
                 else
                 {
-                    client.RunCommand(string.Format("DELETE FROM {0} WHERE Id=@Id", GetTenantTableName(row.Table.Model, state)), parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = row.Id } });
+                    client.RunCommand(string.Format("DELETE FROM {0} WHERE Id=@Id", GetTenantTableName(model, row.Table.Model.DbTableName, state)), parameters: new IntwentySqlParameter[] { new IntwentySqlParameter() { Name = "@Id", Value = row.Id } });
                     result = new ModifyResult(true, MessageCode.RESULT, string.Format("Deleted sub table row {0}", row.Table.DbName), row.Id);
                 }
                 
@@ -1265,25 +1260,25 @@ namespace Intwenty
 
         #region Lists
 
-        public virtual DataListResult<T> GetEntityList<T>(ClientOperation args, ApplicationModel model) where T : Intwenty.Model.Dto.InformationHeader, new()
+        public virtual DataListResult<T> GetEntityList<T>(ClientOperation args, IntwentyApplication model) where T : Intwenty.Model.Dto.InformationHeader, new()
         {
             if (args == null)
                 return new DataListResult<T>(false, MessageCode.SYSTEMERROR, "Parameter args was null");
 
-            if (args.ApplicationId < 1)
+            if (string.IsNullOrEmpty(args.ApplicationId))
                 return new DataListResult<T>(false, MessageCode.SYSTEMERROR, "Parameter args must contain a valid ApplicationId");
 
             if (model == null)
                 return new DataListResult<T>(false, MessageCode.SYSTEMERROR, "Could not find the requested application model");
 
-            if (model.Application.Id != args.ApplicationId)
+            if (model.Id != args.ApplicationId)
                 return new DataListResult<T>(false, MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from args.Applicationid");
 
             if (string.IsNullOrEmpty(args.DataTableDbName))
-                args.DataTableDbName = model.Application.DbName;
+                args.DataTableDbName = model.DbTableName;
 
             var IsSubTable = false;
-            var dbtablemodel = model.DataStructure.Find(p => p.IsMetaTypeDataTable && p.DbName.ToUpper() == args.DataTableDbName.ToUpper());
+            var dbtablemodel = model.DataTables.Find(p => p.DbTableName.ToUpper() == args.DataTableDbName.ToUpper());
             if (dbtablemodel != null)
                 IsSubTable = true;
 
@@ -1305,12 +1300,26 @@ namespace Intwenty
                     var columnname = args.GetPropertyValue("FOREIGNKEYNAME");
                     if (!string.IsNullOrEmpty(columnname) && columnname.ToLower()!= "parentid")
                     {
-                        var colmodel = model.DataStructure.Find(p => p.DbName.ToLower() == columnname.ToLower() && p.IsMetaTypeDataColumn);
+                        var colmodel = model.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
                         if (colmodel != null)
                         {
                             args.ForeignKeyColumnName = columnname;
                             args.ForeignKeyId = args.GetAsInt("FOREIGNKEYID");
                         }
+                        else
+                        {
+                            foreach (var table in model.DataTables) 
+                            {
+                                var subcolmodel = table.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
+                                if (subcolmodel != null)
+                                {
+                                    args.ForeignKeyColumnName = columnname;
+                                    args.ForeignKeyId = args.GetAsInt("FOREIGNKEYID");
+                                }
+                            }
+
+                        }
+
                     }
                 }
 
@@ -1318,32 +1327,32 @@ namespace Intwenty
                 {
                     var maxcount_stmt = new StringBuilder();
  
-                    if (model.Application.DataMode == DataModeOptions.Simple && !IsSubTable)
+                    if (model.DataMode == DataModeOptions.Simple && !IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                         if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                             maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
 
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Simple && IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Simple && IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                         maxcount_stmt.Append(string.Format("AND t1.ParentId = {0} ", args.ParentId));
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Standard && !IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Standard && !IsSubTable)
                     {
                         maxcount_stmt.Append("SELECT COUNT(*) FROM sysdata_InformationStatus t2 ");
-                        maxcount_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, args)));
-                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ",model.Application.Id));
+                        maxcount_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, args)));
+                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ",model.Id));
                         if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                             maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
                                  
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Standard && IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Standard && IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 ", GetTenantTableName(model, args)));
                         maxcount_stmt.Append("JOIN sysdata_InformationStatus t2 on t1.ParentId=t2.Id and t1.Version = t2.Version ");
-                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Application.Id));
+                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Id));
                         maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
                     }
                     
@@ -1362,44 +1371,44 @@ namespace Intwenty
                 var parameters = new List<IIntwentySqlParameter>();
                 var sql_list_stmt = new StringBuilder();
 
-                if (model.Application.DataMode == DataModeOptions.Simple && !IsSubTable)
+                if (model.DataMode == DataModeOptions.Simple && !IsSubTable)
                 {
-                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Application.MetaCode));
-                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Id));
+                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                     if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                         sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName,args.ForeignKeyId));
 
                 }
-                else if (model.Application.DataMode == DataModeOptions.Simple && IsSubTable)
+                else if (model.DataMode == DataModeOptions.Simple && IsSubTable)
                 {
-                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Application.MetaCode));
-                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Id));
+                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                     sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
                 }
-                else if (model.Application.DataMode == DataModeOptions.Standard && IsSubTable)
+                else if (model.DataMode == DataModeOptions.Standard && IsSubTable)
                 {
-                    sql_list_stmt.Append("SELECT t2.MetaCode, t2.PerformDate, t2.StartDate, t2.EndDate, t1.* ");
-                    sql_list_stmt.Append(string.Format("FROM {0} t1", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append("SELECT t2.ApplicationId, t2.PerformDate, t2.StartDate, t2.EndDate, t1.* ");
+                    sql_list_stmt.Append(string.Format("FROM {0} t1", GetTenantTableName(model, args)));
                     sql_list_stmt.Append("JOIN sysdata_InformationStatus t2 on t1.ParentId=t2.Id and t1.Version = t2.Version ");
                     sql_list_stmt.Append("WHERE t2.ApplicationId = @ApplicationId ");
                     sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
-                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Application.Id });
+                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Id });
                 }
-                else if (model.Application.DataMode == DataModeOptions.Standard && !IsSubTable)
+                else if (model.DataMode == DataModeOptions.Standard && !IsSubTable)
                 {
 
-                    sql_list_stmt.Append("SELECT t2.MetaCode, t2.PerformDate, t2.StartDate, t2.EndDate, t1.* ");
+                    sql_list_stmt.Append("SELECT t2.ApplicationId, t2.PerformDate, t2.StartDate, t2.EndDate, t1.* ");
                     sql_list_stmt.Append("FROM sysdata_InformationStatus t2 ");
-                    sql_list_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, args)));
                     sql_list_stmt.Append("WHERE t2.ApplicationId = @ApplicationId ");
                     if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                         sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
-                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Application.Id });
+                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Id });
                 }
 
                 if (!args.IgnoreTenantIsolation)
                 {
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.User && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentUserFilter)
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.User && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentUserFilter)
                     {
                         if (!args.User.HasValidUserId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by user or forced to filter by user");
@@ -1408,7 +1417,7 @@ namespace Intwenty
                         parameters.Add(new IntwentySqlParameter() { Name = "@OwnedBy", Value = args.User.UserName });
                     }
 
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.Organization && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentOrganizationFilter)
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.Organization && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentOrganizationFilter)
                     {
                         if (!args.User.HasValidOrganizationId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by organization or forced to filter by organization");
@@ -1490,23 +1499,23 @@ namespace Intwenty
 
 
 
-        public virtual DataListResult GetJsonArray(ClientOperation args, ApplicationModel model)
+        public virtual DataListResult GetJsonArray(ClientOperation args, IntwentyApplication model)
         {
             return GetJsonArrayInternal<DataListResult>(args, model);
         }
 
         public virtual DataListResult GetJsonArray(ClientOperation args)
         {
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == args.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == args.ApplicationId);
             return GetJsonArrayInternal<DataListResult>(args, model);
         }
 
-        public virtual TDataListResult GetJsonArray<TDataListResult>(ClientOperation args, ApplicationModel model) where TDataListResult : DataListResult, new()
+        public virtual TDataListResult GetJsonArray<TDataListResult>(ClientOperation args, IntwentyApplication model) where TDataListResult : DataListResult, new()
         {
             return GetJsonArrayInternal<TDataListResult>(args, model);
         }
 
-        private TDataListResult GetJsonArrayInternal<TDataListResult>(ClientOperation args, ApplicationModel model) where TDataListResult : DataListResult, new()
+        private TDataListResult GetJsonArrayInternal<TDataListResult>(ClientOperation args, IntwentyApplication model) where TDataListResult : DataListResult, new()
         {
 
             if (args == null)
@@ -1516,7 +1525,7 @@ namespace Intwenty
                 return t;
             }
 
-            if (args.ApplicationId < 1)
+            if (String.IsNullOrEmpty(args.ApplicationId))
             {
                 var t = new TDataListResult() { IsSuccess = false };
                 t.AddMessage(MessageCode.SYSTEMERROR, "Parameter args must contain a valid ApplicationId");
@@ -1530,7 +1539,7 @@ namespace Intwenty
                 return t;
             }
 
-            if (model.Application.Id != args.ApplicationId)
+            if (model.Id != args.ApplicationId)
             {
                 var t = new TDataListResult() { IsSuccess = false };
                 t.AddMessage(MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from args.Applicationid");
@@ -1538,10 +1547,10 @@ namespace Intwenty
             }
 
             if (string.IsNullOrEmpty(args.DataTableDbName))
-                args.DataTableDbName = model.Application.DbName;
+                args.DataTableDbName = model.DbTableName;
 
             var IsSubTable = false;
-            var dbtablemodel = model.DataStructure.Find(p => p.IsMetaTypeDataTable && p.DbName.ToUpper() == args.DataTableDbName.ToUpper());
+            var dbtablemodel = model.DataTables.Find(p => p.DbTableName.ToUpper() == args.DataTableDbName.ToUpper());
             if (dbtablemodel != null)
                 IsSubTable = true;
 
@@ -1557,49 +1566,63 @@ namespace Intwenty
                     var columnname = args.GetPropertyValue("FOREIGNKEYNAME");
                     if (!string.IsNullOrEmpty(columnname) && columnname.ToLower() != "parentid")
                     {
-                        var colmodel = model.DataStructure.Find(p => p.DbName.ToLower() == columnname.ToLower() && p.IsMetaTypeDataColumn);
+                        var colmodel = model.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
                         if (colmodel != null)
                         {
                             args.ForeignKeyColumnName = columnname;
                             args.ForeignKeyId = args.GetAsInt("FOREIGNKEYID");
                         }
+                        else
+                        {
+                            foreach (var table in model.DataTables)
+                            {
+                                var subcolmodel = table.DataColumns.Find(p => p.DbColumnName.ToLower() == columnname.ToLower());
+                                if (subcolmodel != null)
+                                {
+                                    args.ForeignKeyColumnName = columnname;
+                                    args.ForeignKeyId = args.GetAsInt("FOREIGNKEYID");
+                                }
+                            }
+
+                        }
+
                     }
                 }
 
                 var result = new TDataListResult();
 
-                result.SetSuccess(string.Format("Fetched list for application {0}", model.Application.Title));
+                result.SetSuccess(string.Format("Fetched list for application {0}", model.Title));
 
                 if (args.MaxCount == 0 && !args.SkipPaging)
                 {
                     var maxcount_stmt = new StringBuilder();
 
-                    if (model.Application.DataMode == DataModeOptions.Simple && !IsSubTable)
+                    if (model.DataMode == DataModeOptions.Simple && !IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                         if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                             maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
 
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Simple && IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Simple && IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                         maxcount_stmt.Append(string.Format("AND t1.ParentId = {0} ", args.ParentId));
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Standard && !IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Standard && !IsSubTable)
                     {
                         maxcount_stmt.Append("SELECT COUNT(*) FROM sysdata_InformationStatus t2 ");
-                        maxcount_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, args)));
-                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Application.Id));
+                        maxcount_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, args)));
+                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Id));
                         if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                             maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
 
                     }
-                    else if (model.Application.DataMode == DataModeOptions.Standard && IsSubTable)
+                    else if (model.DataMode == DataModeOptions.Standard && IsSubTable)
                     {
-                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 ", GetTenantTableName(model.Application, args)));
+                        maxcount_stmt.Append(string.Format("SELECT COUNT(*) FROM {0} t1 ", GetTenantTableName(model, args)));
                         maxcount_stmt.Append("JOIN sysdata_InformationStatus t2 on t1.ParentId=t2.Id and t1.Version = t2.Version ");
-                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Application.Id));
+                        maxcount_stmt.Append(string.Format("WHERE t2.ApplicationId = {0} ", model.Id));
                         maxcount_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
                     }
 
@@ -1617,72 +1640,64 @@ namespace Intwenty
 
                 var sql_list_stmt = new StringBuilder();
                 var parameters = new List<IIntwentySqlParameter>();
-                if (model.Application.DataMode == DataModeOptions.Simple && !IsSubTable)
+                if (model.DataMode == DataModeOptions.Simple && !IsSubTable)
                 {
-                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Application.MetaCode));
-                    foreach (var col in model.DataStructure)
+                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Id));
+                    foreach (var col in model.DataColumns)
                     {
-                        if (col.IsMetaTypeDataColumn && col.IsRoot)
-                            sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbName));
+                        sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbColumnName));
                     }
-                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                     if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                         sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
 
                 }
-                else if (model.Application.DataMode == DataModeOptions.Simple && IsSubTable)
+                else if (model.DataMode == DataModeOptions.Simple && IsSubTable)
                 {
-                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Application.MetaCode));
-                    foreach (var col in model.DataStructure)
+                    sql_list_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Id));
+                    foreach (var col in dbtablemodel.DataColumns.Where(p=> !p.IsFrameworkColumn))
                     {
-                        if (col.IsMetaTypeDataColumn && !col.IsRoot && col.ParentMetaCode == dbtablemodel.MetaCode)
-                            sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbName));
+                            sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbColumnName));
                     }
-                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("FROM {0} t1 WHERE 1=1 ", GetTenantTableName(model, args)));
                     sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
                 }
-                else if (model.Application.DataMode == DataModeOptions.Standard && IsSubTable)
+                else if (model.DataMode == DataModeOptions.Standard && IsSubTable)
                 {
-                    sql_list_stmt.Append("SELECT t2.MetaCode, t2.PerformDate, t2.StartDate, t2.EndDate ");
+                    sql_list_stmt.Append("SELECT t2.ApplicationId, t2.PerformDate, t2.StartDate, t2.EndDate ");
 
-                    foreach (var col in model.DataStructure)
+                    foreach (var col in dbtablemodel.DataColumns.Where(p => !p.IsFrameworkColumn))
                     {
-                        if (col.IsMetaTypeDataColumn && !col.IsRoot && col.ParentMetaCode == dbtablemodel.MetaCode)
-                        {
-                            sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbName));
-                        }
+                        sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbColumnName));
                     }
 
-                    sql_list_stmt.Append(string.Format("FROM {0} t1 ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("FROM {0} t1 ", GetTenantTableName(model, args)));
                     sql_list_stmt.Append("JOIN sysdata_InformationStatus t2 on t1.ParentId=t2.Id and t1.Version = t2.Version ");
                     sql_list_stmt.Append("WHERE t2.ApplicationId = @ApplicationId ");
                     sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", "ParentId", args.ParentId));
-                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Application.Id });
+                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Id });
                 }
-                else if (model.Application.DataMode == DataModeOptions.Standard && !IsSubTable)
+                else if (model.DataMode == DataModeOptions.Standard && !IsSubTable)
                 {
-                    sql_list_stmt.Append("SELECT t2.MetaCode, t2.PerformDate, t2.StartDate, t2.EndDate ");
-                    foreach (var col in model.DataStructure)
+                    sql_list_stmt.Append("SELECT t2.ApplicationId, t2.PerformDate, t2.StartDate, t2.EndDate ");
+                    foreach (var col in model.DataColumns)
                     {
-                        if (col.IsMetaTypeDataColumn && col.IsRoot)
-                        {
-                            sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbName));
-                        }
+                        sql_list_stmt.Append(string.Format(", t1.{0} ", col.DbColumnName));
                     }
 
                     sql_list_stmt.Append("FROM sysdata_InformationStatus t2 ");
-                    sql_list_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, args)));
+                    sql_list_stmt.Append(string.Format("JOIN {0} t1 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, args)));
                     sql_list_stmt.Append("WHERE t2.ApplicationId = @ApplicationId ");
                     if (args.ForeignKeyId > 0 && !string.IsNullOrEmpty(args.ForeignKeyColumnName))
                         sql_list_stmt.Append(string.Format("AND t1.{0} = {1} ", args.ForeignKeyColumnName, args.ForeignKeyId));
 
-                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Application.Id });
+                    parameters.Add(new IntwentySqlParameter() { Name = "@ApplicationId", Value = model.Id });
 
                 }
 
                 if (!args.IgnoreTenantIsolation)
                 {
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.User && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentUserFilter)
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.User && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentUserFilter)
                     {
                         if (!args.User.HasValidUserId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by user or forced to filter by user");
@@ -1691,7 +1706,7 @@ namespace Intwenty
                         parameters.Add(new IntwentySqlParameter() { Name = "@OwnedBy", Value = args.User.UserName });
                     }
 
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.Organization && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentOrganizationFilter)
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.Organization && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows) || args.ForceCurrentOrganizationFilter)
                     {
                         if (!args.User.HasValidOrganizationId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by organization or forced to filter by organization");
@@ -1778,17 +1793,17 @@ namespace Intwenty
 
         #region GetApplication
 
-        public virtual DataResult<T> Get<T>(ClientOperation state, ApplicationModel model) where T : Intwenty.Model.Dto.InformationHeader, new()
+        public virtual DataResult<T> Get<T>(ClientOperation state, IntwentyApplication model) where T : Intwenty.Model.Dto.InformationHeader, new()
         {
             if (state == null)
                 return new DataResult<T>(false, MessageCode.SYSTEMERROR, "state was null when executing DefaultDbManager.GetLatestVersionById.");
             if (state.Id < 0)
                 return new DataResult<T>(false, MessageCode.SYSTEMERROR, "Id is required when executing DefaultDbManager.GetLatestVersionById.");
-            if (state.ApplicationId < 0)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new DataResult<T>(false, MessageCode.SYSTEMERROR, "ApplicationId is required when executing DefaultDbManager.GetLatestVersionById.");
             if (model == null)
                 return new DataResult<T>(false, MessageCode.SYSTEMERROR, "Coluld not find the requested application model");
-            if (model.Application.Id != state.ApplicationId)
+            if (model.Id != state.ApplicationId)
                 return new DataResult<T>(false, MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from state.applicationid");
 
             DataResult<T> result = null;
@@ -1799,23 +1814,23 @@ namespace Intwenty
             {
 
                 var sql_stmt = new StringBuilder();
-                if (model.Application.DataMode == DataModeOptions.Simple)
+                if (model.DataMode == DataModeOptions.Simple)
                 {
-                    sql_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Application.MetaCode));
-                    sql_stmt.Append(string.Format("FROM {0} t1 WHERE Id={1} ", GetTenantTableName(model.Application, state), state.Id));
+                    sql_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate, t1.* ", model.Id));
+                    sql_stmt.Append(string.Format("FROM {0} t1 WHERE Id={1} ", GetTenantTableName(model, state), state.Id));
                 }
                 else
                 {
-                    sql_stmt.Append("SELECT t1.MetaCode, t1.PerformDate, t1.StartDate, t1.EndDate, t2.* ");
+                    sql_stmt.Append("SELECT t1.ApplicationId, t1.PerformDate, t1.StartDate, t1.EndDate, t2.* ");
                     sql_stmt.Append("FROM sysdata_InformationStatus t1 ");
-                    sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, state)));
-                    sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Application.Id));
+                    sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, state)));
+                    sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Id));
                     sql_stmt.Append(string.Format("AND t1.Id = {0} ", state.Id));
                 }
 
                 if (!state.IgnoreTenantIsolation)
                 {
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.User && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.User && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                     {
                         if (!state.User.HasValidUserId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by user or forced to filter by user");
@@ -1823,7 +1838,7 @@ namespace Intwenty
                         sql_stmt.Append(string.Format("AND t1.OwnedBy = '{0}'", state.User.UserName));
                     }
 
-                    if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.Organization && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                    if ((model.TenantIsolationLevel == TenantIsolationOptions.Organization && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                     {
                         if (!state.User.HasValidOrganizationId)
                             throw new InvalidOperationException("No valid username found when querying app with tenant isolation by organization or forced to filter by organization");
@@ -1837,13 +1852,13 @@ namespace Intwenty
                 client.Close();
                 if (t.Count == 1)
                 {
-                    result = new DataResult<T>(true, MessageCode.RESULT, string.Format("Get<T> successful, application {0}.", model.Application.Title), state.Id, state.Version);
+                    result = new DataResult<T>(true, MessageCode.RESULT, string.Format("Get<T> successful, application {0}.", model.Title), state.Id, state.Version);
                     result.Data = t[0];
                     return result;
                 }
                 else
                 {
-                    result = new DataResult<T>(false, MessageCode.RESULT, string.Format("Get<T> failed, application {0}.", model.Application.Title), state.Id, state.Version);
+                    result = new DataResult<T>(false, MessageCode.RESULT, string.Format("Get<T> failed, application {0}.", model.Title), state.Id, state.Version);
                     return result;
                 }
 
@@ -1868,30 +1883,30 @@ namespace Intwenty
 
         }
 
-        public virtual DataResult Get(ClientOperation state, ApplicationModel model)
+        public virtual DataResult Get(ClientOperation state, IntwentyApplication model)
         {
             return GetLatestVersionByIdInternal(state, model);
         }
 
         public virtual DataResult Get(ClientOperation state)
         {
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == state.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == state.ApplicationId);
             return GetLatestVersionByIdInternal(state, model);
         }
 
 
 
-        private DataResult GetLatestVersionByIdInternal(ClientOperation state, ApplicationModel model)
+        private DataResult GetLatestVersionByIdInternal(ClientOperation state, IntwentyApplication model)
         {
             if (state == null)
                 return new DataResult(false, MessageCode.SYSTEMERROR, "state was null when executing DefaultDbManager.GetLatestVersionById.");
             if (state.Id < 1)
                 return new DataResult(false, MessageCode.SYSTEMERROR, "Id is required when executing DefaultDbManager.GetLatestVersionById.");
-            if (state.ApplicationId < 0)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 return new DataResult(false, MessageCode.SYSTEMERROR, "ApplicationId is required when executing DefaultDbManager.GetLatestVersionById.");
             if (model == null)
                 return new DataResult(false, MessageCode.SYSTEMERROR, "Could not find the requested application model");
-            if (model.Application.Id != state.ApplicationId)
+            if (model.Id != state.ApplicationId)
                 return new DataResult(false, MessageCode.SYSTEMERROR, "Bad request, model.Application.Id differ from state.applicationid");
 
             DataResult result = null;
@@ -1901,7 +1916,7 @@ namespace Intwenty
                 return result;
             }
 
-            result = new DataResult(true, MessageCode.RESULT, string.Format("Fetched latest version for application {0}", model.Application.Title), state.Id, state.Version);
+            result = new DataResult(true, MessageCode.RESULT, string.Format("Fetched latest version for application {0}", model.Title), state.Id, state.Version);
 
             var client = GetDataClient();
 
@@ -1912,20 +1927,19 @@ namespace Intwenty
 
                 var sql_stmt = new StringBuilder();
                 var jsonresult = new StringBuilder("{");
-                if (model.Application.DataMode == DataModeOptions.Simple)
+                if (model.DataMode == DataModeOptions.Simple)
                 {
-                    sql_stmt.Append(string.Format("SELECT '{0}' AS MetaCode, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Application.MetaCode));
-                    foreach (var col in model.DataStructure)
+                    sql_stmt.Append(string.Format("SELECT '{0}' AS ApplicationId, t1.ChangedDate AS PerformDate, t1.ChangedDate AS StartDate, t1.ChangedDate AS EndDate ", model.Id));
+                    foreach (var col in model.DataColumns)
                     {
-                        if (col.IsMetaTypeDataColumn && col.IsRoot)
-                            sql_stmt.Append(string.Format(", t1.{0} ", col.DbName));
+                         sql_stmt.Append(string.Format(", t1.{0} ", col.DbColumnName));
                     }
 
-                    sql_stmt.Append(string.Format("FROM {0} t1 WHERE t1.Id={1} ", GetTenantTableName(model.Application, state), state.Id));
+                    sql_stmt.Append(string.Format("FROM {0} t1 WHERE t1.Id={1} ", GetTenantTableName(model, state), state.Id));
 
                     if (!state.IgnoreTenantIsolation)
                     {
-                        if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.User && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                        if ((model.TenantIsolationLevel == TenantIsolationOptions.User && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                         {
                             if (!state.User.HasValidUserId)
                                 throw new InvalidOperationException("No valid username found when querying app with tenant isolation by user or forced to filter by user");
@@ -1933,7 +1947,7 @@ namespace Intwenty
                             sql_stmt.Append(string.Format("AND t1.OwnedBy = '{0}'", state.User.UserName));
                         }
 
-                        if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.Organization && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                        if ((model.TenantIsolationLevel == TenantIsolationOptions.Organization && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                         {
                             if (!state.User.HasValidOrganizationId)
                                 throw new InvalidOperationException("No valid username found when querying app with tenant isolation by organization or forced to filter by organization");
@@ -1949,32 +1963,31 @@ namespace Intwenty
                         result.Messages.Clear();
                         result.Data = jsonresult.ToString();
                         result.IsSuccess = false;
-                        result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} returned no data", model.Application.Title));
-                        result.AddMessage(MessageCode.SYSTEMERROR, string.Format("Get application {0} returned no data", model.Application.Title));
+                        result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} returned no data", model.Title));
+                        result.AddMessage(MessageCode.SYSTEMERROR, string.Format("Get application {0} returned no data", model.Title));
                         return result;
                     }
 
-                    jsonresult.Append("\"" + model.Application.DbName + "\":" + appjson.ToString());
+                    jsonresult.Append("\"" + model.DbTableName + "\":" + appjson.ToString());
                     jsonresult.Append("}");
 
                 }
                 else
                 {
-                    sql_stmt.Append("SELECT t1.MetaCode, t1.PerformDate, t1.StartDate, t1.EndDate ");
-                    foreach (var col in model.DataStructure)
+                    sql_stmt.Append("SELECT t1.ApplicationId, t1.PerformDate, t1.StartDate, t1.EndDate ");
+                    foreach (var col in model.DataColumns)
                     {
-                        if (col.IsMetaTypeDataColumn && col.IsRoot)
-                            sql_stmt.Append(string.Format(", t2.{0} ", col.DbName));
+                            sql_stmt.Append(string.Format(", t2.{0} ", col.DbColumnName));
                     }
 
                     sql_stmt.Append("FROM sysdata_InformationStatus t1 ");
-                    sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model.Application, state)));
-                    sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Application.Id));
+                    sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.Id and t1.Version = t2.Version ", GetTenantTableName(model, state)));
+                    sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Id));
                     sql_stmt.Append(string.Format("AND t1.Id = {0} ", state.Id));
 
                     if (!state.IgnoreTenantIsolation)
                     {
-                        if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.User && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                        if ((model.TenantIsolationLevel == TenantIsolationOptions.User && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                         {
                             if (!state.User.HasValidUserId)
                                 throw new InvalidOperationException("No valid username found when querying app with tenant isolation by user or forced to filter by user");
@@ -1982,7 +1995,7 @@ namespace Intwenty
                             sql_stmt.Append(string.Format("AND t1.OwnedBy = '{0}'", state.User.UserName));
                         }
 
-                        if ((model.Application.TenantIsolationLevel == TenantIsolationOptions.Organization && model.Application.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
+                        if ((model.TenantIsolationLevel == TenantIsolationOptions.Organization && model.TenantIsolationMethod == TenantIsolationMethodOptions.ByRows))
                         {
                             if (!state.User.HasValidOrganizationId)
                                 throw new InvalidOperationException("No valid username found when querying app with tenant isolation by organization or forced to filter by organization");
@@ -1998,41 +2011,37 @@ namespace Intwenty
                         result.Messages.Clear();
                         result.Data = jsonresult.ToString();
                         result.IsSuccess = false;
-                        result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} returned no data", model.Application.Title));
-                        result.AddMessage(MessageCode.SYSTEMERROR, string.Format("Get application {0} returned no data", model.Application.Title));
+                        result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} returned no data", model.Title));
+                        result.AddMessage(MessageCode.SYSTEMERROR, string.Format("Get application {0} returned no data", model.Title));
                         return result;
                     }
 
-                    jsonresult.Append("\"" + model.Application.DbName + "\":" + appjson.ToString());
+                    jsonresult.Append("\"" + model.DbTableName + "\":" + appjson.ToString());
 
                     if (state.ActionMode == ActionModeOptions.AllTables)
                     {
                         //SUBTABLES
-                        foreach (var t in model.DataStructure)
+                        foreach (var t in model.DataTables)
                         {
-                            if (t.IsMetaTypeDataTable && t.IsRoot)
-                            {
-                                char sep = ' ';
-                                sql_stmt = new StringBuilder("SELECT ");
-                                foreach (var col in model.DataStructure)
-                                {
-                                    if (col.IsMetaTypeDataColumn && col.ParentMetaCode == t.MetaCode)
-                                    {
-                                        sql_stmt.Append(sep + string.Format(" t2.{0} ", col.DbName));
-                                        sep = ',';
-                                    }
-                                }
-                                sql_stmt.Append("FROM sysdata_InformationStatus t1 ");
-                                sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.ParentId and t1.Version = t2.Version ", GetTenantTableName(t, state)));
-                                sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Application.Id));
-                                sql_stmt.Append(string.Format("AND t1.Id = {0}", state.Id));
+                            
+                             char sep = ' ';
+                             sql_stmt = new StringBuilder("SELECT ");
+                             foreach (var col in t.DataColumns)
+                             {
+                                 sql_stmt.Append(sep + string.Format(" t2.{0} ", col.DbColumnName));
+                                 sep = ',';
+                             }
+                             sql_stmt.Append("FROM sysdata_InformationStatus t1 ");
+                             sql_stmt.Append(string.Format("JOIN {0} t2 on t1.Id=t2.ParentId and t1.Version = t2.Version ", GetTenantTableName(model,t.DbTableName, state)));
+                             sql_stmt.Append(string.Format("WHERE t1.ApplicationId = {0} ", model.Id));
+                             sql_stmt.Append(string.Format("AND t1.Id = {0}", state.Id));
 
-                                var tablearray = client.GetJsonArray(sql_stmt.ToString()).GetJsonString();
+                             var tablearray = client.GetJsonArray(sql_stmt.ToString()).GetJsonString();
 
-                                jsonresult.Append(", \"" + t.DbName + "\": " + tablearray.ToString());
+                             jsonresult.Append(", \"" + t.DbTableName + "\": " + tablearray.ToString());
 
-                            }
-                        }
+                         }
+                        
                     }
 
                     jsonresult.Append("}");
@@ -2053,7 +2062,7 @@ namespace Intwenty
                     result.Version = state.Version;
                 }
                 result.IsSuccess = false;
-                result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} failed", model.Application.Title));
+                result.AddMessage(MessageCode.USERERROR, string.Format("Get application {0} failed", model.Title));
                 result.AddMessage(MessageCode.SYSTEMERROR, ex.Message);
                 result.Data = "{}";
                 DbLogger.LogErrorAsync("IntwentyDataService.Get: " + ex.Message);
@@ -2078,24 +2087,19 @@ namespace Intwenty
         #region ValueDomain
       
 
-        public virtual List<ValueDomainModelItem> GetValueDomains()
+        public virtual List<IntwentyValueDomainItem> GetValueDomains()
         {
             return ModelRepository.GetValueDomains();
         }
 
-        public virtual List<ValueDomainModelItem> GetValueDomain(string domainname)
+        public virtual List<IntwentyValueDomainItem> GetValueDomain(string domainname)
         {
             return ModelRepository.GetValueDomains().Where(p => p.DomainName.ToUpper() == domainname.ToUpper()).ToList();
         }
 
-        public virtual List<ValueDomainModelItem> GetValueDomain(string domainname, ClientOperation state)
+        public virtual List<IntwentyValueDomainItem> GetApplicationDomain(string domainname, ClientOperation state)
         {
-            return ModelRepository.GetValueDomains().Where(p => p.DomainName.ToUpper() == domainname.ToUpper()).ToList();
-        }
-
-        public virtual List<ValueDomainModelItem> GetApplicationDomain(string domainname, ClientOperation state)
-        {
-            return new List<ValueDomainModelItem>();
+            return new List<IntwentyValueDomainItem>();
         }
 
         #endregion
@@ -2106,15 +2110,15 @@ namespace Intwenty
         {
             if (state == null)
                 throw new InvalidOperationException("Parameter state cannot be null");
-            if (state.ApplicationId < 1)
+            if (string.IsNullOrEmpty(state.ApplicationId))
                 throw new InvalidOperationException("Parameter state must contain a valid ApplicationId");
 
-            var model = ModelRepository.GetApplicationModels().Find(p => p.Application.Id == state.ApplicationId);
+            var model = ModelRepository.GetApplicationModels().Find(p => p.Id == state.ApplicationId);
 
             return Validate(model, state);
         }
 
-        protected virtual ModifyResult Validate(ApplicationModel model, ClientOperation state)
+        protected virtual ModifyResult Validate(IntwentyApplication model, ClientOperation state)
         {
 
             foreach (var v in model.Views)
@@ -2122,33 +2126,32 @@ namespace Intwenty
                 if (v.Id != state.ApplicationViewId)
                     continue;
 
-                foreach (var ui in v.UserInterface)
+                foreach (var ui in v.UIElements)
                 {
-                    foreach (var t in ui.UIStructure)
+                    if (!string.IsNullOrEmpty(ui.DbColumnName) && ui.IsMandatory)
                     {
-                        if (t.IsDataColumn1Connected && t.DataColumn1Info.Mandatory)
+                        var dv = state.Data.Values.FirstOrDefault(p => p.DbName == ui.DbColumnName);
+                        if (dv != null && !dv.HasValue)
                         {
-                            var dv = state.Data.Values.FirstOrDefault(p => p.DbName == t.DataColumn1Info.DbName);
-                            if (dv != null && !dv.HasValue)
+                            return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", ui.Title), state.Id, state.Version);
+                        }
+                        foreach (var table in state.Data.SubTables)
+                        {
+                            foreach (var row in table.Rows)
                             {
-                                return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", t.Title), state.Id, state.Version);
-                            }
-                            foreach (var table in state.Data.SubTables)
-                            {
-                                foreach (var row in table.Rows)
+                                dv = row.Values.Find(p => p.DbName == ui.DbColumnName);
+                                if (dv != null && !dv.HasValue)
                                 {
-                                    dv = row.Values.Find(p => p.DbName == t.DataColumn1Info.DbName);
-                                    if (dv != null && !dv.HasValue)
-                                    {
-                                        return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", t.Title), state.Id, state.Version);
-                                    }
+                                    return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", ui.Title), state.Id, state.Version);
                                 }
-
                             }
 
                         }
+
                     }
+
                 }
+
             }
 
             return new ModifyResult(true, MessageCode.RESULT, "Successfully validated", state.Id, state.Version) { EndTime = DateTime.Now };
@@ -2174,7 +2177,6 @@ namespace Intwenty
                 var parameters = new List<IIntwentySqlParameter>();
                 parameters.Add(new IntwentySqlParameter("@Verbosity", verbosity));
                 parameters.Add(new IntwentySqlParameter("@Message", message));
-                parameters.Add(new IntwentySqlParameter("@AppMetaCode", appmetacode));
                 parameters.Add(new IntwentySqlParameter("@ApplicationId", applicationid));
                 parameters.Add(new IntwentySqlParameter("@UserName", username));
 
@@ -2182,7 +2184,7 @@ namespace Intwenty
 
                 var getdatecmd = client.GetDbCommandMap().Find(p => p.Key == "GETDATE" && p.DbEngine == Settings.DefaultConnectionDBMS);
 
-                client.RunCommand("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, AppMetaCode, ApplicationId,UserName) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @AppMetaCode, @ApplicationId,@UserName)", parameters: parameters.ToArray());
+                client.RunCommand("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, ApplicationId,UserName) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @ApplicationId,@UserName)", parameters: parameters.ToArray());
 
             }
             catch { }
@@ -2192,9 +2194,9 @@ namespace Intwenty
             }
         }
 
-        protected void AddToApplicationCache(ApplicationModel model, DataResult data)
+        protected void AddToApplicationCache(IntwentyApplication model, DataResult data)
         {
-            var key = string.Format("APP_APPID_{0}_ID_{1}", model.Application.Id, data.Id);
+            var key = string.Format("APP_APPID_{0}_ID_{1}", model.Id, data.Id);
             ApplicationCache.Set(key, data);
 
             List<CachedObjectDescription> descriptions = null;
@@ -2202,40 +2204,40 @@ namespace Intwenty
             {
                 if (!descriptions.Exists(p => p.IsCachedApplication() && p.DataId == data.Id))
                 {
-                    descriptions.Add(new CachedObjectDescription("CACHEDAPP", key) { ApplicationId = model.Application.Id, DataId = data.Id, JsonCharcterCount = data.Data.Length, Title = model.Application.Title + ", ID: " + data.Id });
+                    descriptions.Add(new CachedObjectDescription("CACHEDAPP", key) { ApplicationId = model.Id, DataId = data.Id, JsonCharcterCount = data.Data.Length, Title = model.Title + ", ID: " + data.Id });
                 }
             }
             else
             {
                 descriptions = new List<CachedObjectDescription>();
-                descriptions.Add(new CachedObjectDescription("CACHEDAPP", key) { ApplicationId = model.Application.Id, DataId = data.Id, JsonCharcterCount = data.Data.Length, Title = model.Application.Title + ", ID: " + data.Id });
+                descriptions.Add(new CachedObjectDescription("CACHEDAPP", key) { ApplicationId = model.Id, DataId = data.Id, JsonCharcterCount = data.Data.Length, Title = model.Title + ", ID: " + data.Id });
                 ApplicationCache.Set("TRANSACTIONCACHE", descriptions);
             }
 
         }
 
-        protected void AddToApplicationListCache(ApplicationModel model, DataListResult data)
+        protected void AddToApplicationListCache(IntwentyApplication model, DataListResult data)
         {
-            var key = string.Format("APPLIST_APPID_{0}", model.Application.Id);
+            var key = string.Format("APPLIST_APPID_{0}", model.Id);
             ApplicationCache.Set(key, data);
 
             List<CachedObjectDescription> descriptions = null;
             if (ApplicationCache.TryGetValue("TRANSACTIONCACHE", out descriptions))
             {
-                if (!descriptions.Exists(p => p.IsCachedApplicationList() && p.ApplicationId == model.Application.Id))
+                if (!descriptions.Exists(p => p.IsCachedApplicationList() && p.ApplicationId == model.Id))
                 {
-                    descriptions.Add(new CachedObjectDescription("CACHEDAPPLIST", key) { ApplicationId = model.Application.Id, JsonCharcterCount = data.Data.Length, Title = "List of applications: " + model.Application.Title });
+                    descriptions.Add(new CachedObjectDescription("CACHEDAPPLIST", key) { ApplicationId = model.Id, JsonCharcterCount = data.Data.Length, Title = "List of applications: " + model.Title });
                 }
             }
             else
             {
                 descriptions = new List<CachedObjectDescription>();
-                descriptions.Add(new CachedObjectDescription("CACHEDAPPLIST", key) { ApplicationId = model.Application.Id, JsonCharcterCount = data.Data.Length, Title = "List of applications: " + model.Application.Title });
+                descriptions.Add(new CachedObjectDescription("CACHEDAPPLIST", key) { ApplicationId = model.Id, JsonCharcterCount = data.Data.Length, Title = "List of applications: " + model.Title });
                 ApplicationCache.Set("TRANSACTIONCACHE", descriptions);
             }
         }
 
-        protected void RemoveFromApplicationCache(int applicationid, int id)
+        protected void RemoveFromApplicationCache(string applicationid, int id)
         {
             ApplicationCache.Remove(string.Format("APP_APPID_{0}_ID_{1}", applicationid, id));
 
@@ -2253,7 +2255,7 @@ namespace Intwenty
 
         }
 
-        protected void RemoveFromApplicationListCache(int applicationid)
+        protected void RemoveFromApplicationListCache(string applicationid)
         {
             ApplicationCache.Remove(string.Format("APPLIST_APPID_{0}", applicationid));
 

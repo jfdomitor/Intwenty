@@ -1000,8 +1000,7 @@ namespace Intwenty
             var DefaultVersioningTableColumns = new List<IntwentyDataBaseColumn>();
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Id" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "Version" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "ApplicationId" });
-            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "MetaCode" });
+            DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "ApplicationId" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.String, Id = "MetaType" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.DateTime, Id = "ChangedDate" });
             DefaultVersioningTableColumns.Add(new IntwentyDataBaseColumn() { DataType = IntwentyDataType.Int, Id = "ParentId" });

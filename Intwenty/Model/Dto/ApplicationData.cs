@@ -8,7 +8,7 @@ namespace Intwenty.Model.Dto
    
     public class ApplicationData : ValueCollectionBase
     {
-        public int ApplicationId { get; set; }
+        public string ApplicationId { get; set; }
 
         public string DbName { get; set; }
 
@@ -136,7 +136,7 @@ namespace Intwenty.Model.Dto
 
                 var appid = res.Values.Find(p => p.DbName == "ApplicationId");
                 if (appid != null)
-                    res.ApplicationId = appid.GetAsInt();
+                    res.ApplicationId = appid.GetAsString();
 
                 var dataid = res.Values.Find(p => p.DbName == "Id");
                 if (dataid != null)
@@ -221,39 +221,31 @@ namespace Intwenty.Model.Dto
 
         }
 
-        public void InferModel(ApplicationModel model)
+        public void InferModel(IntwentyApplication model)
         {
-            foreach (var rootitem in model.DataStructure)
+            foreach (var maincol in model.DataColumns)
             {
 
-                if (rootitem.IsMetaTypeDataColumn && rootitem.IsRoot)
+                var v = Values.Find(p => p.DbName == maincol.DbColumnName);
+                if (v != null)
+                    v.Model = maincol; 
+            }
+
+            foreach (var modeltable in model.DataTables)
+            {
+                var table = SubTables.Find(p => p.DbName == modeltable.DbTableName);
+                if (table == null)
+                    continue;
+
+                table.Model = modeltable;
+
+                foreach (var row in table.Rows)
                 {
-                    var v = Values.Find(p => p.DbName == rootitem.DbName);
-                    if (v != null)
-                        v.Model = rootitem;
-
-                }
-
-                if (rootitem.IsMetaTypeDataTable && rootitem.IsRoot)
-                {
-                    var table = SubTables.Find(p => p.DbName == rootitem.DbName);
-                    if (table == null)
-                        continue;
-
-                    table.Model = rootitem;
-
-                    foreach (var row in table.Rows)
+                    foreach (var item in modeltable.DataColumns)
                     {
-                        foreach (var item in model.DataStructure)
-                        {
-                            if (item.IsMetaTypeDataColumn && item.ParentMetaCode == rootitem.MetaCode)
-                            {
-                                var v = row.Values.Find(p => p.DbName == item.DbName);
-                                if (v != null)
-                                    v.Model = item;
-
-                            }
-                        }
+                        var v = row.Values.Find(p => p.DbName == item.DbColumnName);
+                        if (v != null)
+                            v.Model = item;
                     }
                 }
             }
@@ -491,25 +483,18 @@ namespace Intwenty.Model.Dto
                 return;
             else if (Table.Model == null && !string.IsNullOrEmpty(Table.DbName))
             {
-                var tablemodel = model.DataStructure.Find(p => p.IsMetaTypeDataTable && p.DbName.ToUpper() == Table.DbName.ToUpper());
+                var tablemodel = model.DataTables.Find(p => p.DbTableName.ToUpper() == Table.DbName.ToUpper());
                 if (tablemodel == null)
                     return;
 
                 Table.Model = tablemodel;
             }
 
-            foreach (var item in model.DataStructure)
+            foreach (var item in Table.Model.DataColumns)
             {
-                if (item.IsRoot)
-                    continue;
-
-                if (item.IsMetaTypeDataColumn && item.ParentMetaCode == Table.Model.MetaCode)
-                {
-                    var v = this.Values.Find(p => p.DbName == item.DbName);
-                    if (v != null)
-                        v.Model = item;
-
-                }
+                var v = this.Values.Find(p => p.DbName == item.DbColumnName);
+                if (v != null)
+                    v.Model = item;
             }
 
         }
@@ -666,12 +651,12 @@ namespace Intwenty.Model.Dto
         /// <summary>
         /// Updates a current value and model or creates a new value with the specified model
         /// </summary>
-        public void SetValue(DatabaseModelItem model, object value)
+        public void SetValue(IntwentyDataBaseColumn model, object value)
         {
             if (model == null)
                 return;
 
-            var t = this.Values.Find(p => p.DbName.ToLower() == model.DbName.ToLower());
+            var t = this.Values.Find(p => p.DbName.ToLower() == model.DbColumnName.ToLower());
             if (t != null)
             {
                 t.Model = model;
@@ -679,7 +664,7 @@ namespace Intwenty.Model.Dto
             }
             else
             {
-                this.Values.Add(new ApplicationValue() { DbName = model.DbName, Value = value, Model=model });
+                this.Values.Add(new ApplicationValue() { DbName = model.DbColumnName, Value = value, Model=model });
             }
         }
 
