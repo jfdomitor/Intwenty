@@ -265,16 +265,14 @@ namespace Intwenty
         {
             LocalizeTitle(model);
 
-
-            foreach (var root in model.UIElements)
+            foreach (var sect in model.VerticalSections)
             {
-                LocalizeTitle(root);
-                foreach (var lvl1 in root.ChildElements)
+                LocalizeTitle(sect);
+                foreach (var panel in sect.Panels)
                 {
-                    LocalizeTitle(lvl1);
-                    foreach (var lvl2 in lvl1.ChildElements)
+                    foreach (var ui in panel.ChildElements)
                     {
-                        LocalizeTitle(lvl2);
+                        LocalizeTitle(ui);
 
                     }
 
@@ -374,17 +372,6 @@ namespace Intwenty
         {
             return Model.Systems.SelectMany(sys => sys.Applications).ToList();
 
-        }
-
-
-
-        public async Task<List<IntwentyView>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal)
-        {
-
-            var all_auth_views = await GetAuthorizedViewModelsAsync(claimprincipal);
-            var all_auth_primary_views = all_auth_views.Where(p => p.IsPrimary).ToList();
-            LocalizeTitles(all_auth_primary_views.ToList<ILocalizableTitle>());
-            return all_auth_primary_views;
         }
 
         public async Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal)
@@ -909,7 +896,7 @@ namespace Intwenty
                         }
 
 
-                        foreach (var ui in view.UIElements)
+                        foreach (var ui in view.VerticalSections)
                         {
                            
 

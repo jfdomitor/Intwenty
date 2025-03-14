@@ -23,10 +23,9 @@ namespace Intwenty.Interface
 
         List<IntwentyDataClientTypeMap> DataTypes { get; }
 
-        IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
-        void AddChildViewsToRender(IntwentyView view);
 
-        Task<List<IntwentyView>> GetApplicationMenuAsync(ClaimsPrincipal claimprincipal);
+
+        IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest);
         Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal);

@@ -13,6 +13,7 @@ using Intwenty.Model;
 using Microsoft.Extensions.Options;
 using Intwenty.Areas.Identity.Entity;
 using Microsoft.AspNetCore.Authorization;
+using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.Account.Manage
 {
@@ -85,7 +86,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-           user.APIKey = Intwenty.Model.BaseModelItem.GetQuiteUniqueString();
+           user.APIKey = Extensions.GetQuiteUniqueString();
            await _userManager.UpdateAsync(user);
 
            ResultCode = "SUCCESS";

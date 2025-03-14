@@ -74,19 +74,7 @@ namespace Intwenty
 
                 var sb = new StringBuilder();
                 sb.Append("{");
-                sb.Append("\"" + model.DbTableName + "\":{");
-
-                var sep = "";
-                var defval = GetDefaultValues(model);
-                if (defval.Count > 0)
-                {
-                    foreach (var df in defval)
-                    {
-                        sb.Append(sep + DBHelpers.GetJSONValue(df.ColumnName, df.LatestValue));
-                        sep = ",";
-                    }
-                }
-                sb.Append("}");
+                sb.Append("\"" + model.DbTableName + "\":{}");
 
                 foreach (var dbtbl in model.DataTables)
                 {
@@ -112,55 +100,7 @@ namespace Intwenty
             return result;
         }
 
-        protected virtual List<DefaultValue> GetDefaultValues(IntwentyApplication model)
-        {
-            var res = new List<DefaultValue>();
-            if (model == null)
-                return new List<DefaultValue>();
-
-            var client = GetDataClient();
-            client.Open();
-
-            foreach (var dbcol in model.DataColumns)
-            {
-              
-                    if (dbcol.HasPropertyWithValue("DEFVALUE", "AUTO"))
-                    {
-                        var start = dbcol.GetPropertyValue("DEFVALUE_START");
-                        var seed = dbcol.GetPropertyValue("DEFVALUE_SEED");
-                        var prefix = dbcol.GetPropertyValue("DEFVALUE_PREFIX");
-                        int istart = Convert.ToInt32(start);
-                        int iseed = Convert.ToInt32(seed);
-
-                        var result = client.GetEntities<DefaultValue>();
-                        var current = result.Find(p => p.ApplicationId == model.Id && p.ColumnName == dbcol.DbColumnName);
-                        if (current == null)
-                        {
-
-                            var firstval = string.Format("{0}{1}", prefix, (istart));
-                            current = new DefaultValue() { ApplicationId = model.Id, ColumnName = dbcol.DbColumnName, GeneratedDate = DateTime.Now, TableName = model.DbTableName, Count = istart, LatestValue = firstval };
-                            client.InsertEntity(current);
-                            res.Add(current);
-
-                        }
-                        else
-                        {
-                            current.Count += iseed;
-                            current.LatestValue = string.Format("{0}{1}", prefix, current.Count);
-                            client.UpdateEntity(current);
-                            res.Add(current);
-                        }
-                    }
-
-                
-
-            }
-
-            client.Close();
-
-            return res;
-
-        }
+       
 
         #endregion
 
@@ -2126,26 +2066,32 @@ namespace Intwenty
                 if (v.Id != state.ApplicationViewId)
                     continue;
 
-                foreach (var ui in v.UIElements)
+                foreach (var sect in v.VerticalSections)
                 {
-                    if (!string.IsNullOrEmpty(ui.DbColumnName) && ui.IsMandatory)
+                    foreach (var panel in sect.Panels)
                     {
-                        var dv = state.Data.Values.FirstOrDefault(p => p.DbName == ui.DbColumnName);
-                        if (dv != null && !dv.HasValue)
+                        foreach (var ui in panel.ChildElements)
                         {
-                            return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", ui.Title), state.Id, state.Version);
-                        }
-                        foreach (var table in state.Data.SubTables)
-                        {
-                            foreach (var row in table.Rows)
+                            if (!string.IsNullOrEmpty(ui.DbColumnName) && ui.IsMandatory)
                             {
-                                dv = row.Values.Find(p => p.DbName == ui.DbColumnName);
+                                var dv = state.Data.Values.FirstOrDefault(p => p.DbName == ui.DbColumnName);
                                 if (dv != null && !dv.HasValue)
                                 {
                                     return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", ui.Title), state.Id, state.Version);
                                 }
-                            }
+                                foreach (var table in state.Data.SubTables)
+                                {
+                                    foreach (var row in table.Rows)
+                                    {
+                                        dv = row.Values.Find(p => p.DbName == ui.DbColumnName);
+                                        if (dv != null && !dv.HasValue)
+                                        {
+                                            return new ModifyResult(false, MessageCode.USERERROR, string.Format("The field {0} is mandatory", ui.Title), state.Id, state.Version);
+                                        }
+                                    }
 
+                                }
+                            }
                         }
 
                     }

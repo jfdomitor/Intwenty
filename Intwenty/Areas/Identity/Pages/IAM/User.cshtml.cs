@@ -91,7 +91,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             var user = await UserManager.FindByNameAsync(model.UserName);
             if (user != null)
             {
-                user.APIKey = Intwenty.Model.BaseModelItem.GetQuiteUniqueString();
+                user.APIKey = Extensions.GetQuiteUniqueString();
                 await UserManager.UpdateAsync(user);
                 return await OnGetLoad(user.Id);
             }

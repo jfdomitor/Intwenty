@@ -1,16 +1,5 @@
 ﻿@model Intwenty.Model.IntwentyUIListView
 
-@{
-
-    // var pagesize = Model.DataTableDbName + "_pageInfo.pageSize";
-    // var tabletitle = string.Empty;
-    // var uitable = Model.UIStructure.Find(p => p.IsMetaTypeTable);
-    // if (uitable != null)
-    // {
-    //     tabletitle = uitable.LocalizedTitle;
-
-    // }
-}
 
 
 <br />
@@ -43,7 +32,7 @@
 
         @if (Model.EnableDelete)
         {
-            <td style="vertical-align:middle"><button class="btn btn-sm btn-danger" v-on:click="deleteTableLine(item,'@Model.DataTableDbName')"><span class="fas fa-trash" title="Remove"></span></button></td>
+            <td style="vertical-align:middle"><button class="btn btn-sm btn-danger"><span class="fas fa-trash" title="Remove"></span></button></td>
         }
         @if (Model.EditMode != IntwentyEditMode.None)
         {

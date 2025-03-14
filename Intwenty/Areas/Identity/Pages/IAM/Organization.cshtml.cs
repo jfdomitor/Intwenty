@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Intwenty.Areas.Identity.Data;
 using Intwenty.Model.Dto;
+using Intwenty.Model;
 
 namespace Intwenty.Areas.Identity.Pages.IAM
 {
@@ -85,7 +86,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
 
         public async Task<JsonResult> OnPostFindUsers([FromBody] ClientSearchBoxQuery model)
         {
-            var retlist = new List<ValueDomainVm>();
+            var retlist = new List<IntwentyValueDomainItem>();
 
             if (model==null)
                 return new JsonResult(retlist);
@@ -97,16 +98,16 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             {
                 if (model.Query.ToUpper() == "ALL")
                 {
-                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).ToList();
+                    retlist = domaindata.Select(p => new IntwentyValueDomainItem() { Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).ToList();
                 }
                 else if (model.Query.ToUpper() == "PRELOAD")
                 {
-                    var result = new List<ValueDomainVm>();
+                    var result = new List<IntwentyValueDomainItem>();
                     for (int i = 0; i < domaindata.Count; i++)
                     {
                         var p = domaindata[i];
                         if (i < 50)
-                            result.Add(new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName });
+                            result.Add(new IntwentyValueDomainItem() {  Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName });
                         else
                             break;
                     }
@@ -114,7 +115,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
                 }
                 else
                 {
-                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = 0, Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).Where(p => p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
+                    retlist = domaindata.Select(p => new IntwentyValueDomainItem() { Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).Where(p => p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
                 }
             }
             return new JsonResult(retlist);

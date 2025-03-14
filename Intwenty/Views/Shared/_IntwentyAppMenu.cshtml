@@ -2,23 +2,8 @@
 
 @{
 
-    var systems = new List<SystemModelItem>();
-    var views = await ModelRepository.GetApplicationMenuAsync(User);
-    foreach (var a in views)
-    {
-        if (!systems.Exists(p => p.MetaCode == a.SystemMetaCode))
-        {
-            if (a.SystemInfo != null && views.Exists(p=> p.SystemMetaCode == a.SystemMetaCode))
-            {
-                systems.Add(a.SystemInfo);
-            }
-        }
-    }
-
+    var model = ModelRepository.GetModel();
 }
-
-
-
 
 
 <li class="nav-item dropdown">
@@ -29,7 +14,7 @@
 
 
             var cnt = 0;
-            foreach (var sys in systems)
+            foreach (var sys in model.Systems)
             {
                 if (cnt > 0)
                 {
@@ -38,9 +23,9 @@
                 <div class="dropdown-item"><strong>@sys.Title</strong></div>
                 <div class="dropdown-divider"></div>
 
-                foreach (var view in views.Where(p => p.SystemMetaCode == sys.MetaCode && !p.Path.Contains("{id}")))
+                foreach (var view in sys.Applications.SelectMany(p=> p.Views).Where(p => !p.RequestPath.Contains("{id}")))
                 {
-                    var path = view.Path;
+                    var path = view.RequestPath;
                     var reqinfo = string.Format("VIEWID={0}", view.Id);
                     path = "~"+path.Replace("{requestinfo}", reqinfo.B64UrlEncode());
                     <a class="dropdown-item" href="@Url.Content(path)">@view.LocalizedTitle</a>

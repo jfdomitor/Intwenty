@@ -39,7 +39,7 @@ namespace Intwenty.Controllers
         /// <param name="applicationid">The ID of the application in the meta model</param>
         /// <param name="id">The data id</param>
         [HttpGet("/Application/API/GetApplication/{applicationid}/{viewid}/{id}/{requestinfo?}")]
-        public virtual async Task<IActionResult> GetApplication(int applicationid, int viewid, int id,string requestinfo)
+        public virtual async Task<IActionResult> GetApplication(string applicationid, string viewid, int id,string requestinfo)
         {
 
             var model = ModelRepository.GetApplicationModel(applicationid);
@@ -71,7 +71,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "You do not have access to this resource"));
                     if (!await UserManager.HasAuthorization(User, viewmodel))
-                        return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", model.Application.Title)));
+                        return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", model.Title)));
 
                     var data = DataRepository.Get(state, model);
                    
@@ -93,7 +93,7 @@ namespace Intwenty.Controllers
                 if (!User.Identity.IsAuthenticated)
                     return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "You do not have access to this resource"));
                 if (!await UserManager.HasAuthorization(User, model))
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", model.Application.Title)));
+                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", model.Title)));
 
                 var data = DataRepository.Get(state, model);
            
@@ -113,7 +113,7 @@ namespace Intwenty.Controllers
 
             if (model == null)
                 return BadRequest();
-            if (model.ApplicationId < 1)
+            if (string.IsNullOrEmpty(model.ApplicationId))
                 return BadRequest();
 
             var appmodel = ModelRepository.GetApplicationModel(model.ApplicationId);
@@ -126,7 +126,7 @@ namespace Intwenty.Controllers
             if (!string.IsNullOrEmpty(model.Properties))
                 model.Properties = model.Properties.B64UrlDecode();
 
-            if (model.ApplicationViewId > 0)
+            if (string.IsNullOrEmpty(model.ApplicationViewId))
             {
                 var viewmodel = appmodel.Views.Find(p => p.Id == model.ApplicationViewId);
                 if (viewmodel == null)
@@ -137,7 +137,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "You do not have access to this resource"));
                     if (!await UserManager.HasAuthorization(User, viewmodel))
-                        return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", appmodel.Application.Title)));
+                        return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", appmodel.Title)));
 
                 }
 
@@ -147,8 +147,8 @@ namespace Intwenty.Controllers
                 if (!User.Identity.IsAuthenticated)
                     return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "You do not have access to this resource"));
 
-                if (!await UserManager.HasAuthorization(User, appmodel.Application))
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", appmodel.Application.Title)));
+                if (!await UserManager.HasAuthorization(User, appmodel))
+                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, string.Format("You do not have access to this resource, apply for read permission for application {0}", appmodel.Title)));
 
                
             }
@@ -160,18 +160,18 @@ namespace Intwenty.Controllers
         }
 
         [HttpPost("/Application/API/GetDomain")]
-        public virtual List<ValueDomainVm> GetDomain([FromBody] ClientSearchBoxQuery model)
+        public virtual List<IntwentyValueDomainItem> GetDomain([FromBody] ClientSearchBoxQuery model)
         {
             if (model==null)
-                return new List<ValueDomainVm>();
+                return new List<IntwentyValueDomainItem>();
 
             model.User = new UserInfo(User);
 
             if (string.IsNullOrEmpty(model.DomainName))
-                return new List<ValueDomainVm>();
+                return new List<IntwentyValueDomainItem>();
 
             if (!model.DomainName.Contains("."))
-                return new List<ValueDomainVm>();
+                return new List<IntwentyValueDomainItem>();
 
             ClientOperation state = null;
             if (User.Identity.IsAuthenticated)
@@ -186,14 +186,14 @@ namespace Intwenty.Controllers
             var dtype = arr[0];
             var dname = arr[1];
 
-            var retlist = new List<ValueDomainVm>();
+            var retlist = new List<IntwentyValueDomainItem>();
 
 
-            List<ValueDomainModelItem> domaindata = null;
+            List<IntwentyValueDomainItem> domaindata = null;
 
             if (dtype.ToUpper() == "VALUEDOMAIN")
             {
-                domaindata = DataRepository.GetValueDomain(dname, state);
+                domaindata = DataRepository.GetValueDomain(dname);
             }
             if (dtype.ToUpper() == "APPDOMAIN")
             {
@@ -204,16 +204,16 @@ namespace Intwenty.Controllers
             {
                 if (model.Query.ToUpper() == "ALL")
                 {
-                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display=p.LocalizedTitle }).ToList();
+                    retlist = domaindata;
                 }
                 else if (model.Query.ToUpper() == "PRELOAD")
                 {
-                    var result = new List<ValueDomainVm>();
+                    var result = new List<IntwentyValueDomainItem>();
                     for (int i = 0; i < domaindata.Count; i++)
                     {
                         var p = domaindata[i];
                         if (i < 50)
-                            result.Add(new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display = p.LocalizedTitle });
+                            result.Add(p);
                         else
                             break;
                     }
@@ -221,7 +221,7 @@ namespace Intwenty.Controllers
                 }
                 else
                 {
-                    retlist = domaindata.Select(p => new ValueDomainVm() { Id = p.Id, Code = p.Code, DomainName = dname, Value = p.Value, Display = p.LocalizedTitle }).Where(p=> p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
+                    retlist = domaindata.Where(p=> p.Value.ToLower().Contains(model.Query.ToLower())).ToList();
                 }
             }
 
@@ -236,7 +236,7 @@ namespace Intwenty.Controllers
         /// Get a json structure for a new application, including defaultvalues
         /// </summary>
         [HttpGet("/Application/API/CreateNew/{id}/{requestinfo?}")]
-        public virtual JsonResult CreateNew(int id, string requestinfo)
+        public virtual JsonResult CreateNew(string id, string requestinfo)
         {
             ClientOperation state = null;
             if (User.Identity.IsAuthenticated)
@@ -270,7 +270,7 @@ namespace Intwenty.Controllers
 
                  state.ActionMode = ActionModeOptions.MainTable;
 
-                if (state.ApplicationId < 1)
+                if (string.IsNullOrEmpty(state.ApplicationId))
                     return BadRequest();
 
                 var appmodel = ModelRepository.GetApplicationModel(state.ApplicationId);
@@ -278,7 +278,7 @@ namespace Intwenty.Controllers
                     return BadRequest();
 
 
-                if (state.ApplicationViewId > 0)
+                if (!string.IsNullOrEmpty(state.ApplicationViewId))
                 {
                     var viewmodel = appmodel.Views.Find(p => p.Id == state.ApplicationViewId);
                     if (viewmodel == null)
@@ -313,7 +313,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
-                    if (!await UserManager.HasAuthorization(User, appmodel.Application))
+                    if (!await UserManager.HasAuthorization(User, appmodel))
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this application"));
 
                 }
@@ -366,9 +366,9 @@ namespace Intwenty.Controllers
 
 
                 if (User.Identity.IsAuthenticated)
-                    state = new ClientOperation(User) { Id = row.ParentId, ApplicationId = row.GetAsInt("ApplicationId"), ApplicationViewId = row.GetAsInt("ApplicationViewId"), Version = row.Version };
+                    state = new ClientOperation(User) { Id = row.ParentId, ApplicationId = row.GetAsString("ApplicationId"), ApplicationViewId = row.GetAsString("ApplicationViewId"), Version = row.Version };
                 else
-                    state = new ClientOperation() { Id = row.ParentId, ApplicationId = row.GetAsInt("ApplicationId"), ApplicationViewId = row.GetAsInt("ApplicationViewId"), Version = row.Version };
+                    state = new ClientOperation() { Id = row.ParentId, ApplicationId = row.GetAsString("ApplicationId"), ApplicationViewId = row.GetAsString("ApplicationViewId"), Version = row.Version };
 
                 if (state.Version < 1)
                     state.Version = 1;
@@ -379,7 +379,7 @@ namespace Intwenty.Controllers
                     return BadRequest();
 
 
-                if (state.ApplicationViewId > 0)
+                if (!string.IsNullOrEmpty(state.ApplicationViewId))
                 {
                     var viewmodel = appmodel.Views.Find(p => p.Id == state.ApplicationViewId);
                     if (viewmodel == null)
@@ -411,7 +411,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
-                    if (!await UserManager.HasAuthorization(User, appmodel.Application))
+                    if (!await UserManager.HasAuthorization(User, appmodel))
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to modify data in this application"));
 
                 }
@@ -463,14 +463,14 @@ namespace Intwenty.Controllers
 
                 if (state == null)
                     return BadRequest();
-                if (state.ApplicationId < 1)
+                if (string.IsNullOrEmpty(state.ApplicationId))
                     return BadRequest();
               
                 var appmodel = ModelRepository.GetApplicationModel(state.ApplicationId);
                 if (appmodel == null)
                     return BadRequest();
 
-                if (state.ApplicationViewId > 0)
+                if (!string.IsNullOrEmpty(state.ApplicationViewId))
                 {
                     var viewmodel = appmodel.Views.Find(p => p.Id == state.ApplicationViewId);
                     if (viewmodel == null)
@@ -505,7 +505,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
-                    if (!await UserManager.HasAuthorization(User, appmodel.Application))
+                    if (!await UserManager.HasAuthorization(User, appmodel))
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this application"));
 
                 }
@@ -559,9 +559,9 @@ namespace Intwenty.Controllers
                     return BadRequest();
 
                 if (User.Identity.IsAuthenticated)
-                    state = new ClientOperation(User) { Id=row.ParentId, ApplicationId = row.GetAsInt("ApplicationId"), ApplicationViewId = row.GetAsInt("ApplicationViewId") };
+                    state = new ClientOperation(User) { Id=row.ParentId, ApplicationId = row.GetAsString("ApplicationId"), ApplicationViewId = row.GetAsString("ApplicationViewId") };
                 else
-                    state = new ClientOperation() { Id=row.ParentId, ApplicationId = row.GetAsInt("ApplicationId"), ApplicationViewId = row.GetAsInt("ApplicationViewId") };
+                    state = new ClientOperation() { Id=row.ParentId, ApplicationId = row.GetAsString("ApplicationId"), ApplicationViewId = row.GetAsString("ApplicationViewId") };
 
 
                 var appmodel = ModelRepository.GetApplicationModel(state.ApplicationId);
@@ -569,7 +569,7 @@ namespace Intwenty.Controllers
                     return BadRequest();
 
 
-                if (state.ApplicationViewId > 0)
+                if (!string.IsNullOrEmpty(state.ApplicationViewId))
                 {
                     var viewmodel = appmodel.Views.Find(p => p.Id == state.ApplicationViewId);
                     if (viewmodel == null)
@@ -601,7 +601,7 @@ namespace Intwenty.Controllers
                     if (!User.Identity.IsAuthenticated)
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You must login to use this function"));
 
-                    if (!await UserManager.HasAuthorization(User, appmodel.Application))
+                    if (!await UserManager.HasAuthorization(User, appmodel))
                         throw new IntwentyNotifyUserException(ModelRepository.GetLocalizedString("You are not authorized to delete data in this application"));
 
                 }

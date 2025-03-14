@@ -93,26 +93,7 @@
 
     <br />
 
-        @* iface.CurrentRenderContext = CurrentRenderContextOptions.View; *@
-
-        @* <!-- 4. RENDER APPLICATION LISTVIEW --> *@
-        @* if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsMainApplicationTableInterface && Model.IsApplicationListView()) *@
-        @* { *@
-        @*     @await Html.PartialAsync("UISections/_MainTableListInterface", iface) *@
-        @* } *@
-
-        @* <!-- 5. RENDER APPLICATION ONPAGE INPUT INTERFACES --> *@ *@
-        @* @* if (iface.IsMetaTypeInputInterface && iface.IsMainApplicationTableInterface && Model.IsApplicationInputView()) *@ *@
-        @* @* { *@ *@
-        @* @*     @await Html.PartialAsync("UISections/_InputInterface", iface) *@ *@
-        @* @* } *@
-
-        @* <!-- 6. RENDER APPLICATION ONPAGE SUBTABLE INTERFACES --> *@
-        @* if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsSubTableUserInterface && Model.IsApplicationInputView()) *@
-        @* { *@
-        @*     @await Html.PartialAsync("UISections/_SubTableListInterface", iface) *@
-        @* } *@
-
+     
     }
 
 

@@ -33,37 +33,17 @@ namespace IntwentyDemo.Services
     {
 
 
-        public CustomModelService(IConfiguration config, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
-                : base(config, cache, usermanager, orgmanager, dblogger)
+        public CustomModelService(IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+                : base(settings, model, cache, usermanager, orgmanager, dblogger)
         {
         }
 
-        public override ViewModel GetViewToRender(int? id, string requestinfo, HttpRequest httprequest)
+        public override IntwentyView GetViewToRender(int? id, string requestinfo, HttpRequest httprequest)
         {
             return base.GetViewToRender(id, requestinfo, httprequest);
 
         }
 
-        public override void AddChildViewsToRender(ViewModel view)
-        {
-            //IF VIEW IS EDIT STUDY
-            if (view.HasApplicationInfo && view.ApplicationInfo.Id == 200 && view.IsApplicationInputView() && view.RuntimeRequestInfo.Id > 0)
-            {
-                //ADD USER FORMS LIST VIEW
-                var ufmodel = GetViewModels().Find(p => p.HasApplicationInfo && p.ApplicationInfo.Id == 210 && p.IsApplicationListView());
-                if (ufmodel != null)
-                    view.RuntimeRequestInfo.AddChildView(ufmodel, "StudyId", "userforms");
-
-                //ADD SURVEY LIST VIEW
-                var surveymodel = GetViewModels().Find(p => p.HasApplicationInfo && p.ApplicationInfo.Id == 230 && p.IsApplicationListView());
-                if (surveymodel != null)
-                    view.RuntimeRequestInfo.AddChildView(surveymodel, "StudyId", "surveys");
-
-
-            }
-
-
-        }
-
+      
     }
 }

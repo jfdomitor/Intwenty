@@ -46,8 +46,7 @@ namespace Intwenty.Controllers
             view.RuntimeRequestInfo.EndpointSaveApplicationPath= Url.Content("~/Application/API/Save");
             view.RuntimeRequestInfo.EndpointSaveLinePath = Url.Content("~/Application/API/SaveSubTableLine");
 
-            ModelRepository.AddChildViewsToRender(view);
-
+      
             if (view.IsPublic)
                 return View(view.RuntimeRequestInfo.ViewFilePath, view);
             if (await UserManager.HasAuthorization(User, view))

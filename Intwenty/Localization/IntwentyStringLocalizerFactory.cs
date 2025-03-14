@@ -21,11 +21,13 @@ namespace Intwenty.Localization
 
         private IMemoryCache ModelCache { get; }
         private IntwentySettings Settings { get; }
+        private IntwentyModel Model { get; }
 
-        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings)
+        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model)
         {
             ModelCache = cache;
             Settings = settings.Value;
+            Model = model.Value;
         }
 
         public IStringLocalizer Create(string basename, string location)
@@ -68,19 +70,7 @@ namespace Intwenty.Localization
 
         private List<IntwentyLocalizationItem> GetLocalizations()
         {
-            List<IntwentyLocalizationItem> res;
-            if (ModelCache.TryGetValue("UILOCALIZATIONS", out res))
-            {
-                return res;
-            }
-            var client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-            client.Open();
-            var t = client.GetEntities<TranslationItem>().Select(p => new TranslationModelItem(p)).ToList();
-            client.Close();
-
-            ModelCache.Set("UILOCALIZATIONS", t);
-
-            return t;
+            return Model.Localizations;
         }
     }
     

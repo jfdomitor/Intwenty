@@ -24,10 +24,10 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (ApplicationItem a in apps)
+        @foreach (InformationStatus a in apps)
         {
             <tr>
-                <td>@a.Title</td>
+                <td>@a.ApplicationId + ' - ' + @a.Id + ' ' + @a.CreatedBy</td>
             </tr>
           
         }
@@ -66,19 +66,19 @@
 
     static string InputValue { get; set; } = string.Empty;
 
-    public List<ApplicationItem> apps = new List<ApplicationItem>();
+    public List<InformationStatus> apps = new List<InformationStatus>();
 
     private void Test()
     {
         var client = new Connection(Settings.Value.DefaultConnectionDBMS, Settings.Value.DefaultConnection);
         client.Open();
-        apps=client.GetEntities<ApplicationItem>();
+        apps = client.GetEntities<InformationStatus>();
         client.Close();
     }
 
     private async Task BtnProcessInboundValueClick()
     {
-        apps.Add(new ApplicationItem() { Title = InputValue });
+        apps.Add(new InformationStatus() {  CreatedBy = InputValue });
         await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.raiseDlg");
     }
 

@@ -48,12 +48,12 @@ namespace Intwenty.Areas.Identity.Models
 
         public bool IsSystemAuthorization
         {
-            get { return AuthorizationType == SystemModelItem.MetaTypeSystem; }
+            get { return AuthorizationType == "SYSTEM"; }
         }
 
         public bool IsApplicationAuthorization
         {
-            get { return AuthorizationType == ApplicationModelItem.MetaTypeApplication; }
+            get { return AuthorizationType == "APPLICATION"; }
         }
 
         public bool IsProductAuthorization
@@ -63,7 +63,7 @@ namespace Intwenty.Areas.Identity.Models
 
         public bool IsViewAuthorization
         {
-            get { return AuthorizationType == ViewModel.MetaTypeUIView; }
+            get { return AuthorizationType == "VIEW"; }
         }
 
 

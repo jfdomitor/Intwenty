@@ -77,142 +77,142 @@ namespace Intwenty.Controllers
         {
             var res = new List<TestResult>();
 
-            //CLEAN UP PREV TEST
-            var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 10000);
-            var simplemodel = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 20000);
+            ////CLEAN UP PREV TEST
+            //var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 10000);
+            //var simplemodel = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 20000);
 
 
-            var db = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
-            db.Open();
+            //var db = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
+            //db.Open();
 
-            db.RunCommand("DELETE FROM sysmodel_ValueDomainItem WHERE DOMAINNAME = 'TESTDOMAIN'");
+            //db.RunCommand("DELETE FROM sysmodel_ValueDomainItem WHERE DOMAINNAME = 'TESTDOMAIN'");
 
-            if (model != null && db.TableExists(model.DbName))
-            {
-                db.RunCommand(string.Format("DROP TABLE {0}", model.DbName));
-            }
+            //if (model != null && db.TableExists(model.DbName))
+            //{
+            //    db.RunCommand(string.Format("DROP TABLE {0}", model.DbName));
+            //}
 
-            if (simplemodel != null && db.TableExists(simplemodel.DbName))
-            {
-                db.RunCommand(string.Format("DROP TABLE {0}", simplemodel.DbName));
-            }
+            //if (simplemodel != null && db.TableExists(simplemodel.DbName))
+            //{
+            //    db.RunCommand(string.Format("DROP TABLE {0}", simplemodel.DbName));
+            //}
 
-            if (model != null && db.TableExists(model.VersioningTableName))
-            {
-                db.RunCommand(string.Format("DROP TABLE {0}", model.VersioningTableName));
-            }
-            if (db.TableExists("def_TestAppSubTable"))
-            {
-                db.RunCommand("DROP TABLE def_TestAppSubTable");
-            }
-            if (db.TableExists("tests_TestDataAutoInc"))
-            {
-                db.RunCommand("DROP TABLE tests_TestDataAutoInc");
-            }
-            if (db.TableExists("tests_TestDataIndexNoAutoInc"))
-            {
-                db.RunCommand("DROP TABLE tests_TestDataIndexNoAutoInc");
-            }
-            if (db.TableExists("tests_TestData2AutoInc"))
-            {
-                db.RunCommand("DROP TABLE tests_TestData2AutoInc");
-            }      
+            //if (model != null && db.TableExists(model.VersioningTableName))
+            //{
+            //    db.RunCommand(string.Format("DROP TABLE {0}", model.VersioningTableName));
+            //}
+            //if (db.TableExists("def_TestAppSubTable"))
+            //{
+            //    db.RunCommand("DROP TABLE def_TestAppSubTable");
+            //}
+            //if (db.TableExists("tests_TestDataAutoInc"))
+            //{
+            //    db.RunCommand("DROP TABLE tests_TestDataAutoInc");
+            //}
+            //if (db.TableExists("tests_TestDataIndexNoAutoInc"))
+            //{
+            //    db.RunCommand("DROP TABLE tests_TestDataIndexNoAutoInc");
+            //}
+            //if (db.TableExists("tests_TestData2AutoInc"))
+            //{
+            //    db.RunCommand("DROP TABLE tests_TestData2AutoInc");
+            //}      
            
 
-            if (model != null)
-            {
-                var dbmodels = _modelservice.GetDatabaseModels().Where(p => p.AppMetaCode == model.MetaCode && !p.IsFrameworkItem && p.SystemMetaCode == model.SystemMetaCode);
-                foreach (var dbitem in dbmodels)
-                    db.DeleteEntity(new DatabaseItem() { Id = dbitem.Id });
+            //if (model != null)
+            //{
+            //    var dbmodels = _modelservice.GetDatabaseModels().Where(p => p.AppMetaCode == model.MetaCode && !p.IsFrameworkItem && p.SystemMetaCode == model.SystemMetaCode);
+            //    foreach (var dbitem in dbmodels)
+            //        db.DeleteEntity(new DatabaseItem() { Id = dbitem.Id });
 
-                db.DeleteEntity(new ApplicationItem() { Id = model.Id });
-            }
-
-
-            if (simplemodel != null)
-            {
-                var dbmodels = _modelservice.GetDatabaseModels().Where(p => p.AppMetaCode == simplemodel.MetaCode && !p.IsFrameworkItem && p.SystemMetaCode == simplemodel.SystemMetaCode);
-                foreach (var dbitem in dbmodels)
-                    db.DeleteEntity(new DatabaseItem() { Id = dbitem.Id });
-
-                db.DeleteEntity(new ApplicationItem() { Id = simplemodel.Id });
-            }
+            //    db.DeleteEntity(new ApplicationItem() { Id = model.Id });
+            //}
 
 
-            db.Close();
+            //if (simplemodel != null)
+            //{
+            //    var dbmodels = _modelservice.GetDatabaseModels().Where(p => p.AppMetaCode == simplemodel.MetaCode && !p.IsFrameworkItem && p.SystemMetaCode == simplemodel.SystemMetaCode);
+            //    foreach (var dbitem in dbmodels)
+            //        db.DeleteEntity(new DatabaseItem() { Id = dbitem.Id });
 
-            if (_settings.AllowSignalR)
-            {
-
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test1ORMCreateTable());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test2ORMInsert());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test3ORMUpdate());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test4ORMDelete());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test5NotUsed());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test6CreateIntwentyStandardModel());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test7CreateIntwentyStandardApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test8GetListOfIntwentyStandardApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test9GetListOfIntwentyStandardApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test11UpdateIntwentyStandardApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test111GetTypedApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test12DeleteIntwentyApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test13GetAllValueDomains());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test14GetDataSet());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test15Transactions());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test17GetLists());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test18TestIdentity());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test30CreateIntwentySimpleModel());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test32CreateIntwentySimpleApplication());
-                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test34GetListOfIntwentySimpleApplication());
+            //    db.DeleteEntity(new ApplicationItem() { Id = simplemodel.Id });
+            //}
 
 
+            //db.Close();
 
-                //TEST ALL SUPPORTED DB
-                if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlite))
-                {
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test100SqliteInsertPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test101SqliteGetJSONArrayPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test102SqliteGetEntitiesPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test103SqliteGetResultSetPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test104SqliteGetDataTablePerformance());
-                }
+            //if (_settings.AllowSignalR)
+            //{
 
-                if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlServer))
-                {
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test200SqlServerInsertPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test201SqlServerGetJSONArrayPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test202SqlServerGetEntitiesPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test203SqlServerGetResultSetPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test204SqlServerGetDataTablePerformance());
-                }
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test1ORMCreateTable());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test2ORMInsert());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test3ORMUpdate());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test4ORMDelete());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test5NotUsed());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test6CreateIntwentyStandardModel());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test7CreateIntwentyStandardApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test8GetListOfIntwentyStandardApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test9GetListOfIntwentyStandardApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test11UpdateIntwentyStandardApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test111GetTypedApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test12DeleteIntwentyApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test13GetAllValueDomains());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test14GetDataSet());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test15Transactions());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test17GetLists());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test18TestIdentity());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test30CreateIntwentySimpleModel());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test32CreateIntwentySimpleApplication());
+            //    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test34GetListOfIntwentySimpleApplication());
 
-                if (!string.IsNullOrEmpty(_settings.TestDbConnectionMariaDb))
-                {
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test300MariaDbInsertPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test301MariaDbGetJSONArrayPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test302MariaDbGetEntitiesPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test303MariaDbGetResultSetPerformance());
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", Test304MariaDbGetDataTablePerformance());
-                }
 
-                if (!string.IsNullOrEmpty(_settings.TestDbConnectionPostgres))
-                {
-                    int expected = 5000;
-                    for (int i = 0; i < 5; i++)
-                    {
-                        if (i == 0)
-                            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(true));
-                        else
-                            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(false));
 
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test401PostgresGetJSONArrayPerformance(expected));
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test402PostgresGetEntitiesPerformance(expected));
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test403PostgresGetResultSetPerformance(expected));
-                        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test404PostgresGetDataTablePerformance(expected));
-                        expected += 5000;
-                    }
-                }
-            }
+            //    //TEST ALL SUPPORTED DB
+            //    if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlite))
+            //    {
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test100SqliteInsertPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test101SqliteGetJSONArrayPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test102SqliteGetEntitiesPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test103SqliteGetResultSetPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test104SqliteGetDataTablePerformance());
+            //    }
+
+            //    if (!string.IsNullOrEmpty(_settings.TestDbConnectionSqlServer))
+            //    {
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test200SqlServerInsertPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test201SqlServerGetJSONArrayPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test202SqlServerGetEntitiesPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test203SqlServerGetResultSetPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test204SqlServerGetDataTablePerformance());
+            //    }
+
+            //    if (!string.IsNullOrEmpty(_settings.TestDbConnectionMariaDb))
+            //    {
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test300MariaDbInsertPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test301MariaDbGetJSONArrayPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test302MariaDbGetEntitiesPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test303MariaDbGetResultSetPerformance());
+            //        _hubContext.Clients.All.SendAsync("ReceiveMessage", Test304MariaDbGetDataTablePerformance());
+            //    }
+
+            //    if (!string.IsNullOrEmpty(_settings.TestDbConnectionPostgres))
+            //    {
+            //        int expected = 5000;
+            //        for (int i = 0; i < 5; i++)
+            //        {
+            //            if (i == 0)
+            //                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(true));
+            //            else
+            //                _hubContext.Clients.All.SendAsync("ReceiveMessage", Test400PostgresInsertPerformance(false));
+
+            //            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test401PostgresGetJSONArrayPerformance(expected));
+            //            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test402PostgresGetEntitiesPerformance(expected));
+            //            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test403PostgresGetResultSetPerformance(expected));
+            //            _hubContext.Clients.All.SendAsync("ReceiveMessage", Test404PostgresGetDataTablePerformance(expected));
+            //            expected += 5000;
+            //        }
+            //    }
+            //}
 
             return new JsonResult(res);
 
@@ -392,54 +392,54 @@ namespace Intwenty.Controllers
         private TestResult Test6CreateIntwentyStandardModel()
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Create an intwenty application (My test application)");
-            var dbstore = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
+            //var dbstore = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
 
-            try
-            {
+            //try
+            //{
 
-                var system = _modelservice.GetSystemModels().Find(p => p.MetaCode == "INTWENTYDEFAULTSYS");
-                if (system == null)
-                    throw new InvalidOperationException("The default system could not be found");
+            //    var system = _modelservice.GetSystemModels().Find(p => p.MetaCode == "INTWENTYDEFAULTSYS");
+            //    if (system == null)
+            //        throw new InvalidOperationException("The default system could not be found");
 
-                dbstore.Open();
-                dbstore.InsertEntity(new ApplicationItem() { Id = 10000, SystemMetaCode = system.MetaCode, Description = "An app for testing intwenty", MetaCode = "TESTAPP", Title = "My test application", DbName = "def_TestApp", DataMode = 0, UseVersioning = true });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "HEADER", DbName = "Header", ParentMetaCode = "ROOT", DataType = "STRING" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DESCRIPTION", DbName = "Description", ParentMetaCode = "ROOT", DataType = "TEXT" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "BOOLVALUE", DbName = "BoolValue", ParentMetaCode = "ROOT", DataType = "BOOLEAN" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "INTVALUE", DbName = "IntValue", ParentMetaCode = "ROOT", DataType = "INTEGER" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE", DbName = "DecValue", ParentMetaCode = "ROOT", DataType = "3DECIMAL" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE2", DbName = "DecValue2", ParentMetaCode = "ROOT", DataType = "2DECIMAL" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATATABLE", MetaCode = "TESTAPP_SUBTABLE", DbName = "def_TestAppSubTable", ParentMetaCode = "ROOT" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "LINETEXT", DbName = "LineHeader", ParentMetaCode = "TESTAPP_SUBTABLE", DataType = "STRING" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "LINEDESCRIPTION", DbName = "LineDescription", ParentMetaCode = "TESTAPP_SUBTABLE", DataType = "STRING" });
+            //    dbstore.Open();
+            //    dbstore.InsertEntity(new ApplicationItem() { Id = 10000, SystemMetaCode = system.MetaCode, Description = "An app for testing intwenty", MetaCode = "TESTAPP", Title = "My test application", DbName = "def_TestApp", DataMode = 0, UseVersioning = true });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "HEADER", DbName = "Header", ParentMetaCode = "ROOT", DataType = "STRING" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DESCRIPTION", DbName = "Description", ParentMetaCode = "ROOT", DataType = "TEXT" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "BOOLVALUE", DbName = "BoolValue", ParentMetaCode = "ROOT", DataType = "BOOLEAN" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "INTVALUE", DbName = "IntValue", ParentMetaCode = "ROOT", DataType = "INTEGER" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE", DbName = "DecValue", ParentMetaCode = "ROOT", DataType = "3DECIMAL" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE2", DbName = "DecValue2", ParentMetaCode = "ROOT", DataType = "2DECIMAL" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATATABLE", MetaCode = "TESTAPP_SUBTABLE", DbName = "def_TestAppSubTable", ParentMetaCode = "ROOT" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "LINETEXT", DbName = "LineHeader", ParentMetaCode = "TESTAPP_SUBTABLE", DataType = "STRING" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "TESTAPP", MetaType = "DATACOLUMN", MetaCode = "LINEDESCRIPTION", DbName = "LineDescription", ParentMetaCode = "TESTAPP_SUBTABLE", DataType = "STRING" });
 
-                dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 1", Code = "1" });
-                dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 2", Code = "2" });
-                dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 2", Code = "3" });
+            //    dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 1", Code = "1" });
+            //    dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 2", Code = "2" });
+            //    dbstore.InsertEntity(new ValueDomainItem() { DomainName = "TESTDOMAIN", Value = "Domain Value 2", Code = "3" });
 
 
-                dbstore.Close();
+            //    dbstore.Close();
 
-                _modelservice.ClearCache();
+            //    _modelservice.ClearCache();
 
-                var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 10000);
-                if (model == null)
-                    throw new InvalidOperationException("The created intwenty 'TESTAPP' model could not be found");
+            //    var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 10000);
+            //    if (model == null)
+            //        throw new InvalidOperationException("The created intwenty 'TESTAPP' model could not be found");
 
-                var configres = _modelservice.ConfigureDatabase(model);
+            //    var configres = _modelservice.ConfigureDatabase(model);
 
-                if (!configres.Result.IsSuccess)
-                    throw new InvalidOperationException("The created intwenty model could not be configured with success");
+            //    if (!configres.Result.IsSuccess)
+            //        throw new InvalidOperationException("The created intwenty model could not be configured with success");
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test6CreateIntwentyExampleModel lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test6CreateIntwentyExampleModel lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                dbstore.Close();
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    dbstore.Close();
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -448,56 +448,56 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Create 100 intwenty application based on the created test model");
 
-            try
-            {
-                for (int i = 0; i < 100; i++)
-                {
-                    var state = new ClientOperation();
-                    state.ApplicationId = 10000;
-                    state.User.UserName = "TESTUSER";
+            //try
+            //{
+            //    for (int i = 0; i < 100; i++)
+            //    {
+            //        var state = new ClientOperation();
+            //        state.ApplicationId = 10000;
+            //        state.User.UserName = "TESTUSER";
 
-                    if (i > 25)
-                        state.User.UserName = "OTHERUSER";
-                    if (i > 50)
-                        state.User.UserName = "OTHERUSER1";
-                    if (i > 75)
-                        state.User.UserName = "OTHERUSER2";
+            //        if (i > 25)
+            //            state.User.UserName = "OTHERUSER";
+            //        if (i > 50)
+            //            state.User.UserName = "OTHERUSER1";
+            //        if (i > 75)
+            //            state.User.UserName = "OTHERUSER2";
 
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "Header", Value = "Test Header " + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "Description", Value = "Test description " + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "BoolValue", Value = true });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "IntValue", Value = 25 + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "DecValue", Value = 777.77 });
-                    var subtable = new ApplicationTable() { DbName = "def_TestAppSubTable" };
-                    var row = new ApplicationTableRow() { Table = subtable };
-                    row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "First Row" });
-                    row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "First Row Description" });
-                    subtable.Rows.Add(row);
-                    row = new ApplicationTableRow() { Table = subtable };
-                    row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "Second Row" });
-                    row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "Second Row Description" });
-                    subtable.Rows.Add(row);
-                    row = new ApplicationTableRow() { Table = subtable };
-                    row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "Third Row" });
-                    row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "Third Row Description" });
-                    subtable.Rows.Add(row);
-                    state.Data.SubTables.Add(subtable);
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "Header", Value = "Test Header " + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "Description", Value = "Test description " + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "BoolValue", Value = true });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "IntValue", Value = 25 + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "DecValue", Value = 777.77 });
+            //        var subtable = new ApplicationTable() { DbName = "def_TestAppSubTable" };
+            //        var row = new ApplicationTableRow() { Table = subtable };
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "First Row" });
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "First Row Description" });
+            //        subtable.Rows.Add(row);
+            //        row = new ApplicationTableRow() { Table = subtable };
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "Second Row" });
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "Second Row Description" });
+            //        subtable.Rows.Add(row);
+            //        row = new ApplicationTableRow() { Table = subtable };
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineHeader", Value = "Third Row" });
+            //        row.Values.Add(new ApplicationValue() { DbName = "LineDescription", Value = "Third Row Description" });
+            //        subtable.Rows.Add(row);
+            //        state.Data.SubTables.Add(subtable);
 
-                    var saveresult = _dataservice.Save(state);
-                    if (!saveresult.IsSuccess)
-                        throw new InvalidOperationException("IntwentyDataService.Save() intwenty application failed: " + saveresult.SystemError);
+            //        var saveresult = _dataservice.Save(state);
+            //        if (!saveresult.IsSuccess)
+            //            throw new InvalidOperationException("IntwentyDataService.Save() intwenty application failed: " + saveresult.SystemError);
 
 
-                }
+            //    }
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test7CreateIntwentyApplication (Create 100 applications) lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test7CreateIntwentyApplication (Create 100 applications) lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -506,46 +506,46 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Get a list just of created intwenty applications");
 
-            try
-            {
-                var filter = new ClientOperation() { ApplicationId = 10000, SkipPaging = true };
-                var getlistresult = _dataservice.GetJsonArray(filter);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetList(1000) failed: " + getlistresult.SystemError);
+            //try
+            //{
+            //    var filter = new ClientOperation() { ApplicationId = 10000, SkipPaging = true };
+            //    var getlistresult = _dataservice.GetJsonArray(filter);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetList(1000) failed: " + getlistresult.SystemError);
 
-                var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                if (state.Data.SubTables[0].Rows.Count < 5)
-                    throw new InvalidOperationException("Could not get list of intwenty applications, should be at least 5 records");
-
-
-                filter = new ClientOperation() { ApplicationId = 10000, PageSize = 10 };
-                for (int i = 1; i < 4; i++)
-                {
-                    filter.PageNumber = i;
-                    var pageresult = _dataservice.GetJsonArray(filter);
-                    if (pageresult.Data.Length < 20)
-                        throw new InvalidOperationException("GetPagedList - No result");
+            //    if (state.Data.SubTables[0].Rows.Count < 5)
+            //        throw new InvalidOperationException("Could not get list of intwenty applications, should be at least 5 records");
 
 
-                    if (pageresult.CurrentOperation.MaxCount == 0)
-                        throw new InvalidOperationException("GetPagedList - ListFilter.MaxCount was 0");
-
-                }
-
-
-
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test8GetListOfIntwentyApplication (Get 100 Applications) lasted  {0} ms", result.Duration));
+            //    filter = new ClientOperation() { ApplicationId = 10000, PageSize = 10 };
+            //    for (int i = 1; i < 4; i++)
+            //    {
+            //        filter.PageNumber = i;
+            //        var pageresult = _dataservice.GetJsonArray(filter);
+            //        if (pageresult.Data.Length < 20)
+            //            throw new InvalidOperationException("GetPagedList - No result");
 
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //        if (pageresult.CurrentOperation.MaxCount == 0)
+            //            throw new InvalidOperationException("GetPagedList - ListFilter.MaxCount was 0");
+
+            //    }
+
+
+
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test8GetListOfIntwentyApplication (Get 100 Applications) lasted  {0} ms", result.Duration));
+
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -554,28 +554,28 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Get a list of created intwenty applications");
 
-            try
-            {
-                var f = new ClientOperation() { ApplicationId = 10000 };
-                var getlistresult = _dataservice.GetJsonArray(f);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetJsonArray(listfilter) failed: " + getlistresult.SystemError);
+            //try
+            //{
+            //    var f = new ClientOperation() { ApplicationId = 10000 };
+            //    var getlistresult = _dataservice.GetJsonArray(f);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetJsonArray(listfilter) failed: " + getlistresult.SystemError);
 
-                var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                if (state.Data.SubTables[0].Rows.Count < 20)
-                    throw new InvalidOperationException("Could not get list of intwenty applications owned by OTHERUSER, should be 20 records");
+            //    if (state.Data.SubTables[0].Rows.Count < 20)
+            //        throw new InvalidOperationException("Could not get list of intwenty applications owned by OTHERUSER, should be 20 records");
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test9GetListOfIntwentyApplicationByOwnerUser lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test9GetListOfIntwentyApplicationByOwnerUser lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -587,80 +587,80 @@ namespace Intwenty.Controllers
 
             TestResult result = new TestResult(true, MessageCode.RESULT, "Update intwenty application");
 
-            try
-            {
-                var filter = new ClientOperation();
-                filter.ApplicationId = 10000;
+            //try
+            //{
+            //    var filter = new ClientOperation();
+            //    filter.ApplicationId = 10000;
 
-                var getresult = _dataservice.GetJsonArray(filter);
-                if (!getresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetJsonArray(filter) failed: " + getresult.SystemError);
+            //    var getresult = _dataservice.GetJsonArray(filter);
+            //    if (!getresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetJsonArray(filter) failed: " + getresult.SystemError);
 
-                var lastindex = getresult.GetAsApplicationData().SubTables[0].Rows.Count - 1;
-                var id = getresult.GetAsApplicationData().SubTables[0].Rows[lastindex].Id;
-
-
-                var state = new ClientOperation() { ApplicationId = 10000, Id = id };
-                var getbyidresult = _dataservice.Get(state);
-                if (!getbyidresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.Get(state) 1 failed: " + getresult.SystemError);
-
-                state = new ClientOperation() { ApplicationId = 10000, Id = id };
-                state.Data = getbyidresult.GetAsApplicationData();
-                state.User.UserName = "OTHERUSER2";
-                state.Data.SetValue("Description", "Updated test application");
-                state.Data.SetValue("DecValue", 333.777M);
-                state.Data.SetValue("DecValue2", 444.55);
-                var saveresult = _dataservice.Save(state);
-                if (!saveresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.Save(state) failed when updating application: " + getresult.SystemError);
+            //    var lastindex = getresult.GetAsApplicationData().SubTables[0].Rows.Count - 1;
+            //    var id = getresult.GetAsApplicationData().SubTables[0].Rows[lastindex].Id;
 
 
-                var newstate = new ClientOperation() { ApplicationId = 10000, Id = id };
-                getbyidresult = _dataservice.Get(newstate);
-                if (!getbyidresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetById(state) 2 failed: " + getresult.SystemError);
+            //    var state = new ClientOperation() { ApplicationId = 10000, Id = id };
+            //    var getbyidresult = _dataservice.Get(state);
+            //    if (!getbyidresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.Get(state) 1 failed: " + getresult.SystemError);
 
-                var appdata = getbyidresult.GetAsApplicationData();
-                if (!appdata.HasData)
-                    throw new InvalidOperationException("Could not create applicationdata from application json string");
+            //    state = new ClientOperation() { ApplicationId = 10000, Id = id };
+            //    state.Data = getbyidresult.GetAsApplicationData();
+            //    state.User.UserName = "OTHERUSER2";
+            //    state.Data.SetValue("Description", "Updated test application");
+            //    state.Data.SetValue("DecValue", 333.777M);
+            //    state.Data.SetValue("DecValue2", 444.55);
+            //    var saveresult = _dataservice.Save(state);
+            //    if (!saveresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.Save(state) failed when updating application: " + getresult.SystemError);
 
-                var checkupdate = appdata.Values.Find(p => p.DbName == "Description");
-                if (checkupdate.GetAsString() != "Updated test application")
-                    throw new InvalidOperationException("Updated application string value was not persisted");
 
-                checkupdate = appdata.Values.Find(p => p.DbName == "DecValue");
-                if (checkupdate.GetAsDecimal() != 333.777M)
-                    throw new InvalidOperationException("Updated application decimal value was not persisted");
+            //    var newstate = new ClientOperation() { ApplicationId = 10000, Id = id };
+            //    getbyidresult = _dataservice.Get(newstate);
+            //    if (!getbyidresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetById(state) 2 failed: " + getresult.SystemError);
 
-                checkupdate = appdata.Values.Find(p => p.DbName == "DecValue2");
-                if (Convert.ToDouble(checkupdate.GetAsDecimal()) != 444.55)
-                    throw new InvalidOperationException("Updated application decimal double value was not persisted");
+            //    var appdata = getbyidresult.GetAsApplicationData();
+            //    if (!appdata.HasData)
+            //        throw new InvalidOperationException("Could not create applicationdata from application json string");
 
-                if (_modelservice.GetApplicationModels().Exists(p => p.Application.Id == 10000 && p.Application.UseVersioning))
-                {
-                    if (saveresult.Version < 2)
-                        throw new InvalidOperationException("Updated application did not recieve a new version id");
-                }
+            //    var checkupdate = appdata.Values.Find(p => p.DbName == "Description");
+            //    if (checkupdate.GetAsString() != "Updated test application")
+            //        throw new InvalidOperationException("Updated application string value was not persisted");
 
-                getbyidresult.AddApplicationJSONValue("AddedTestString", "TestString", false);
-                getbyidresult.AddApplicationJSONValue("AddedTestInt", 99, true);
+            //    checkupdate = appdata.Values.Find(p => p.DbName == "DecValue");
+            //    if (checkupdate.GetAsDecimal() != 333.777M)
+            //        throw new InvalidOperationException("Updated application decimal value was not persisted");
 
-                appdata = getbyidresult.GetAsApplicationData();
+            //    checkupdate = appdata.Values.Find(p => p.DbName == "DecValue2");
+            //    if (Convert.ToDouble(checkupdate.GetAsDecimal()) != 444.55)
+            //        throw new InvalidOperationException("Updated application decimal double value was not persisted");
 
-                getbyidresult.RemoveJSON("LineDescription");
-                getbyidresult.RemoveJSON("Version");
+            //    if (_modelservice.GetApplicationModels().Exists(p => p.Application.Id == 10000 && p.Application.UseVersioning))
+            //    {
+            //        if (saveresult.Version < 2)
+            //            throw new InvalidOperationException("Updated application did not recieve a new version id");
+            //    }
 
-                appdata = getbyidresult.GetAsApplicationData();
+            //    getbyidresult.AddApplicationJSONValue("AddedTestString", "TestString", false);
+            //    getbyidresult.AddApplicationJSONValue("AddedTestInt", 99, true);
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test11UpdateIntwentyApplication (Get Application, Update, JSONOperations) lasted  {0} ms", result.Duration));
+            //    appdata = getbyidresult.GetAsApplicationData();
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //    getbyidresult.RemoveJSON("LineDescription");
+            //    getbyidresult.RemoveJSON("Version");
+
+            //    appdata = getbyidresult.GetAsApplicationData();
+
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test11UpdateIntwentyApplication (Get Application, Update, JSONOperations) lasted  {0} ms", result.Duration));
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -670,40 +670,40 @@ namespace Intwenty.Controllers
 
             TestResult result = new TestResult(true, MessageCode.RESULT, "Get typed intwenty application");
 
-            try
-            {
-                var args = new ClientOperation() { ApplicationId = 10000, PageSize = 500 };
-                var model = _modelservice.GetApplicationModels().Find(p => p.Application.Id == 10000);
-                if (model == null)
-                    throw new InvalidOperationException("Model not found");
+            //try
+            //{
+            //    var args = new ClientOperation() { ApplicationId = 10000, PageSize = 500 };
+            //    var model = _modelservice.GetApplicationModels().Find(p => p.Application.Id == 10000);
+            //    if (model == null)
+            //        throw new InvalidOperationException("Model not found");
 
-                var data = _dataservice.GetEntityList<def_TestApp>(args, model);
-                if (!data.IsSuccess)
-                    throw new InvalidOperationException(data.SystemError);
+            //    var data = _dataservice.GetEntityList<def_TestApp>(args, model);
+            //    if (!data.IsSuccess)
+            //        throw new InvalidOperationException(data.SystemError);
 
-                if (data.Data.Count < 1)
-                    throw new InvalidOperationException("No data found when using GetPagedList<def_TestApp>()");
+            //    if (data.Data.Count < 1)
+            //        throw new InvalidOperationException("No data found when using GetPagedList<def_TestApp>()");
 
 
-                var state = new ClientOperation() { ApplicationId = 10000, Id = data.Data[0].Id };
-                var data2 = _dataservice.Get<def_TestApp>(state, model);
-                if (!data2.IsSuccess)
-                    throw new InvalidOperationException(data2.SystemError);
+            //    var state = new ClientOperation() { ApplicationId = 10000, Id = data.Data[0].Id };
+            //    var data2 = _dataservice.Get<def_TestApp>(state, model);
+            //    if (!data2.IsSuccess)
+            //        throw new InvalidOperationException(data2.SystemError);
 
-                if (data2.Data == null)
-                    throw new InvalidOperationException("No data found when using Get<def_TestApp>()");
+            //    if (data2.Data == null)
+            //        throw new InvalidOperationException("No data found when using Get<def_TestApp>()");
 
-                if (data2.Data.Id < 1)
-                    throw new InvalidOperationException("No data found when using Get<def_TestApp>()");
+            //    if (data2.Data.Id < 1)
+            //        throw new InvalidOperationException("No data found when using Get<def_TestApp>()");
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test111GetTypedApplication (Get typed intwenty application) lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test111GetTypedApplication (Get typed intwenty application) lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -713,68 +713,68 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Delete an intwenty application");
 
-            try
-            {
-                var filter = new ClientOperation();
-                filter.ApplicationId = 10000;
+            //try
+            //{
+            //    var filter = new ClientOperation();
+            //    filter.ApplicationId = 10000;
 
-                var listresult = _dataservice.GetJsonArray(filter);
-                if (!listresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetJsonArray(filter) failed: " + listresult.SystemError);
+            //    var listresult = _dataservice.GetJsonArray(filter);
+            //    if (!listresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetJsonArray(filter) failed: " + listresult.SystemError);
 
-                var lastindex = listresult.GetAsApplicationData().SubTables[0].Rows.Count - 1;
-                var id = listresult.GetAsApplicationData().SubTables[0].Rows[lastindex].Id;
-
-
-                var state = new ClientOperation() { ApplicationId = 10000, Id = id };
+            //    var lastindex = listresult.GetAsApplicationData().SubTables[0].Rows.Count - 1;
+            //    var id = listresult.GetAsApplicationData().SubTables[0].Rows[lastindex].Id;
 
 
-                var getresult = _dataservice.Get(state);
-                if (!getresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetLatestVersionByOwnerUser(state) failed: " + getresult.SystemError);
-
-                var appdata = getresult.GetAsApplicationData();
-
-                //DELETE THE LAST SUBTABLE ROW IN APP
-                var model = _modelservice.GetApplicationModel(state.ApplicationId);
-                var row = appdata.SubTables[0].Rows.Last();
-                var deleterowresult = _dataservice.DeleteSubTableLine(state, model, row);
-                if (!deleterowresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.DeleteById(applicationid,id, dbname) failed when deleting row: " + deleterowresult.SystemError);
-
-                var newstate = getresult.CreateClientState();
-                var getbyidresult = _dataservice.Get(newstate);
-                if (!getbyidresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returned with failure: " + getresult.SystemError);
-
-                appdata = getbyidresult.GetAsApplicationData();
-                if (appdata.SubTables[0].Rows.Count != 2)
-                    throw new InvalidOperationException("The deleted subtable row was returned when using IntwentyDataService.GetLatestVersionById(state)");
-
-                var deleteresult = _dataservice.Delete(newstate);
-                if (!deleteresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.DeleteById(state) failed: " + deleteresult.SystemError);
+            //    var state = new ClientOperation() { ApplicationId = 10000, Id = id };
 
 
-                getbyidresult = _dataservice.Get(newstate);
-                if (getbyidresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returnded success but is deleted: " + getresult.SystemError);
+            //    var getresult = _dataservice.Get(state);
+            //    if (!getresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetLatestVersionByOwnerUser(state) failed: " + getresult.SystemError);
 
-                appdata = getbyidresult.GetAsApplicationData();
-                if (appdata.HasData)
-                    throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returned values but is deleted");
+            //    var appdata = getresult.GetAsApplicationData();
+
+            //    //DELETE THE LAST SUBTABLE ROW IN APP
+            //    var model = _modelservice.GetApplicationModel(state.ApplicationId);
+            //    var row = appdata.SubTables[0].Rows.Last();
+            //    var deleterowresult = _dataservice.DeleteSubTableLine(state, model, row);
+            //    if (!deleterowresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.DeleteById(applicationid,id, dbname) failed when deleting row: " + deleterowresult.SystemError);
+
+            //    var newstate = getresult.CreateClientState();
+            //    var getbyidresult = _dataservice.Get(newstate);
+            //    if (!getbyidresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returned with failure: " + getresult.SystemError);
+
+            //    appdata = getbyidresult.GetAsApplicationData();
+            //    if (appdata.SubTables[0].Rows.Count != 2)
+            //        throw new InvalidOperationException("The deleted subtable row was returned when using IntwentyDataService.GetLatestVersionById(state)");
+
+            //    var deleteresult = _dataservice.Delete(newstate);
+            //    if (!deleteresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.DeleteById(state) failed: " + deleteresult.SystemError);
 
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test12DeleteIntwentyApplication (Delete Subtable Row, Delete Application) lasted  {0} ms", result.Duration));
+            //    getbyidresult = _dataservice.Get(newstate);
+            //    if (getbyidresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returnded success but is deleted: " + getresult.SystemError);
+
+            //    appdata = getbyidresult.GetAsApplicationData();
+            //    if (appdata.HasData)
+            //        throw new InvalidOperationException("IntwentyDataService.GetLatestVersionById(state) returned values but is deleted");
+
+
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test12DeleteIntwentyApplication (Delete Subtable Row, Delete Application) lasted  {0} ms", result.Duration));
 
 
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -895,63 +895,63 @@ namespace Intwenty.Controllers
         {
 
             TestResult result = new TestResult(true, MessageCode.RESULT, "Test GetList(args) and paging");
-            try
-            {
+            //try
+            //{
 
-                var args = new ClientOperation();
-                args.ApplicationId = 10000;
-                args.PageSize = 20;
-                args.PageNumber = 0;
+            //    var args = new ClientOperation();
+            //    args.ApplicationId = 10000;
+            //    args.PageSize = 20;
+            //    args.PageNumber = 0;
 
-                var getlistresult = _dataservice.GetJsonArray(args);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetList(args) failed: " + getlistresult.SystemError);
+            //    var getlistresult = _dataservice.GetJsonArray(args);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetList(args) failed: " + getlistresult.SystemError);
 
-                var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                if (state.Data.SubTables[0].Rows.Count != args.PageSize)
-                    throw new InvalidOperationException("The returned amount of records was different from batch size");
+            //    if (state.Data.SubTables[0].Rows.Count != args.PageSize)
+            //        throw new InvalidOperationException("The returned amount of records was different from batch size");
 
-                var latestid = state.Data.SubTables[0].Rows.Max(p => p.Id);
+            //    var latestid = state.Data.SubTables[0].Rows.Max(p => p.Id);
 
-                args = getlistresult.CurrentOperation;
-                args.PageNumber = 1;
+            //    args = getlistresult.CurrentOperation;
+            //    args.PageNumber = 1;
 
-                getlistresult = _dataservice.GetJsonArray(args);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetList(args) failed: " + getlistresult.SystemError);
+            //    getlistresult = _dataservice.GetJsonArray(args);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetList(args) failed: " + getlistresult.SystemError);
 
-                state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                var newlatestid = state.Data.SubTables[0].Rows.Min(p => p.Id);
-                if (latestid >= newlatestid)
-                    throw new InvalidOperationException("Paging not working properly");
+            //    var newlatestid = state.Data.SubTables[0].Rows.Min(p => p.Id);
+            //    if (latestid >= newlatestid)
+            //        throw new InvalidOperationException("Paging not working properly");
 
-                if (state.Data.SubTables[0].Rows.Count != args.PageSize)
-                    throw new InvalidOperationException("The returned amount of records was different from batch size");
+            //    if (state.Data.SubTables[0].Rows.Count != args.PageSize)
+            //        throw new InvalidOperationException("The returned amount of records was different from batch size");
 
-                args = new ClientOperation() { ApplicationId = 10000, SkipPaging = true };
-                getlistresult = _dataservice.GetJsonArray(args);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetList(applicationid) failed: " + getlistresult.SystemError);
+            //    args = new ClientOperation() { ApplicationId = 10000, SkipPaging = true };
+            //    getlistresult = _dataservice.GetJsonArray(args);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetList(applicationid) failed: " + getlistresult.SystemError);
 
 
-                state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test17GetLists (GetLists, JSON Operations) lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test17GetLists (GetLists, JSON Operations) lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -1052,45 +1052,45 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Create an intwenty simple mode application");
 
-            var dbstore = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
+            //var dbstore = new Connection(_settings.DefaultConnectionDBMS, _settings.DefaultConnection);
 
-            try
-            {
+            //try
+            //{
 
-                var system = _modelservice.GetSystemModels().Find(p => p.MetaCode == "INTWENTYDEFAULTSYS");
-                if (system == null)
-                    throw new InvalidOperationException("The default system could not be found");
+            //    var system = _modelservice.GetSystemModels().Find(p => p.MetaCode == "INTWENTYDEFAULTSYS");
+            //    if (system == null)
+            //        throw new InvalidOperationException("The default system could not be found");
 
-                dbstore.Open();
-                dbstore.InsertEntity(new ApplicationItem() { Id = 20000, SystemMetaCode = system.MetaCode, Description = "An app for testing intwenty simple model", MetaCode = "SIMPLEAPP", Title = "My simple mode test application", DbName = "def_SimpleTestApp", DataMode = 1, UseVersioning = false });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "HEADER", DbName = "Header", ParentMetaCode = "ROOT", DataType = "STRING" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DESCRIPTION", DbName = "Description", ParentMetaCode = "ROOT", DataType = "TEXT" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "BOOLVALUE", DbName = "BoolValue", ParentMetaCode = "ROOT", DataType = "BOOLEAN" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "INTVALUE", DbName = "IntValue", ParentMetaCode = "ROOT", DataType = "INTEGER" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE", DbName = "DecValue", ParentMetaCode = "ROOT", DataType = "3DECIMAL" });
-                dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE2", DbName = "DecValue2", ParentMetaCode = "ROOT", DataType = "2DECIMAL" });
-                dbstore.Close();
+            //    dbstore.Open();
+            //    dbstore.InsertEntity(new ApplicationItem() { Id = 20000, SystemMetaCode = system.MetaCode, Description = "An app for testing intwenty simple model", MetaCode = "SIMPLEAPP", Title = "My simple mode test application", DbName = "def_SimpleTestApp", DataMode = 1, UseVersioning = false });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "HEADER", DbName = "Header", ParentMetaCode = "ROOT", DataType = "STRING" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DESCRIPTION", DbName = "Description", ParentMetaCode = "ROOT", DataType = "TEXT" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "BOOLVALUE", DbName = "BoolValue", ParentMetaCode = "ROOT", DataType = "BOOLEAN" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "INTVALUE", DbName = "IntValue", ParentMetaCode = "ROOT", DataType = "INTEGER" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE", DbName = "DecValue", ParentMetaCode = "ROOT", DataType = "3DECIMAL" });
+            //    dbstore.InsertEntity(new DatabaseItem() { SystemMetaCode = system.MetaCode, AppMetaCode = "SIMPLEAPP", MetaType = "DATACOLUMN", MetaCode = "DECVALUE2", DbName = "DecValue2", ParentMetaCode = "ROOT", DataType = "2DECIMAL" });
+            //    dbstore.Close();
 
-                _modelservice.ClearCache();
+            //    _modelservice.ClearCache();
 
-                var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 20000);
-                if (model == null)
-                    throw new InvalidOperationException("The created intwenty 'SIMPLEAPP' model could not be found");
+            //    var model = _modelservice.GetApplicationDescriptions().Find(p => p.Id == 20000);
+            //    if (model == null)
+            //        throw new InvalidOperationException("The created intwenty 'SIMPLEAPP' model could not be found");
 
-                var configres = _modelservice.ConfigureDatabase(model);
+            //    var configres = _modelservice.ConfigureDatabase(model);
 
-                if (!configres.Result.IsSuccess)
-                    throw new InvalidOperationException("The created intwenty model could not be configured with success");
+            //    if (!configres.Result.IsSuccess)
+            //        throw new InvalidOperationException("The created intwenty model could not be configured with success");
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test30CreateIntwentySimpleModel lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test30CreateIntwentySimpleModel lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                dbstore.Close();
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    dbstore.Close();
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -1099,35 +1099,35 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Create 200 intwenty application based on the created simple mode test model");
 
-            try
-            {
-                for (int i = 0; i < 200; i++)
-                {
-                    var state = new ClientOperation();
-                    state.ApplicationId = 20000;
+            //try
+            //{
+            //    for (int i = 0; i < 200; i++)
+            //    {
+            //        var state = new ClientOperation();
+            //        state.ApplicationId = 20000;
 
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "Header", Value = "Test Header " + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "Description", Value = "Test description " + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "BoolValue", Value = true });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "IntValue", Value = 25 + i });
-                    state.Data.Values.Add(new ApplicationValue() { DbName = "DecValue", Value = 777.77 });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "Header", Value = "Test Header " + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "Description", Value = "Test description " + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "BoolValue", Value = true });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "IntValue", Value = 25 + i });
+            //        state.Data.Values.Add(new ApplicationValue() { DbName = "DecValue", Value = 777.77 });
                    
 
-                    var saveresult = _dataservice.Save(state);
-                    if (!saveresult.IsSuccess)
-                        throw new InvalidOperationException("IntwentyDataService.Save() intwenty application failed: " + saveresult.SystemError);
+            //        var saveresult = _dataservice.Save(state);
+            //        if (!saveresult.IsSuccess)
+            //            throw new InvalidOperationException("IntwentyDataService.Save() intwenty application failed: " + saveresult.SystemError);
 
 
-                }
+            //    }
 
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test32CreateIntwentySimpleApplication (Create 200 applications) lasted  {0} ms", result.Duration));
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test32CreateIntwentySimpleApplication (Create 200 applications) lasted  {0} ms", result.Duration));
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }
@@ -1136,31 +1136,31 @@ namespace Intwenty.Controllers
         {
             TestResult result = new TestResult(true, MessageCode.RESULT, "Get a list just of created intwenty simple mode applications");
 
-            try
-            {
-                var filter = new ClientOperation() { ApplicationId = 20000, SkipPaging = true };
-                var getlistresult = _dataservice.GetJsonArray(filter);
-                if (!getlistresult.IsSuccess)
-                    throw new InvalidOperationException("IntwentyDataService.GetJsonArray(listfilter) failed: " + getlistresult.SystemError);
+            //try
+            //{
+            //    var filter = new ClientOperation() { ApplicationId = 20000, SkipPaging = true };
+            //    var getlistresult = _dataservice.GetJsonArray(filter);
+            //    if (!getlistresult.IsSuccess)
+            //        throw new InvalidOperationException("IntwentyDataService.GetJsonArray(listfilter) failed: " + getlistresult.SystemError);
 
-                var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
-                if (state.Data.SubTables.Count < 1)
-                    throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
+            //    var state = ClientOperation.CreateFromJSON(System.Text.Json.JsonDocument.Parse(getlistresult.Data).RootElement);
+            //    if (state.Data.SubTables.Count < 1)
+            //        throw new InvalidOperationException("Could not create ClientStateInfo.SubTable from string json array");
 
-                if (state.Data.SubTables[0].Rows.Count < 200)
-                    throw new InvalidOperationException("Could not get list of intwenty applications, should be 200 records");
-
-
-
-                result.Finish();
-                _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test34GetListOfIntwentySimpleApplication (Get 200 Applications) lasted  {0} ms", result.Duration));
+            //    if (state.Data.SubTables[0].Rows.Count < 200)
+            //        throw new InvalidOperationException("Could not get list of intwenty applications, should be 200 records");
 
 
-            }
-            catch (Exception ex)
-            {
-                result.SetError(ex.Message, "Test failed");
-            }
+
+            //    result.Finish();
+            //    _dbloggerservice.LogInfoAsync(string.Format("Test Case: Test34GetListOfIntwentySimpleApplication (Get 200 Applications) lasted  {0} ms", result.Duration));
+
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    result.SetError(ex.Message, "Test failed");
+            //}
 
             return result;
         }

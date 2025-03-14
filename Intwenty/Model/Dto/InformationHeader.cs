@@ -16,7 +16,6 @@ namespace Intwenty.Model.Dto
             Id = entity.Id;
             Version = entity.Version;
             ApplicationId = entity.ApplicationId;
-            MetaCode = entity.MetaCode;
             ChangedBy = entity.ChangedBy;
             ChangedDate = entity.ChangedDate;
             CreatedBy = entity.CreatedBy;
@@ -32,9 +31,7 @@ namespace Intwenty.Model.Dto
 
         public int Version { get; set; }
 
-        public int ApplicationId { get; set; }
-
-        public string MetaCode { get; set; }
+        public string ApplicationId { get; set; }
 
         public string ChangedBy { get; set; }
 

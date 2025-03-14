@@ -159,18 +159,6 @@ namespace Intwenty.Controllers
         #region UI Model
 
 
-        [HttpGet("/Model/API/GetAllProperties")]
-        public IActionResult GetAllProperties()
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Forbid();
-            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
-                return Forbid();
-
-            return new JsonResult(IntwentyRegistry.IntwentyProperties);
-
-        }
-
      
         /// <summary>
         /// Get application views for an application

@@ -577,11 +577,6 @@ namespace Intwenty.WebHostBuilder
                 var seederservice = serviceProvider.GetRequiredService<IIntwentySeeder>();
 
                 //The order is important
-
-                if (settings.StartUpSeedLocalizations)
-                {
-                    seederservice.SeedLocalization();
-                }
                 if (settings.StartUpSeedProductAndOrganization || settings.StartUpSeedDemoUserAccounts)
                 {
                     seederservice.SeedProductAndOrganization();
@@ -589,10 +584,6 @@ namespace Intwenty.WebHostBuilder
                 if (settings.StartUpSeedDemoUserAccounts)
                 {
                     seederservice.SeedUsersAndRoles();
-                }
-                if (settings.StartUpSeedModel)
-                {
-                    seederservice.SeedModel();
                 }
                 if (settings.StartUpSeedData)
                 {
@@ -623,7 +614,6 @@ namespace Intwenty.WebHostBuilder
                 client.ModifyTable<EventLog>();
                 client.ModifyTable<InformationStatus>();
                 client.ModifyTable<InstanceId>();
-                client.ModifyTable<DefaultValue>();
                 client.Close();
 
             }

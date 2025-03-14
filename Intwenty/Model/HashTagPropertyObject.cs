@@ -49,34 +49,15 @@ namespace Intwenty.Model
         {
             try
             {
-                var definition = IntwentyRegistry.IntwentyProperties.Find(p => p.CodeName == key.ToUpper());
-                if (definition == null)
-                    return;
-
+             
                 var check = PropertyList.Find(p => p.CodeName.ToUpper() == key.ToUpper());
                 if (check != null)
                 {
                     check.CodeValue = value;
-                    if (definition.IsListType)
-                    {
-                        var listvalue = definition.ValidValues.Find(p => p.CodeValue == value.ToUpper());
-                        if (listvalue != null)
-                        {
-                            check.DisplayValue = listvalue.DisplayValue;
-                        }
-                    }
                 }
                 else
                 {
                     var pv = new PropertyValue() { CodeName=key, CodeValue=value };
-                    if (definition.IsListType)
-                    {
-                        var listvalue = definition.ValidValues.Find(p => p.CodeValue == value.ToUpper());
-                        if (listvalue != null)
-                        {
-                            pv.DisplayValue = listvalue.DisplayValue;
-                        }
-                    }
                     PropertyList.Add(pv);
 
                 }
@@ -100,26 +81,8 @@ namespace Intwenty.Model
                 var keyval = v.Split("=".ToCharArray());
                 if (keyval.Length == 2)
                 {
-                    var definition = IntwentyRegistry.IntwentyProperties.Find(p => p.CodeName == keyval[0].ToUpper());
-                    if (definition == null)
-                    {
-                        PropertyList.Add(new PropertyValue() { CodeName = keyval[0].ToUpper(), CodeValue = keyval[1], DisplayValue = keyval[1] });
-                    }
-                    else
-                    {
-                        if (definition.IsListType)
-                        {
-                            var listvalue = definition.ValidValues.Find(p => p.CodeValue == keyval[1].ToUpper());
-                            if (listvalue != null)
-                            {
-                                PropertyList.Add(new PropertyValue() { CodeName = keyval[0].ToUpper(), CodeValue = keyval[1], DisplayValue = listvalue.DisplayValue });
-                                continue;
-                            }
-                        }
+                    PropertyList.Add(new PropertyValue() { CodeName = keyval[0].ToUpper(), CodeValue = keyval[1], DisplayValue = keyval[1] });
 
-                        PropertyList.Add( new PropertyValue() { CodeName = keyval[0].ToUpper(), CodeValue = keyval[1], DisplayValue = keyval[1] });
-                    }
-                   
                 }
             }
         }

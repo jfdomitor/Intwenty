@@ -250,7 +250,6 @@ namespace Intwenty.Model
         public IntwentyViewFunction ViewType { get; set; }
         public IntwentyUIHeader HeaderPanel { get; set; }
         public List<IntwentyUISection> VerticalSections { get; set; }
-        public List<IntwentyUIElement> UIElements { get; set; }
         [JsonIgnore]
         public ViewRequestInfo RuntimeRequestInfo { get; set; }
         public bool HasDefaultFilePath
@@ -375,6 +374,8 @@ namespace Intwenty.Model
         public string DomainName { get; set; }
         public string Code { get; set; }
         public string Value { get; set; }
+        public string Display { get; set; }
+
     }
 
 
