@@ -14,12 +14,12 @@ namespace Intwenty.Localization
     public class IntwentyStringLocalizer : IStringLocalizer
     {
 
-        private List<IntwentyLocalizationItem> TranslationList { get; }
+        private List<IntwentyLocalizationItem> LocalizationList { get; }
         private IntwentySettings Settings { get; }
 
-        public IntwentyStringLocalizer(List<IntwentyLocalizationItem> list, IntwentySettings settings)
+        public IntwentyStringLocalizer(IntwentyModel model, IntwentySettings settings)
         {
-            TranslationList = list;
+            LocalizationList = model.Localizations;
             Settings = settings;
         }
 
@@ -48,7 +48,7 @@ namespace Intwenty.Localization
                 if (string.IsNullOrEmpty(culture))
                     throw new InvalidOperationException("Can't get current culture");
 
-                var trans = TranslationList.Find(p => p.Key == name && p.Culture == culture);
+                var trans = LocalizationList.Find(p => p.Key == name && p.Culture == culture);
                 if (trans == null)
                     return new LocalizedString(name, name);
 
@@ -75,7 +75,7 @@ namespace Intwenty.Localization
                 if (string.IsNullOrEmpty(culture))
                     throw new InvalidOperationException("Can't get current culture");
 
-                var trans = TranslationList.Find(p => p.Key == name && p.Culture == culture);
+                var trans = LocalizationList.Find(p => p.Key == name && p.Culture == culture);
                 if (trans == null)
                     return new LocalizedString(name, name);
 
@@ -96,7 +96,7 @@ namespace Intwenty.Localization
             if (string.IsNullOrEmpty(culture))
                 throw new InvalidOperationException("Missing culture in settingfile");
 
-            return TranslationList.Where(z=> z.Culture==culture).Select(p => new LocalizedString(p.Key, p.Text)).ToList();
+            return LocalizationList.Where(z=> z.Culture==culture).Select(p => new LocalizedString(p.Key, p.Text)).ToList();
         }
 
         public IStringLocalizer WithCulture(CultureInfo culture)

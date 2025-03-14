@@ -48,6 +48,7 @@ namespace Intwenty.WebHostBuilder
         public static IConfigurationBuilder AddIntwentyModel(this IConfigurationBuilder builder)
         {
             return builder.AddJsonFile("intwenty.json", optional: false, reloadOnChange: true);
+
         }
      
         public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
@@ -67,6 +68,13 @@ namespace Intwenty.WebHostBuilder
         {
 
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
+
+            //Add Model
+            //services.Configure<IntwentyModel>(options => configuration.Bind(options));
+            var intwentyConfig = configuration.Get<IntwentyModel>();
+            services.AddSingleton(intwentyConfig);
+
+
 
             if (settings.AllowSignalR)
             {

@@ -52,10 +52,10 @@ namespace Intwenty
         private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
 
 
-        public IntwentyModelService(IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+        public IntwentyModelService(IOptions<IntwentySettings> settings, IntwentyModel model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
         {
           
-            Model = model.Value;
+            Model = model;
             IntwentyModel.EnsureModel(Model);
             DbLogger = dblogger;
             OrganizationManager = orgmanager;
@@ -137,12 +137,7 @@ namespace Intwenty
 
         }
 
-        public virtual void AddChildViewsToRender(IntwentyView view)
-        {
-
-        }
-
-
+     
         #region Utils
 
         public List<CachedObjectDescription> GetCachedObjectDescriptions()
@@ -555,64 +550,24 @@ namespace Intwenty
           
 
             var res = new List<IntwentyDataBaseTable>();
-
             foreach (var sys in Model.Systems)
             {
                 foreach (var app in sys.Applications)
                 {
                     var table = new IntwentyDataBaseTable(true) { Id=app.DbTableName, DataColumns=new List<IntwentyDataBaseColumn>(), DbTableName = app.DbTableName, ApplicationId=app.Id, SystemId=sys.Id };
-
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName=table.DbTableName, DbColumnName="Id" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = table.DbTableName, DbColumnName = "Version" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = table.DbTableName, DbColumnName = "ApplicationId" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "CreatedBy" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "ChangedBy" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedBy" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedByOrganizationId" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = table.DbTableName, DbColumnName = "OwnedByOrganizationName" });
-                    table.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = table.DbTableName, DbColumnName = "ChangedDate" });
-
-               
                     foreach (var column in app.DataColumns)
                     {
-                        if (table.DataColumns.Exists(p => p.DbColumnName.ToUpper() == column.DbColumnName.ToUpper()))
-                            continue;
-
                         table.DataColumns.Add(column);
                     }
 
                     res.Add(table);
-
                     foreach (var t in app.DataTables)
                     {
-                        var subtable = new IntwentyDataBaseTable(false) { Id = t.DbTableName, DataColumns = new List<IntwentyDataBaseColumn>(), DbTableName = t.DbTableName, ApplicationId = app.Id, SystemId = sys.Id };
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Id" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Version" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ApplicationId" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "CreatedBy" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "ChangedBy" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedBy" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationId" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationName" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = subtable.DbTableName, DbColumnName = "ChangedDate" });
-                        subtable.DataColumns.Add(new IntwentyDataBaseColumn(true) { Id = "ParentId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ParentId" });
-
-                        foreach (var column in t.DataColumns)
-                        {
-                            if (subtable.DataColumns.Exists(p => p.DbColumnName.ToUpper() == column.DbColumnName.ToUpper()))
-                                continue;
-
-                            subtable.DataColumns.Add(column);
-                        }
-
-                        res.Add(subtable);
+                        res.Add(t);
                     }
                 }
 
-
-
             }
-
 
             return res;
         }

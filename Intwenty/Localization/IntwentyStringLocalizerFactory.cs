@@ -23,11 +23,11 @@ namespace Intwenty.Localization
         private IntwentySettings Settings { get; }
         private IntwentyModel Model { get; }
 
-        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model)
+        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IntwentyModel model)
         {
             ModelCache = cache;
             Settings = settings.Value;
-            Model = model.Value;
+            Model = model;
         }
 
         public IStringLocalizer Create(string basename, string location)
@@ -43,7 +43,7 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(GetLocalizations(), Settings);
+            value = new IntwentyStringLocalizer(Model, Settings);
 
             Cache.TryAdd(basename, value);
 
@@ -61,17 +61,14 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(GetLocalizations(), Settings);
+            value = new IntwentyStringLocalizer(Model, Settings);
 
             Cache.TryAdd(basename, value);
 
             return value;
         }
 
-        private List<IntwentyLocalizationItem> GetLocalizations()
-        {
-            return Model.Localizations;
-        }
+       
     }
     
 }

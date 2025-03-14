@@ -33,7 +33,7 @@ namespace IntwentyDemo.Services
     {
 
 
-        public CustomModelService(IOptions<IntwentySettings> settings, IOptions<IntwentyModel> model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
+        public CustomModelService(IOptions<IntwentySettings> settings, IntwentyModel model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
                 : base(settings, model, cache, usermanager, orgmanager, dblogger)
         {
         }

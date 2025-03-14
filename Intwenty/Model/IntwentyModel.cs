@@ -140,6 +140,17 @@ namespace Intwenty.Model
                     {
                         view.SystemId = sys.Id;
                         view.ApplicationId = app.Id;
+                        if (!view.RequestPath.StartsWith("/"))
+                            view.RequestPath = "/" + view.RequestPath;
+
+                        if (!string.IsNullOrEmpty(view.TitleLocalizationKey))
+                        {
+                            var viewtitle =model.Localizations.Find(p=> p.Key.ToUpper()== view.TitleLocalizationKey.ToUpper());
+                            if (viewtitle != null)
+                                view.LocalizedTitle = viewtitle.Text;
+                            else
+                                view.LocalizedTitle = view.Title;
+                        }
                         if (view.HeaderPanel == null)
                             view.HeaderPanel = new IntwentyUIHeader();
                         if (string.IsNullOrEmpty(view.DbTableName))
@@ -160,6 +171,36 @@ namespace Intwenty.Model
                                 sect.ListView = new IntwentyUIListView();
                         }
 
+                    }
+
+                    if (app.DataColumns == null)
+                        app.DataColumns = new List<IntwentyDataBaseColumn>();
+
+                    app.DataColumns.Insert(0,new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = app.DbTableName, DbColumnName = "Id" });
+                    app.DataColumns.Insert(1,new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = app.DbTableName, DbColumnName = "Version" });
+                    app.DataColumns.Insert(2,new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = app.DbTableName, DbColumnName = "ApplicationId" });
+                    app.DataColumns.Insert(3,new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "CreatedBy" });
+                    app.DataColumns.Insert(4,new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "ChangedBy" });
+                    app.DataColumns.Insert(5,new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "OwnedBy" });
+                    app.DataColumns.Insert(6,new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "OwnedByOrganizationId" });
+                    app.DataColumns.Insert(7,new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "OwnedByOrganizationName" });
+                    app.DataColumns.Insert(8,new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = app.DbTableName, DbColumnName = "ChangedDate" });
+
+                    if (app.DataTables == null)
+                        app.DataTables = new List<IntwentyDataBaseTable>();
+
+                    foreach (var subtable in app.DataTables) 
+                    {
+                        subtable.DataColumns.Insert(0,new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Id" });
+                        subtable.DataColumns.Insert(1, new IntwentyDataBaseColumn(true) { Id = "Version", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "Version" });
+                        subtable.DataColumns.Insert(2, new IntwentyDataBaseColumn(true) { Id = "ApplicationId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ApplicationId" });
+                        subtable.DataColumns.Insert(3, new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "CreatedBy" });
+                        subtable.DataColumns.Insert(4, new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "ChangedBy" });
+                        subtable.DataColumns.Insert(5, new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedBy" });
+                        subtable.DataColumns.Insert(6, new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationId", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationId" });
+                        subtable.DataColumns.Insert(7, new IntwentyDataBaseColumn(true) { Id = "OwnedByOrganizationName", DataType = IntwentyDataType.String, DbTableName = subtable.DbTableName, DbColumnName = "OwnedByOrganizationName" });
+                        subtable.DataColumns.Insert(8, new IntwentyDataBaseColumn(true) { Id = "ChangedDate", DataType = IntwentyDataType.DateTime, DbTableName = subtable.DbTableName, DbColumnName = "ChangedDate" });
+                        subtable.DataColumns.Insert(9, new IntwentyDataBaseColumn(true) { Id = "ParentId", DataType = IntwentyDataType.Int, DbTableName = subtable.DbTableName, DbColumnName = "ParentId" });
                     }
                 }
             }
@@ -195,31 +236,24 @@ namespace Intwenty.Model
 
     public class IntwentyDataBaseColumn : IIntwentyResultColumn
     {
-        private bool p_IsFrameworkColumn = false;
         public string Id { get; set; }
         public string Name { get => DbColumnName; }
         public string DbTableName { get; set; }
         public string DbColumnName { get; set; }
         public string NativeDataType { get; set; }
+        [JsonIgnore]
+        public bool IsFrameworkColumn { get; set; }
         public IntwentyDataType DataType { get; set; }
 
 
         public IntwentyDataBaseColumn()
         {
         }
-        public IntwentyDataBaseColumn(bool isframeworkcolumn)
+        public IntwentyDataBaseColumn(bool frameworkcolumn)
         {
-            p_IsFrameworkColumn = isframeworkcolumn;
+            IsFrameworkColumn = frameworkcolumn;
         }
 
-
-        public bool IsFrameworkColumn 
-        {
-            get
-            {
-                return p_IsFrameworkColumn;
-            }
-        }
 
         public bool IsNumeric
         {
@@ -245,12 +279,13 @@ namespace Intwenty.Model
 
     public class IntwentyDataBaseTable 
     {
-        private bool p_IsAppMainTable = false;
         public string Id { get; set; }
         public string SystemId { get; set; }
         public string ApplicationId { get; set; }
         public string DbTableName { get; set; }
         public string Properties { get; set; }
+        [JsonIgnore]
+        public bool IsAppMainTable { get; set; }
         public List<IntwentyDataBaseColumn> DataColumns { get; set; }
 
         public IntwentyDataBaseTable()
@@ -258,17 +293,9 @@ namespace Intwenty.Model
         }
         public IntwentyDataBaseTable(bool is_app_main_table)
         {
-            p_IsAppMainTable = is_app_main_table;
+            IsAppMainTable = is_app_main_table;
         }
 
-
-        public bool IsAppMainTable
-        {
-            get
-            {
-                return p_IsAppMainTable;
-            }
-        }
     }
 
     public class IntwentyView : IntwentyModelBase, ILocalizableDescription
