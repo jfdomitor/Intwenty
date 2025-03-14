@@ -25,7 +25,7 @@ namespace Intwenty.Model.UIRendering
 
         public string JavaScriptObjectName { get; set; }
 
-        public string VueModelBinding
+        public string ModelBinding
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Intwenty.Model.UIRendering
         public string DomainName { get; set; }
         public string DataColumn2DbName { get; set; }
 
-        public string VueModelBinding2
+        public string ModelBinding2
         {
             get
             {

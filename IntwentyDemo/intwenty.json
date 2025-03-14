@@ -71,7 +71,7 @@
 					],
 					"Views": [
 						{
-							"Id": "LV_CUSTOMER1",
+							"Id": "CustomerListView",
 							"SystemId": "Demo",
 							"ApplicationId": "Customer",
 							"Title": "Customer List",
@@ -81,72 +81,50 @@
 							"IsPrimary": true,
 							"IsPublic": false,
 							"Properties": "",
-							"UIElements": [
+							"HeaderPanel": {
+								"EnableCreateNew": true,
+								"EnableSave": true,
+								"EnableExport": false
+							},
+							"VerticalSections": [
 								{
-									"Id": "CUST_LISTVIEW",
-									"ElementType": "TABLE",
-									"Title": "Customer List",
-									"TitleLocalizationKey": "CUSTLIST",
-									"DbTableName": "Customers",
-									"DbColumnName": "",
-									"DbColumnName2": "",
-									"ColumnOrder": 0,
-									"RowOrder": 0,
-									"Domain": "",
-									"Properties": "",
-									"RawHTML": "",
-									"ChildElements": [
-										{
-											"Id": "LV_ID",
-											"elementType": "TABLETEXTCOLUMN",
-											"Title": "ID",
-											"TitleLocalizationKey": "",
-											"DbTableName": "Customers",
-											"DbColumnName": "id",
-											"DbColumnName2": "",
-											"ColumnOrder": 1,
-											"RowOrder": 1,
-											"Domain": "",
-											"Properties": "",
-											"RawHTML": "",
-											"ChildElements": []
-										},
-										{
-											"Id": "LV_CUSTID",
-											"ElementType": "TABLETEXTCOLUMN",
-											"Title": "Customer ID",
-											"TitleLocalizationKey": "CUSTID",
-											"DbTableName": "Customers",
-											"DbColumnName": "CustomerId",
-											"DbColumnName2": "",
-											"ColumnOrder": 2,
-											"RowOrder": 1,
-											"Domain": "",
-											"Properties": "",
-											"RawHTML": "",
-											"ChildElements": []
-										},
-										{
-											"Id": "LV_CUSTName",
-											"ElementType": "TABLETEXTCOLUMN",
-											"Title": "Customer Id",
-											"TitleLocalizationKey": "CUSTName",
-											"DbTableName": "Customers",
-											"DbColumnName": "CustomerName",
-											"DbColumnName2": "",
-											"ColumnOrder": 3,
-											"RowOrder": 1,
-											"Domain": "",
-											"Properties": "",
-											"RawHTML": "",
-											"ChildElements": []
-										}
-									]
+									"Id": "MainSection",
+									"Expandable": true,
+									"Panels": [],
+									"ListView": {
+										"Sortable": false,
+										"EnableDelete": true,
+										"EditMode": "None",
+										"DbTableName": "Customers",
+										"Columns": [
+											{
+												"Id": "LV_ID",
+												"ColumnType": "TextColumn",
+												"Title": "ID",
+												"TitleLocalizationKey": "",
+												"DbColumnName": "Id"
+											},
+											{
+												"Id": "LV_CUSTID",
+												"ColumnType": "TextColumn",
+												"Title": "Customer ID",
+												"TitleLocalizationKey": "CUSTID",
+												"DbColumnName": "CustomerId"
+											},
+											{
+												"Id": "LV_CUSTName",
+												"ColumnType": "TextColumn",
+												"Title": "Customer Id",
+												"TitleLocalizationKey": "CUSTName",
+												"DbColumnName": "CustomerName"
+											}
+										]
+									}
 								}
 							]
 						},
 						{
-							"Id": "INPUT_CUSTOMER1",
+							"Id": "CustomerCreateView",
 							"SystemId": "Demo",
 							"ApplicationId": "Customer",
 							"Title": "Create Customer",
@@ -154,11 +132,24 @@
 							"FilePath": null,
 							"IsPrimary": false,
 							"IsPublic": false,
-							"Properties": ""
+							"Properties": "",
+							"HeaderPanel": {
+								"EnableCreateNew": false,
+								"EnableSave": true,
+								"EnableExport": false
+							},
+							"VerticalSections": [
+								{
+									"Id": "MainSection",
+									"Expandable": true,
+									"Panels": [],
+									"ListView": {}
+								}
+							]
 						},
 						{
 
-							"Id": "INPUT_CUSTOMER2",
+							"Id": "CustomerEditView",
 							"SystemId": "Demo",
 							"ApplicationId": "Customer",
 							"Title": "Edit Customer",
@@ -166,11 +157,22 @@
 							"FilePath": null,
 							"IsPrimary": false,
 							"IsPublic": false,
-							"Properties": ""
+							"Properties": "",
+							"HeaderPanel": {
+								"EnableCreateNew": false,
+								"EnableSave": true,
+								"EnableExport": false
+							},
+							"VerticalSections": [
+								{
+									"Id": "MainSection",
+									"Expandable": true,
+									"Panels": [],
+									"ListView": {}
+								}
+							]
 						}
 					]
-
-
 				}
 			]
 		}

@@ -1,6 +1,6 @@
-﻿@model Intwenty.Model.ViewModel
+﻿@model Intwenty.Model.IntwentyView
 <!-- ADD VUE Prototypes to extend standard intwenty implementation -->
-@if (Model.HasApplicationInfo && Model.ApplicationInfo.Id == 999) 
+@if (Model.ApplicationId == "Something") 
 {
     <script>
         Vue.prototype.exampleMethod = function () {

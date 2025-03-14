@@ -1,4 +1,4 @@
-﻿@model Intwenty.Model.ViewModel
+﻿@model Intwenty.Model.IntwentyView
 @{
     ViewData["Title"] = Model.LocalizedTitle;
 }
@@ -21,13 +21,13 @@
 <div id="@Model.RuntimeRequestInfo.ViewHtmlId">
 
     <!-- 1. ADD MODALS AND SOME CONFIG -->
-    @foreach (var iface in Model.UserInterface)
-    {
-        @foreach (var mip in iface.ModalInterfaces)
-        {
-            @await Html.PartialAsync("UISections/_ModalInputInterface", mip)
-        }
-    }
+    @* @foreach (var iface in Model.UserInterface) *@
+    @* { *@
+    @*     @foreach (var mip in iface.ModalInterfaces) *@
+    @*     { *@
+    @*         @await Html.PartialAsync("UISections/_ModalInputInterface", mip) *@
+    @*     } *@
+    @* } *@
 
 
     <!-- 2. RENDER THE VIEW HEADER -->
@@ -43,28 +43,75 @@
     </div>
 
 
-    @foreach (var iface in Model.UserInterface)
+    @foreach (var sect in Model.VerticalSections)
     {
+        var colapse = "class=\"collapse\"";
+        var card = "class=\"card\"";
+        var cardbody = "class=\"card-body\"";
+        var accordion = "class=\"accordion\"";
 
-        iface.CurrentRenderContext = CurrentRenderContextOptions.View;
+        <div @Html.Raw(accordion) id="accordion_@sect.Id">
+            <div @Html.Raw(card) id="cardheader_@sect.Id" style="overflow:inherit">
+                @if (sect.ExcludeOnRender)
+                {
+                    <div class="card-header">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                @if (sect.Collapsible)
+                                {
+                                    <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-target="#colapse_@sect.Id" style="margin-right:20px;margin-bottom:5px"><span class="fa fa-expand-alt"></span></button>
+                                }
+                            </li>
+                            <li class="nav-item">
+                                <h4>@sect.LocalizedTitle</h4>
+                            </li>
+                        </ul>
 
-        <!-- 4. RENDER APPLICATION LISTVIEW -->
-        if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsMainApplicationTableInterface && Model.IsApplicationListView())
-        {
-            @await Html.PartialAsync("UISections/_MainTableListInterface", iface)
-        }
 
-        <!-- 5. RENDER APPLICATION ONPAGE INPUT INTERFACES -->
-        if (iface.IsMetaTypeInputInterface && iface.IsMainApplicationTableInterface && Model.IsApplicationInputView())
-        {
-            @await Html.PartialAsync("UISections/_InputInterface", iface)
-        }
+                    </div>
+                }
 
-        <!-- 6. RENDER APPLICATION ONPAGE SUBTABLE INTERFACES -->
-        if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsSubTableUserInterface && Model.IsApplicationInputView())
-        {
-            @await Html.PartialAsync("UISections/_SubTableListInterface", iface)
-        }
+                <div id="colapse_@sect.Id" @Html.Raw(colapse) data-parent="#accordion_@sect.Id">
+                    <div @Html.Raw(cardbody) id="cardbody_@sect.Id">
+                        <br />
+                        <div class="row">
+                             @if (Model.ViewType == IntwentyViewFunction.Edit || Model.ViewType == IntwentyViewFunction.Create){
+                                @await Html.PartialAsync("UISections/_InputInterface", sect)
+                                if (sect.ListView!=null){
+                                    @await Html.PartialAsync("UISections/_SubTableListInterface", sect.ListView)
+                                 }
+                             }
+                             @if (Model.ViewType == IntwentyViewFunction.List){
+                                @await Html.PartialAsync("UISections/_MainTableListInterface", sect.ListView)
+                             }
+
+                        </div> <!--ROW SECTION-->
+                    </div> <!--CARD-BODY -->
+                </div><!--COLAPSE -->
+            </div>  <!--CARD -->
+    </div><!--ACCORDION -->
+
+    <br />
+
+        @* iface.CurrentRenderContext = CurrentRenderContextOptions.View; *@
+
+        @* <!-- 4. RENDER APPLICATION LISTVIEW --> *@
+        @* if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsMainApplicationTableInterface && Model.IsApplicationListView()) *@
+        @* { *@
+        @*     @await Html.PartialAsync("UISections/_MainTableListInterface", iface) *@
+        @* } *@
+
+        @* <!-- 5. RENDER APPLICATION ONPAGE INPUT INTERFACES --> *@ *@
+        @* @* if (iface.IsMetaTypeInputInterface && iface.IsMainApplicationTableInterface && Model.IsApplicationInputView()) *@ *@
+        @* @* { *@ *@
+        @* @*     @await Html.PartialAsync("UISections/_InputInterface", iface) *@ *@
+        @* @* } *@
+
+        @* <!-- 6. RENDER APPLICATION ONPAGE SUBTABLE INTERFACES --> *@
+        @* if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsSubTableUserInterface && Model.IsApplicationInputView()) *@
+        @* { *@
+        @*     @await Html.PartialAsync("UISections/_SubTableListInterface", iface) *@
+        @* } *@
 
     }
 
@@ -72,15 +119,6 @@
 </div>
 
 <br />
-
-<!-- CHILD APPLICATION VIEWS -->
-@foreach (var childview in Model.RuntimeRequestInfo.ChildViews)
-{
-    <div id="@childview.RuntimeRequestInfo.ViewHtmlId">
-        @await Html.PartialAsync("UISections/_ChildApplicationInterface", childview)
-    </div>
-
-}
 
 
 @section Scripts

@@ -54,6 +54,28 @@ namespace Intwenty.Model
        ,Custom = 3
     }
 
+    public enum IntwentyUIElementType
+    {
+        TextValue = 0,
+        TextBox = 1
+       
+    }
+
+    public enum IntwentyEditMode
+    {
+        None=0,
+        Modal=1,
+        NavigateToView=2
+    }
+
+    public enum IntwentyViewFunction
+    {
+        List = 0,
+        Create = 1,
+        Edit = 2
+    }
+
+
     public class IntwentyDataClientTypeMap : TypeMapItem
     {
         public IntwentyDataType IntwentyDataTypeEnum { get; set; }
@@ -91,6 +113,14 @@ namespace Intwenty.Model
 
     }
 
+    public class IntwentyModelBase : ILocalizableTitle
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string LocalizedTitle { get; set; }
+        public string TitleLocalizationKey { get; set; }
+    }
+
 
     public class IntwentyModel
     {
@@ -101,22 +131,14 @@ namespace Intwenty.Model
     }
 
 
-    public class IntwentySystem : ILocalizableTitle
+    public class IntwentySystem : IntwentyModelBase
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string LocalizedTitle { get; set; }
-        public string TitleLocalizationKey { get; set; }
         public string DbPrefix { get; set; }
         public List<IntwentyApplication> Applications { get; set; }
     }
-    public class IntwentyApplication : ILocalizableTitle
+    public class IntwentyApplication : IntwentyModelBase
     {
-        public string Id { get; set; }
         public string SystemId { get; set; }
-        public string Title { get; set; }
-        public string LocalizedTitle { get; set; }
-        public string TitleLocalizationKey { get; set; }
         public string Description { get; set; }
         public string DbTableName { get; set; }
         public DataModeOptions DataMode { get; set; }
@@ -135,7 +157,7 @@ namespace Intwenty.Model
         }
     }
 
-    public class IntwentyDataBaseColumn : HashTagPropertyObject, IIntwentyResultColumn
+    public class IntwentyDataBaseColumn : IIntwentyResultColumn
     {
         private bool p_IsFrameworkColumn = false;
         public string Id { get; set; }
@@ -213,18 +235,21 @@ namespace Intwenty.Model
         }
     }
 
-    public class IntwentyView : ILocalizableTitle
+    public class IntwentyView : IntwentyModelBase, ILocalizableDescription
     {
-        public string Id { get; set; }
+        public string DbTableName { get; set; }
+        public string Description { get; set; }
+        public string LocalizedDescription { get; set; }
+        public string DescriptionLocalizationKey { get; set; }
         public string SystemId { get; set; }
         public string ApplicationId { get; set; }
-        public string Title { get; set; }
-        public string LocalizedTitle { get; set; }
-        public string TitleLocalizationKey { get; set; }
         public string RequestPath { get; set; }
         public string FilePath { get; set; }
         public bool IsPrimary { get; set; }
         public bool IsPublic { get; set; }
+        public IntwentyViewFunction ViewType { get; set; }
+        public IntwentyUIHeader HeaderPanel { get; set; }
+        public List<IntwentyUISection> VerticalSections { get; set; }
         public List<IntwentyUIElement> UIElements { get; set; }
         [JsonIgnore]
         public ViewRequestInfo RuntimeRequestInfo { get; set; }
@@ -267,23 +292,55 @@ namespace Intwenty.Model
         }
     }
 
-    public class IntwentyUIElement : ILocalizableTitle
+    public class IntwentyUIHeader
     {
         public string Id { get; set; }
-        public string ElementType { get; set; }
-        public string Title { get; set; }
-        public string LocalizedTitle { get; set; }
-        public string TitleLocalizationKey { get; set; }
+        public bool EnableCreateNew { get; set; }
+        public bool EnableSave { get; set; }
+        public bool EnableExport { get; set; }
+    }
+
+    public class IntwentyUIPanel
+    {
+        public string Id { get; set; }
+        public List<IntwentyUIElement> ChildElements { get; set; }
+    }
+
+    public class IntwentyUIListColumn: IntwentyModelBase
+    {
+        public IntwentyUIElementType ColumnType { get; set; }
+        public string DbColumnName { get; set; }
+    }
+
+    public class IntwentyUIListView
+    {
+        public string Id { get; set; }
+        public bool Sortable { get; set; }
+        public bool EnableDelete { get; set; }
+        public IntwentyEditMode EditMode { get; set; }
+        public string DbTableName { get; set; }
+        public List<IntwentyUIListColumn> Columns { get; set; }
+    }
+
+    public class IntwentyUISection : IntwentyModelBase
+    {
+        public string Id { get; set; }
+        public bool ExcludeOnRender { get; set; }
+        public bool Collapsible { get; set; }
+        public List<IntwentyUIPanel> Panels { get; set; }
+        public IntwentyUIListView ListView { get; set; }
+    }
+
+    public class IntwentyUIElement: IntwentyModelBase
+    {
+        public IntwentyUIElementType ElementType { get; set; }
         public string DbTableName { get; set; }
         public string DbColumnName { get; set; }
         public string DbColumnName2 { get; set; }
         public bool IsMandatory { get; set; }
-        public int ColumnOrder { get; set; }
-        public int RowOrder { get; set; }
         public string Domain { get; set; }
         public string Properties { get; set; }
         public string RawHTML { get; set; }
-        public List<IntwentyUIElement> ChildElements { get; set; }
     }
 
     public class IntwentyEndpoint

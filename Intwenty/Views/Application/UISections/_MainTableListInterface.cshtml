@@ -1,158 +1,93 @@
-﻿@model UserInterfaceModelItem
+﻿@model Intwenty.Model.IntwentyUIListView
 
 @{
 
-    var func_edit_path = "";
-    var func_edit_path_requestinfo = "";
+    // var func_edit_path = "";
+    // var func_edit_path_requestinfo = "";
 
-    if (Model.HasEditFunction)
-    {
-        if (!Model.EditFunction.IsModalAction)
-        {
-            func_edit_path = Model.EditFunction.ActionPath;
-            if (func_edit_path.Contains("{requestinfo}"))
-            {
-                func_edit_path = func_edit_path.Replace("/{requestinfo}", "");
-                func_edit_path_requestinfo = Model.EditFunction.BuildRuntimeRequestInfo(Model.RuntimeRequestInfo.RequestInfo);
-            }
-            if (func_edit_path.Contains("{id}"))
-            {
-                func_edit_path = func_edit_path.Replace("/{id}", "");
-            }
-            else
-            {
-                //TODO: 
-                //Call edit view with b64 encoded request info
-                //Need (per tableline): 1. js decode requestinfo. 2. insert ID= js.id 3. reencode requestinfo, assign it to url
-                //
+    // if (Model.HasEditFunction)
+    // {
+    //     if (!Model.EditFunction.IsModalAction)
+    //     {
+    //         func_edit_path = Model.EditFunction.ActionPath;
+    //         if (func_edit_path.Contains("{requestinfo}"))
+    //         {
+    //             func_edit_path = func_edit_path.Replace("/{requestinfo}", "");
+    //             func_edit_path_requestinfo = Model.EditFunction.BuildRuntimeRequestInfo(Model.RuntimeRequestInfo.RequestInfo);
+    //         }
+    //         if (func_edit_path.Contains("{id}"))
+    //         {
+    //             func_edit_path = func_edit_path.Replace("/{id}", "");
+    //         }
+    //         else
+    //         {
+    //             TODO: 
+    //             Call edit view with b64 encoded request info
+    //             Need (per tableline): 1. js decode requestinfo. 2. insert ID= js.id 3. reencode requestinfo, assign it to url
+                
 
-            }
+    //         }
 
 
-        }
-    }
+    //     }
+    // }
 }
 
-@if (Model.HasFilterFunction)
-{
-
-    <div class="row">
-
-        <div class="col-lg-7">
-
-            <button ba-click="handleMainTableFilterSettings()">
-                <i class="fas fa-search"></i>
-                <span ba-if="root.model_settings.showFilter">Hide Filter</span>
-                <span ba-if="!root.model_settings.showFilter">Show Filter</span>
-            </button>
-
-            <br />
-            <br />
-
-            <fieldset style="padding:5px; border:1px solid black; border-radius:4px" ba-if="root.model_settings.showFilter">
-
-                <div class="row">
-                    <div class="col-lg-5"><button type="button" ba-click="addMainTableFilterValue()"><span class="fa fa-plus"></span> Add filter</button></div>
-                    <div class="col-lg-5"></div>
-                    <div class="col-lg-2"></div>
-                </div>
-
-                <div class="mt-2"></div>
-
-                <div class="row" ba-foreach="filteritem in root.model_pageInfo.filterValues">
-
-                    <div class="col-lg-5">
-                        <div class="form-group">
-                            <select ba-bind="filteritem.name" class="form-control form-control-sm" placeholder="Filter">
-                                @{
-                                    foreach (var c in Model.Table.Columns)
-                                    {
-                                        <option value="@c.DataColumnDbName">@c.LocalizedTitle</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-5">
-                        <div class="form-group">
-                            <input type="text" class="form-control form-control-sm" ba-bind="filteritem.value" onblur="runMainTableFilter()" placeholder="Value to filter on" />
-                        </div>
-                    </div>
-
-                    <div class="col-lg-2">
-                        <button type="button" class="btn btn-sm btn-danger" ba-click="deleteMainTableFilterValue()"><i class="fa fa-trash"></i></button>
-                    </div>
-
-
-
-                </div>
-
-
-
-            </fieldset>
-
-        </div>
-        <div class="col-lg-5"></div>
-
-    </div>
-
-
-}
 
 
 <table class="table table-responsive-sm">
     <thead>
         <tr>
-            @if (Model.HasDeleteFunction)
+            @if (Model.EnableDelete)
             {
                 <th style="width:5%"></th>
             }
-            @if (Model.HasEditFunction)
+            @if (Model.EditMode != IntwentyEditMode.None)
             {
                 <th style="width:5%"></th>
             }
 
-           @foreach (var c in Model.Table.Columns)
+           @foreach (var c in Model.Columns)
            {
-                <th ba-click="sortBycolumn('@c.DataColumnDbName',null)" style="cursor:pointer">@c.LocalizedTitle <span class="fa fa-sort-alpha-down-alt"></span></th>
+                <th ba-click="sortBycolumn('@c.DbColumnName',null)" style="cursor:pointer">@c.LocalizedTitle <span class="fa fa-sort-alpha-down-alt"></span></th>
            }
         </tr>
     </thead>
 
     <tr ba-foreach="item in sortedAppTable">
 
-        @if (Model.HasDeleteFunction)
+        @if (Model.EnableDelete)
         {
             <td style="vertical-align:middle"><button class="btn btn-sm btn-danger" ba-click="deleteApplication()"><span class="fas fa-trash" title="Remove"></span></button></td>
         }
-        @if (Model.HasEditFunction)
+        @if (Model.EditMode != IntwentyEditMode.None)
         {
-            @if (Model.EditFunction.IsModalAction)
-            {
-                <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary" ba-click="openApplicationModal('@Model.EditFunction.ActionMetaCode')"><span class="fas fa-edit" title="Edit"></span></button></td>
-            }
-            else
-            {
-                <td style="vertical-align:middle"><button ba-click="goToLink('@func_edit_path','@func_edit_path_requestinfo')" class="btn btn-sm btn-secondary"><span class="fas fa-edit" title="Edit"></span></button></td>
+            <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary"><span class="fas fa-edit" title="Edit"></span></button></td>
+            @* @if (Model.EditFunction.IsModalAction) *@
+            @* { *@
+            @*     <td style="vertical-align:middle"><button class="btn btn-sm btn-secondary" ba-click="openApplicationModal('@Model.EditFunction.ActionMetaCode')"><span class="fas fa-edit" title="Edit"></span></button></td> *@
+            @* } *@
+            @* else *@
+            @* { *@
+            @*     <td style="vertical-align:middle"><button ba-click="goToLink('@func_edit_path','@func_edit_path_requestinfo')" class="btn btn-sm btn-secondary"><span class="fas fa-edit" title="Edit"></span></button></td> *@
 
-            }
+            @* } *@
         }
 
-        @foreach (var c in Model.UIStructure.Where(p => !p.IsRoot && p.IsMetaTypeTableTextColumn))
+        @foreach (var c in Model.Columns)
         {
-            <td>{{item.@c.DataColumnDbName}}</td>
+            <td>{{item.@c.DbColumnName}}</td>
         }
 
     </tr>
 </table>
 
-@if (Model.HasPagingFunction)
-{
-    <nav>
-        <ul class="pagination">
-            <li class="page-item" ba-class-if="isMainTableFirstPage?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li>
-            <li class="page-item" ba-class-if="isMainTableLastPage?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li>
-        </ul>
-    </nav>
-}
+@* @if (Model.HasPagingFunction) *@
+@* { *@
+@*     <nav> *@
+@*         <ul class="pagination"> *@
+@*             <li class="page-item" ba-class-if="isMainTableFirstPage?disabled"><a class="page-link" href="#" ba-click="prevPage()">Previous {{root.model_pageInfo.pageSize}}</a></li> *@
+@*             <li class="page-item" ba-class-if="isMainTableLastPage?disabled"><a class="page-link" href="#" ba-click="nextPage()">Next {{root.model_pageInfo.pageSize}}</a></li> *@
+@*         </ul> *@
+@*     </nav> *@
+@* } *@
