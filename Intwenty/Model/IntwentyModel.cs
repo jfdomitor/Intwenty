@@ -128,6 +128,42 @@ namespace Intwenty.Model
         public List<IntwentyLocalizationItem> Localizations { get; set; }
         public List<IntwentyEndpoint> Endpoints { get; set; }
         public List<IntwentyValueDomainItem> ValueDomains { get; set; }
+
+        public static void EnsureModel(IntwentyModel model)
+        {
+            foreach (var sys in model.Systems) 
+            {
+                foreach (var app in sys.Applications)
+                {
+                    app.SystemId = sys.Id;
+                    foreach (var view in app.Views)
+                    {
+                        view.SystemId = sys.Id;
+                        view.ApplicationId = app.Id;
+                        if (view.HeaderPanel == null)
+                            view.HeaderPanel = new IntwentyUIHeader();
+                        if (string.IsNullOrEmpty(view.DbTableName))
+                            view.DbTableName = app.DbTableName;
+                        if (view.VerticalSections == null)
+                            view.VerticalSections = new List<IntwentyUISection>();
+                        foreach (var sect in view.VerticalSections)
+                        {
+                            if (sect.Panels == null)
+                                sect.Panels = new List<IntwentyUIPanel>();
+                            foreach (var panel in sect.Panels)
+                            {
+                                if (panel.ChildElements == null)
+                                    panel.ChildElements = new List<IntwentyUIElement>();
+                            }
+
+                            if (sect.ListView == null)
+                                sect.ListView = new IntwentyUIListView();
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
 
@@ -377,13 +413,5 @@ namespace Intwenty.Model
         public string Display { get; set; }
 
     }
-
-
-
-
-
-
-
-
 
 }

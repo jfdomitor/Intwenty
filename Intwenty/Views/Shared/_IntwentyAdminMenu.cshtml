@@ -5,7 +5,7 @@
 
         @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
         {
-            <a class="dropdown-item" asp-controller="Model" asp-action="ApplicationList"><span class="fa fa-cogs"></span> Manage applications</a>
+            <a class="dropdown-item" asp-controller="Model" asp-action="ApplicationList"><span class="fa fa-cogs"></span> View applications</a>
             <a class="dropdown-item" asp-controller="Model" asp-action="ToolConfigureDatabase"><span class="fa fa-cogs"></span> Configure database</a>
             <a class="dropdown-item" asp-controller="Model" asp-action="EditValueDomains"><span class="fa fa-database"></span> Value domains</a>
 
@@ -17,21 +17,6 @@
             <a class="dropdown-item" asp-controller="SystemTest" asp-action="RunTests"><span class="fa fa-cogs"></span> Run System Tests</a>
             <a class="dropdown-item" asp-controller="Model" asp-action="ToolCacheMonitor"><span class="fa fa-cogs"></span> Cache Monitor</a>
             <a class="dropdown-item" asp-controller="Model" asp-action="EventLog" asp-route-logname="Intwenty"><span class="fa fa-cogs"></span> Logviewer</a>
-
-
-
-            @if (User.IsInRole("SUPERADMIN"))
-            {
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportJsonModel"><span class="fa fa-cogs"></span> Export Model (json)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportCSharpModel"><span class="fa fa-cogs"></span> Export Model (C#)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportSqlModel"><span class="fa fa-cogs"></span> Export Model (SQL)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportXmlModel"><span class="fa fa-cogs"></span> Export Model (Xml)</a>
-                <a class="dropdown-item" asp-controller="Model" asp-action="ImportModel"><span class="fa fa-cogs"></span> Import Model</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportData"><span class="fa fa-cogs"></span> Export Data</a>
-                <a class="dropdown-item" asp-controller="Model" asp-action="ImportData"><span class="fa fa-cogs"></span> Import Data</a>
-            }
-
 
 
             <div class="dropdown-divider"></div>

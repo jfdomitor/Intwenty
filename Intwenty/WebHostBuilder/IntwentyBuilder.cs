@@ -35,6 +35,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Intwenty.WebHostBuilder
 {
@@ -43,6 +44,12 @@ namespace Intwenty.WebHostBuilder
 
     public static class IntwentyBuilder
     {
+
+        public static IConfigurationBuilder AddIntwentyModel(this IConfigurationBuilder builder)
+        {
+            return builder.AddJsonFile("intwenty.json", optional: false, reloadOnChange: true);
+        }
+     
         public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
                          where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService
         {
@@ -59,12 +66,7 @@ namespace Intwenty.WebHostBuilder
                            where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
         {
 
-        
-
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-            var model = configuration.Get<IntwentyModel>();
-
-
 
             if (settings.AllowSignalR)
             {

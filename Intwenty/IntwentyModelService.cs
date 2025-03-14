@@ -56,6 +56,7 @@ namespace Intwenty
         {
           
             Model = model.Value;
+            IntwentyModel.EnsureModel(Model);
             DbLogger = dblogger;
             OrganizationManager = orgmanager;
             UserManager = usermanager;
