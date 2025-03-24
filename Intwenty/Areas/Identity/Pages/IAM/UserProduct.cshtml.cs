@@ -17,8 +17,6 @@ namespace Intwenty.Areas.Identity.Pages
     public class UserProductModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
-
         private IntwentyUserManager UserManager { get; }
 
         private IIntwentyProductManager ProductManager { get; }
@@ -28,9 +26,8 @@ namespace Intwenty.Areas.Identity.Pages
         public string ProductId { get; set; }
 
 
-        public UserProductModel(IIntwentyDataService ms, IntwentyUserManager usermanager, IIntwentyProductManager prodmanager)
+        public UserProductModel(IntwentyUserManager usermanager, IIntwentyProductManager prodmanager)
         {
-            DataRepository = ms;
             UserManager = usermanager;
             ProductManager = prodmanager;
         }

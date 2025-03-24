@@ -17,13 +17,12 @@ namespace Intwenty.Areas.Identity.Pages
     public class AjazRazorPageEditTemplateModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
+
 
         public string Id { get; set; }
 
-        public AjazRazorPageEditTemplateModel(IIntwentyDataService ms)
+        public AjazRazorPageEditTemplateModel()
         {
-            DataRepository = ms;
         }
 
         public void OnGet(string id)

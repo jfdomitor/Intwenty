@@ -17,14 +17,11 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     public class OrganizationListModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
-        private IIntwentyModelService ModelRepository { get; }
+
         private IIntwentyOrganizationManager OrganizationManager { get; }
 
-        public OrganizationListModel(IIntwentyDataService ms, IIntwentyModelService sr, IIntwentyOrganizationManager orgmanager)
+        public OrganizationListModel(IIntwentyOrganizationManager orgmanager)
         {
-            DataRepository = ms;
-            ModelRepository = sr;
             OrganizationManager = orgmanager;
         }
 

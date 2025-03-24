@@ -51,20 +51,20 @@ namespace Intwenty.WebHostBuilder
 
         }
      
-        public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
-                         where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService
+        public static void AddIntwenty<TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
+                         where TIntwentyEventService : class, IIntwentyEventService
         {
-            services.AddIntwenty<TIntwentyDataService, TIntwentyEventService, IntwentySeeder>(configuration);
+            services.AddIntwenty<TIntwentyEventService, IntwentySeeder>(configuration);
         }
 
-        public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService, TInwentySeeder>(this IServiceCollection services, IConfiguration configuration)
-                         where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder
+        public static void AddIntwenty<TIntwentyEventService, TInwentySeeder>(this IServiceCollection services, IConfiguration configuration)
+                         where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder
         {
-            services.AddIntwenty<TIntwentyDataService, TIntwentyEventService, TInwentySeeder, IntwentyModelService>(configuration);
+            services.AddIntwenty<TIntwentyEventService, TInwentySeeder, IntwentyModelService>(configuration);
         }
 
-       public static void AddIntwenty<TIntwentyDataService,TIntwentyEventService,TInwentySeeder,TIntwentyModelService>(this IServiceCollection services, IConfiguration configuration) 
-                           where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
+       public static void AddIntwenty<TIntwentyEventService,TInwentySeeder,TIntwentyModelService>(this IServiceCollection services, IConfiguration configuration) 
+                           where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
         {
 
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
@@ -108,7 +108,6 @@ namespace Intwenty.WebHostBuilder
 
             //Required for Intwenty: Services
             services.TryAddTransient<IIntwentyDbLoggerService, DbLoggerService>();
-            services.TryAddTransient<IIntwentyDataService, TIntwentyDataService>();
             services.TryAddTransient<IIntwentyModelService, TIntwentyModelService>();
             services.TryAddTransient<IIntwentyEventService, TIntwentyEventService>();
             services.TryAddTransient<IIntwentyProductManager, IntwentyProductManager>();
@@ -374,39 +373,7 @@ namespace Intwenty.WebHostBuilder
                 
             }).AddViewLocalization();
 
-            if (settings.APIEnable)
-            {
-                services.AddSwaggerGen(options =>
-                {
-         
-                    options.DocumentFilter<APIDocumentFilter>();
-                    options.AddSecurityDefinition("API-Key", new OpenApiSecurityScheme
-                    {
-                        Description = "API-Key",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.ApiKey,
-                        Scheme = "API-Key"
-
-                    });
-
-                    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "API-Key"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
-
-                });
-            }
+           
 
 
         }
@@ -457,28 +424,12 @@ namespace Intwenty.WebHostBuilder
                     var serviceProvider = scope.ServiceProvider;
                     var modelservice = serviceProvider.GetRequiredService<IIntwentyModelService>();
 
-                    //REGISTER ENDPOINTS
-                    if (settings.APIEnable)
-                    {
-                        var epmodels = modelservice.GetEndpointModels();
-
-                        foreach (var ep in epmodels)
-                        {
-                            if (ep.EndpointType == IntwentyEndpointType.Custom)
-                                continue;
-                         
-                            endpoints.MapControllerRoute(ep.Id, ep.RequestPath + "{action=" + ep.Method + "}/{id?}", defaults: new { controller = "DynamicEndpoint" });
-                        }
-                    }
-
+                 
                     //INTWENTY EXPLICIT APP ROUTING
                     if (settings.StartUpRoutingMode == RoutingModeOptions.Explicit)
                     {                     
-                        var appmodels = modelservice.GetApplicationModels();
-                        foreach (var a in appmodels)
-                        {
-
-                            foreach (var view in a.Views)
+                       
+                            foreach (var view in modelservice.Model.Systems.SelectMany(p=>p.Applications).SelectMany(v=>v.Views).ToList())
                             {
                                 if (string.IsNullOrEmpty(view.RequestPath))
                                     continue;
@@ -493,7 +444,7 @@ namespace Intwenty.WebHostBuilder
                                 if (lbc == lbr)
                                 {
                                     //View Paths in the model will never be mapped, so default values will be used
-                                    endpoints.MapControllerRoute("app_route_" + a.Id + "_" + view.Id, path, defaults: new { controller = "Application", action = "View" });
+                                    endpoints.MapControllerRoute("app_route_" + view.ApplicationId + "_" + view.Id, path, defaults: new { controller = "Application", action = "View" });
                                 }
                                 else
                                 {
@@ -501,7 +452,7 @@ namespace Intwenty.WebHostBuilder
                                 }
                                 
                             }
-                        }
+                        
                     }
 
                    

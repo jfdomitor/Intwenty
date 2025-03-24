@@ -1,8 +1,0 @@
-﻿@model Intwenty.Model.IntwentyUIListView
-
-<ul class="nav">
-    <li class="nav-item">
-        <button class="nav-link btn btn-sm btn-outline-secondary" ba:click="openSubTableModal('@Model.DbTableName')"><span class="fa fa-plus"></span>@Localizer["Create"]</button>
-    </li>
-    @await Html.PartialAsync("UISections/_ApplicationSubTableHeaderButtons", Model)
-</ul>

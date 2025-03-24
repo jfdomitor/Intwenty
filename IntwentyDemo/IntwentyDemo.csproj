@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\" />
     <Folder Include="wwwroot\sqlite\" />
     <Folder Include="wwwroot\USERDOC\" />
   </ItemGroup>

@@ -268,12 +268,7 @@ namespace Intwenty.Seed
         public virtual void ConfigureDataBase()
         {
 
-            if (!Settings.StartUpConfigureDatabase)
-                return;
-
-            var t = ModelService.ConfigureDatabase();
-
-            t.GetAwaiter().GetResult();
+           
         }
 
       

@@ -67,9 +67,7 @@ namespace Intwenty.Areas.Identity.Data
             }
 
             var result = await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
-            if (result.Succeeded)
-                ModelRepository.CreateTenantIsolatedTables(user);
-
+            
             return result;
         }
 
@@ -83,9 +81,7 @@ namespace Intwenty.Areas.Identity.Data
 
             
             var result = await base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
-            if (result.Succeeded)
-                ModelRepository.CreateTenantIsolatedTables(user);
-
+          
             return result;
         }
 

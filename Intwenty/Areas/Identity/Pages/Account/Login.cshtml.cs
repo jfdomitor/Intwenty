@@ -25,7 +25,6 @@ namespace Intwenty.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly IIntwentyDbLoggerService _dbloggerService;
-        private readonly IIntwentyDataService _dataService;
         private readonly IntwentySignInManager _signInManager;
         private readonly IntwentyUserManager _userManager;
         private readonly IOptions<IntwentySettings> _settings;
@@ -33,14 +32,12 @@ namespace Intwenty.Areas.Identity.Pages.Account
         private readonly IBankIDClientService _bankidClient;
 
         public LoginModel(IntwentySignInManager signinmanager, 
-                          IIntwentyDataService dataservice, 
                           IOptions<IntwentySettings> settings, 
                           IntwentyUserManager usermanager, 
                           IIntwentyDbLoggerService dblogger,
                           IFrejaClientService frejaclient,
                           IBankIDClientService bankIdclient)
         {
-            _dataService = dataservice;
             _signInManager = signinmanager;
             _settings = settings;
             _userManager = usermanager;

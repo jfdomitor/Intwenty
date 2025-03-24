@@ -19,18 +19,14 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     public class OrganizationModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
-        private IIntwentyModelService ModelRepository { get; }
         private IntwentyUserManager UserManager { get; }
         private IIntwentyOrganizationManager OrganizationManager  { get; }
         private IIntwentyProductManager ProductManager { get; }
 
         public int Id { get; set; }
 
-        public OrganizationModel(IIntwentyDataService ms, IIntwentyModelService sr, IIntwentyOrganizationManager orgmanager, IntwentyUserManager usermanager, IIntwentyProductManager productmanager)
+        public OrganizationModel(IIntwentyOrganizationManager orgmanager, IntwentyUserManager usermanager, IIntwentyProductManager productmanager)
         {
-            DataRepository = ms;
-            ModelRepository = sr;
             OrganizationManager = orgmanager;
             UserManager = usermanager;
             ProductManager = productmanager;
@@ -84,30 +80,28 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             return new JsonResult(t);
         }
 
-        public async Task<JsonResult> OnPostFindUsers([FromBody] ClientSearchBoxQuery model)
+        public async Task<JsonResult> OnPostFindUsers([FromBody] string model)
         {
-            var retlist = new List<IntwentyValueDomainItem>();
+            var retlist = new List<dynamic>();
 
             if (model==null)
                 return new JsonResult(retlist);
 
-            model.User = new UserInfo(User);
-          
             var domaindata = await UserManager.GetUsersByAdminAccessAsync(User);
             if (domaindata != null)
             {
-                if (model.Query.ToUpper() == "ALL")
+                if (model == "ALL")
                 {
-                    retlist = domaindata.Select(p => new IntwentyValueDomainItem() { Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).ToList();
+                    retlist = domaindata.Select(p => new { Code = p.Id, Value = p.FullName, Display = p.FullName }).ToList<dynamic>();
                 }
-                else if (model.Query.ToUpper() == "PRELOAD")
+                else if (model == "PRELOAD")
                 {
-                    var result = new List<IntwentyValueDomainItem>();
+                    var result = new List<dynamic>();
                     for (int i = 0; i < domaindata.Count; i++)
                     {
                         var p = domaindata[i];
                         if (i < 50)
-                            result.Add(new IntwentyValueDomainItem() {  Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName });
+                            result.Add(new {  Code = p.Id, Value = p.FullName, Display = p.FullName });
                         else
                             break;
                     }
@@ -115,7 +109,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
                 }
                 else
                 {
-                    retlist = domaindata.Select(p => new IntwentyValueDomainItem() { Code = p.Id, DomainName = model.DomainName, Value = p.FullName, Display = p.FullName }).Where(p => p.Display.ToLower().Contains(model.Query.ToLower())).ToList();
+                    retlist = domaindata.Select(p => new { Code = p.Id, Value = p.FullName, Display = p.FullName }).Where(p => p.Display.ToLower().Contains(model)).ToList<dynamic>();
                 }
             }
             return new JsonResult(retlist);
@@ -145,7 +139,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             {
                 var myorgs = await OrganizationManager.GetByUserAsync(User.Identity.Name);
                 if (!myorgs.Exists(p=> p.Id == model.OrganizationId))
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "No access to add member to organization with id " + model.OrganizationId)) { StatusCode = 500 };
+                    return new JsonResult("No access to add member to organization with id " + model.OrganizationId) { StatusCode = 500 };
 
             }
 
@@ -156,14 +150,8 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             var result = await OrganizationManager.AddMemberAsync(new IntwentyOrganizationMember() { OrganizationId = model.OrganizationId,  UserId = model.UserId, UserName = user.UserName });
             if (!result.Succeeded) 
             {
-                var error = new OperationResult();
-                if (result.Errors != null && result.Errors.Count() > 0)
-                    error.AddMessage(MessageCode.USERERROR, result.Errors.FirstOrDefault().Code);
-                else
-                    error.AddMessage(MessageCode.USERERROR, "UNEXPECTED_ERROR");
-
-
-                return new JsonResult(error) { StatusCode = 500 };
+             
+                return new JsonResult(result.Errors.FirstOrDefault().Description) { StatusCode = 500 };
 
             }
             return await OnGetLoad(model.OrganizationId);
@@ -176,7 +164,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             {
                 var myorgs = await OrganizationManager.GetByUserAsync(User.Identity.Name);
                 if (!myorgs.Exists(p => p.Id == model.OrganizationId))
-                    return new JsonResult(new OperationResult(false, MessageCode.USERERROR, "No access to remove member from organization with id " + model.OrganizationId)) { StatusCode = 500 };
+                    return new JsonResult("No access to remove member from organization with id " + model.OrganizationId) { StatusCode = 500 };
 
             }
 
@@ -194,15 +182,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             var result = await OrganizationManager.AddProductAsync(model);
             if (!result.Succeeded)
             {
-                var error = new OperationResult();
-                if (result.Errors != null && result.Errors.Count() > 0)
-                    error.AddMessage(MessageCode.USERERROR,result.Errors.FirstOrDefault().Code);
-                else
-                    error.AddMessage(MessageCode.USERERROR, "UNEXPECTED_ERROR");
-
-
-                return new JsonResult(error) { StatusCode = 500 };
-
+                return new JsonResult(result.Errors.FirstOrDefault().Description) { StatusCode = 500 };
             }
 
             return await OnGetLoad(model.OrganizationId);

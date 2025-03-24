@@ -12,13 +12,12 @@ namespace Intwenty.Services
         protected readonly IIntwentyDbLoggerService DbLoggerService;
         protected readonly IIntwentySmsService SmsService;
         protected readonly IIntwentyEmailService EmailService;
-        protected readonly IIntwentyDataService DataService;
 
-        public EventService(IIntwentyEmailService emailservice, IIntwentySmsService smsservice, IIntwentyDataService dataservice, IIntwentyDbLoggerService dblogger)
+
+        public EventService(IIntwentyEmailService emailservice, IIntwentySmsService smsservice, IIntwentyDbLoggerService dblogger)
         {
             EmailService = emailservice;
             SmsService = smsservice;
-            DataService = dataservice;
             DbLoggerService = dblogger;
         }
 

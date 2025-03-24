@@ -238,9 +238,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                var r = new OperationResult();
-                r.SetError(ex.Message, "There was an error when adding a group.");
-                var jres = new JsonResult(r);
+                var jres = new JsonResult("There was an error when adding a group.");
                 jres.StatusCode = 500;
                 return jres;
             }
@@ -319,9 +317,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                var r = new OperationResult();
-                r.SetError("There was an error when inviting a user a group.", ex.Message);
-                var jres = new JsonResult(r);
+                var jres = new JsonResult("There was an error when inviting a user a group.");
                 jres.StatusCode = 500;
                 return jres;
             }
@@ -354,9 +350,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                var r = new OperationResult();
-                r.SetError("There was an error when creating a group.", ex.Message);
-                var jres = new JsonResult(r);
+                var jres = new JsonResult("There was an error when creating a group.");
                 jres.StatusCode = 500;
                 return jres;
             }
@@ -395,9 +389,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                var r = new OperationResult();
-                r.SetError("There was an error when joining a group.", ex.Message);
-                var jres = new JsonResult(r);
+                var jres = new JsonResult("There was an error when joining a group.");
                 jres.StatusCode = 500;
                 return jres;
             }
@@ -416,9 +408,7 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                var r = new OperationResult();
-                r.SetError("There was an error when leaving a group.", ex.Message);
-                var jres = new JsonResult(r);
+                var jres = new JsonResult("There was an error when leaving a group.");
                 jres.StatusCode = 500;
                 return jres;
             }

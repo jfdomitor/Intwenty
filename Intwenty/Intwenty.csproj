@@ -71,6 +71,11 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Model\UIRendering\" />
+    <Folder Include="Views\Model\" />
+  </ItemGroup>
   
   
 
