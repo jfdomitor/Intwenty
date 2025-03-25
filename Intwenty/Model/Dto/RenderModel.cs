@@ -15,7 +15,7 @@ namespace Intwenty.Model.Dto
 
         public RenderModel() { }
 
-        public List<IntwentyDataBaseColumn> GetRenderedColumns()
+        public List<IntwentyDataBaseColumn> GetRequestedViewColumns()
         {
             if (ApplicationModel == null || RequestedView == null)
                 return new List<IntwentyDataBaseColumn>();

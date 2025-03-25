@@ -8,120 +8,155 @@
 
     <div id="app">
 
-        <template>
-            @foreach (var view1 in Model.ApplicationModel.Views)
-            {
-                if (view1.Id!= Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState)
-                {
-                    continue;
-                }
-
-                 <view id="@view1.Id" path="@view1.RequestPath">
-                     <title>@view1.LocalizedTitle</title>
-                     <description>@view1.LocalizedDescription</description>
-                     <data isNewEntityView="@view1.IsNewEntityView" isListView="@view1.IsListView" />
-                </view>
-            }
-            <design>
-                <div class="card">
-                    <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
-                    <div class="card-body">
-                        <p>{{root.viewInfo.description}}</p>
-                        <ul class="nav" ba-if="root.viewInfo.islistview">
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm" tabindex="-1" role="button" href="/Customers/Create" style="margin:5px">Create New</a>
-                            </li>
-                        </ul>
-                        <ul class="nav" ba-if="!root.viewInfo.islistview">
-                            <li class="nav-item">
-                                <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </design>
-        
-        </template>
-
-
-        <br />
-        <br />
-
-        <!-- Define the ui for the list view -->
-        <template>
-
-            @foreach (var view2 in Model.ApplicationModel.Views)
-            {
+      
+        @foreach(var view in Model.ApplicationModel.Views)
+        {
             
-                if (!view2.IsListView){
-                    continue;
-                }
-
-                listPath=view2.RequestPath;
-
-                if (view2.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
-                    continue;
-                }
-
-                <view id="@view2.Id" path="@view2.RequestPath" />
+            if (view.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
+                continue;
             }
-            <design>
-                <div>
-                    <table class="table table-responsive-sm">
-                        <thead>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                @foreach(var col in Model.GetRenderedColumns()){
-                                     <td>@col.DbColumnName</td>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ba-foreach="row in root.model.entityList">
-                                <td><button class="btn btn-danger btn-sm" ba-click="deleteApplication()" style="margin:5px">Delete</button></td>
-                                <td><button class="btn btn-primary btn-sm" ba-click="editApplication('/Customers/Edit/:ID')" style="margin:5px">Edit</button></td>
-                                @foreach (var col in Model.GetRenderedColumns()){
-                                   <td>{{row.@col.DbColumnName}}</td>
-                                }
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </design>
-         
-        </template>
-
-        <!-- Define the ui for the new / edit views -->
-        <template>
-            @foreach (var view3 in Model.ApplicationModel.Views)
+            if (view.IsListView)
             {
-                if (view3.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState)
-                {
-                    continue;
-                }
-
-                if (!view3.IsNewEntityView && !view3.IsPersistedEntityView)
-                    continue;
-
-                <view id="@view3.Id" path="@view3.RequestPath" />
-            }
-            <design>
-                <div>
-                    <div class="col-md-12">
-                        @foreach (var col in Model.GetRenderedColumns())
-                        {
-                            <div class="mb-3">
-                                <label for="tbName" class="form-label">@col.DbColumnName</label>
-                                <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                listPath = view.RequestPath;    
+                <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                        <data isListView="true" />
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <a class="btn btn-primary btn-sm" tabindex="-1" role="button" href="/Customers/Create" style="margin:5px">Create New</a>
+                                    </li>
+                                </ul>
                             </div>
-                         }
-                    <div>
-                </div>
-            </design>
-        
-        </template>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                    <design>
+                        <div>
+                            <table class="table table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        @foreach (var col in view.GetRenderedColumns())
+                                        {
+                                            <td>@col.DbColumnName</td>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ba-foreach="row in root.model.entityList">
+                                        <td><button class="btn btn-danger btn-sm" ba-click="deleteApplication()" style="margin:5px">Delete</button></td>
+                                        <td><button class="btn btn-primary btn-sm" ba-click="editApplication('/Customers/Edit/:ID')" style="margin:5px">Edit</button></td>
+                                        @foreach (var col in view.GetRenderedColumns())
+                                        {
+                                            <td>{{row.@col.DbColumnName}}</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
+            if (view.IsPersistedEntityView)
+            {
+                 <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                     <design>
+                        <div>
+                            <div class="col-md-12">
+                                @foreach (var col in view.GetRenderedColumns())
+                                {
+                                    <div class="mb-3">
+                                        <label for="tbName" class="form-label">@col.DbColumnName</label>
+                                        <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                                    </div>
+                                 }
+                            <div>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
+            if (view.IsNewEntityView)
+            {
+                 <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                     <data isNewEntityView="true" />
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                    <design>
+                        <div>
+                            <div class="col-md-12">
+                                @foreach (var col in view.GetRenderedColumns())
+                                {
+                                    <div class="mb-3">
+                                        <label for="tbName" class="form-label">@col.DbColumnName</label>
+                                        <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                                    </div>
+                                }
+                            <div>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
 
+        }
+       
     </div>
 
  @section Scripts

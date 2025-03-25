@@ -1,6 +1,7 @@
 ﻿using Intwenty.DataClient;
 using Intwenty.DataClient.Model;
 using Intwenty.Interface;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,6 +119,15 @@ namespace Intwenty.Model
                         view.ApplicationId = app.Id;
                         if (!view.RequestPath.StartsWith("/"))
                             view.RequestPath = "/" + view.RequestPath;
+
+                        if (view.RenderedColumns.Count > 0)
+                        {
+                            var cols = app.DataColumns.Where(p => view.RenderedColumns.Contains(p.Id)).ToList();
+                            if (cols == null)
+                                cols = new List<IntwentyDataBaseColumn>();
+
+                            view.SetRenderedColumns(cols);
+                        }
 
                     }
 
@@ -252,6 +262,7 @@ namespace Intwenty.Model
         public bool IsListView { get; set; }
         public bool IsPersistedEntityView { get; set; }
         public List<string> RenderedColumns { get; set; }
+        private List<IntwentyDataBaseColumn> columns { get; set; }
 
 
         public bool HasDefaultFilePath
@@ -287,6 +298,19 @@ namespace Intwenty.Model
                 return true;
 
             return false;
+        }
+
+        public List<IntwentyDataBaseColumn> GetRenderedColumns()
+        {
+            if (columns == null)
+                return new List<IntwentyDataBaseColumn>();
+
+            return columns;
+        }
+
+        public void SetRenderedColumns(List<IntwentyDataBaseColumn> visiblecolumns)
+        {
+            columns = visiblecolumns;
         }
 
     }
