@@ -10,6 +10,8 @@ using Intwenty.Areas.Identity.Data;
 using Intwenty.Model;
 using Intwenty.Helpers;
 using System.Text.Json;
+using Intwenty.DataClient;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Intwenty.Controllers
 {
@@ -53,23 +55,45 @@ namespace Intwenty.Controllers
         [HttpPost("/Applications/Api/GetEntities")]
         public virtual async Task<JsonResult> GetEntities([FromBody] JsonElement payload)
         {
-            foreach (JsonProperty property in payload.EnumerateObject())
-            {
-                if (property.Name == "model" && property.Value.ValueKind == JsonValueKind.Object)
-                {
-                    JsonElement model = property.Value;
-                    var tablename = model.GetProperty("dbTableName").GetString();
-                    foreach (JsonProperty modelprop in model.EnumerateObject())
-                    {
-                        var x = modelprop.Value;
+            var model = payload.GetProperty("model");
+            var sql = payload.GetProperty("sqlStatement").GetString();
+            var tablename = model.GetProperty("dbTableName").GetString();
 
-                    }
+            if (ModelService.CreateDbTable(tablename)){
+                if (string.IsNullOrEmpty(sql))
+                {
+                    sql = "SELECT * FROM " + tablename;
                 }
-                
+                var dbclient = ModelService.Client;
+                dbclient.Open();
+                var res = dbclient.GetJsonArray(sql);
+                dbclient.Close();
+                return new JsonResult(new { entities = res.JsonObjects });
+              
             }
 
-            return new JsonResult(new { });
 
+            return new JsonResult(new { entities = new object[] { } });
+
+        }
+
+        [HttpPost("/Applications/Api/CreateEntity")]
+        public virtual async Task<JsonResult> CreateEntity([FromBody] JsonElement payload)
+        {
+            var model = payload.GetProperty("model");
+            var data = payload.GetProperty("data");
+            var sql = payload.GetProperty("sqlStatement").GetString();
+            var tablename = model.GetProperty("dbTableName").GetString();
+          
+
+            if (ModelService.CreateDbTable(tablename))
+            {
+                var result = ModelService.InsertDbTable(tablename, data);
+                return new JsonResult(new { entities = new object[] { } });
+
+            }
+
+            return new JsonResult(new { entities = new object[] { } });
         }
 
 

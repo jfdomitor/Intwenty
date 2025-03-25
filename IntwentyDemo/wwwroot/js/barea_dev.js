@@ -2650,7 +2650,7 @@ export class BareaDataModel {
 
             async createEntity(obj) {
                 const db = this.#initializeDb();
-                const payload = { model: DataModel, data: obj, entityId: "", sqlStatement: "" };
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: "", sqlStatement: "" };
 
                 try {
                     const response = await fetch(db.newEntityPath, {
@@ -2675,7 +2675,7 @@ export class BareaDataModel {
 
             async updateEntity(obj) {
                 const db = this.#initializeDb();
-                const payload = { model: DataModel, data: obj, entityId: obj.id, sqlStatement: "" };
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: obj.id, sqlStatement: "" };
                 try {
                     const response = await fetch(db.editEntityPath, {
                         method: 'POST',
@@ -2699,7 +2699,8 @@ export class BareaDataModel {
 
             async getEntities(sql = "") {
                 const db = this.#initializeDb();
-                const payload = { model: DataModel, entityId: 0, sqlStatement: sql };
+                const payload = {
+                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: 0, sqlStatement: sql };
                 try {
                     const response = await fetch(db.getEntitiesPath, {
                         method: 'POST',
@@ -2722,7 +2723,8 @@ export class BareaDataModel {
 
             async getEntity(id) {
                 const db = this.#initializeDb();
-                const payload = { model: DataModel, entityId: id, sqlStatement: "" };
+                const payload = {
+                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: id, sqlStatement: "" };
                 try {
                     const response = await fetch(db.getEntityPath, {
                         method: 'POST',
@@ -2745,7 +2747,7 @@ export class BareaDataModel {
 
             async deleteEntity(id) {
                 const db = this.#initializeDb();
-                const payload = { model: DataModel, data: {}, entityId: id, sqlStatement: "" };
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: id, sqlStatement: "" };
                 try {
                     const response = await fetch(db.deleteEntityPath, {
                         method: 'POST',

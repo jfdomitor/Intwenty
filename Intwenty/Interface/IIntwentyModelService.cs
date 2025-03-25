@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Intwenty.Areas.Identity.Entity;
 using Microsoft.AspNetCore.Http;
 using static Intwenty.Model.IntwentyModel;
+using Intwenty.DataClient;
+using System.Text.Json;
 
 namespace Intwenty.Interface
 {
@@ -19,9 +21,8 @@ namespace Intwenty.Interface
     public interface IIntwentyModelService
     {
         IntwentySettings Settings { get; }
-
         IntwentyModel Model { get; }
-
+        IDataClient Client { get; }
         List<IntwentyDataClientTypeMap> DataTypes { get; }
         Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
@@ -29,7 +30,9 @@ namespace Intwenty.Interface
         IntwentyView GetLocalizedViewModelByPath(string path);
         string GetLocalizedString(string localizationkey);
         List<IntwentyValueDomainItem> GetValueDomains();
-      
+        bool CreateDbTable(string dbtablename);
+        bool UpdateDbTable(string dbtablename, int id, JsonElement data);
+        int InsertDbTable(string dbtablename, JsonElement data);
 
 
     }

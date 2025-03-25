@@ -25,10 +25,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Model\UIRendering\**" />
     <Compile Remove="Pages\**" />
+    <Compile Remove="Views\Model\**" />
+    <Content Remove="Model\UIRendering\**" />
     <Content Remove="Pages\**" />
+    <Content Remove="Views\Model\**" />
+    <EmbeddedResource Remove="Model\UIRendering\**" />
     <EmbeddedResource Remove="Pages\**" />
+    <EmbeddedResource Remove="Views\Model\**" />
+    <None Remove="Model\UIRendering\**" />
     <None Remove="Pages\**" />
+    <None Remove="Views\Model\**" />
     <None Include="Build\intwenty_loggo_small.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -55,11 +63,6 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\UIRendering\" />
-    <Folder Include="Views\Model\" />
   </ItemGroup>
   
   
