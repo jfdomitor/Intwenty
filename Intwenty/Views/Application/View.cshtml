@@ -165,7 +165,7 @@
 <script type="module">
 
 
-     import {BareaApp,BareaViewState,BareaDataModel,BareaHelper} from '/lib/barea/barea.js';
+     import {BareaApp,BareaViewState,BareaDataModel,BareaHelper} from '/js/barea_dev.js';
 
      //Just for debugging
      //BareaHelper.printDebugLogs();
@@ -199,7 +199,7 @@
             }
        }
     
-     db.useBareaLocalStorageDb();
+     db.useIntwentyAPI();
 
      const state = new BareaViewState(appElement, db, @(Model.ApplicationModel.UseBrowserState.ToString().ToLower()));
 
@@ -227,6 +227,8 @@
                  db.deleteEntity(data.id);
                  state.setStateAndNavigate(state.CurrentState.currentPath, "",true);
              }
+
+
          },
          computed:{},
          mounted: function(data) {}

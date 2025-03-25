@@ -9,6 +9,7 @@ using Intwenty.Interface;
 using Intwenty.Areas.Identity.Data;
 using Intwenty.Model;
 using Intwenty.Helpers;
+using System.Text.Json;
 
 namespace Intwenty.Controllers
 {
@@ -46,6 +47,28 @@ namespace Intwenty.Controllers
 
 
             return View("View", model);
+
+        }
+
+        [HttpPost("/Applications/Api/GetEntities")]
+        public virtual async Task<JsonResult> GetEntities([FromBody] JsonElement payload)
+        {
+            foreach (JsonProperty property in payload.EnumerateObject())
+            {
+                if (property.Name == "model" && property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    JsonElement model = property.Value;
+                    var tablename = model.GetProperty("dbTableName").GetString();
+                    foreach (JsonProperty modelprop in model.EnumerateObject())
+                    {
+                        var x = modelprop.Value;
+
+                    }
+                }
+                
+            }
+
+            return new JsonResult(new { });
 
         }
 
