@@ -10,12 +10,9 @@
 
 "use strict";
 
-const getBareaApp = function(enableInternalId){
-    return new BareaApp(enableInternalId);
-}
-
-class BareaApp 
+export class BareaApp 
 {
+    #appContent=null; 
     #appElement; 
     #bareaId=0;
     #internalSystemCounter = 0;
@@ -25,7 +22,6 @@ class BareaApp
     #computedPropertyNames = [];
     #appData;
     #methods = {};
-    #consoleLogs = [];
     #mountStarted=false;
     #mountedHandler=null;
     #computedProperties = {};
@@ -41,11 +37,12 @@ class BareaApp
 
         this.#computedPropertiesDependencyTracker = this.#getComputedPropertiesDependencyTracker();
         this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
-        this.#setConsoleLogs(); 
     }
 
     mount(element, content) 
     {
+        this.#appContent=content;
+
         if (this.#mountStarted)
             return;
 
@@ -128,7 +125,7 @@ class BareaApp
         const proxy = this.#createReactiveProxy((path, reasonobj, reasonkey, reasonvalue, reasonfuncname="") => 
         { 
             //Handles changes in the data and updates the dom
-            let log = this.#getConsoleLog(1);
+            let log = BareaHelper.getDebugLog(1);
             if (log.active)
                 console.log(log.name, path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
 
@@ -164,6 +161,51 @@ class BareaApp
         return this.#appDataProxy;
     }
 
+    /**
+     * Force a full reload of barea, except for the proxy
+     * Baraea use this when new untracked objects in the data is detected
+     */
+    refresh() 
+    {
+        if (!this.#mountStarted)
+            return;
+
+        if (!this.#appElement)
+        {
+            console.error('The app element is missing in barea.js');
+            return;
+        }
+
+        //restore templates and clear
+        this.#uiDependencyTracker.restoreUITracker();
+        this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
+        Object.keys(this.#computedProperties).forEach(key => {
+            this.#computedProperties[key].clearDependentDirectives();
+        });
+        this.#dynamicExpressionRegistry.clear();
+        if (this.#appContent.computed) 
+        {
+            this.#computedProperties={};
+            Object.keys(this.#appContent.computed).forEach(key => {
+                if (typeof this.#appContent.computed[key] === "function") {
+                    this.#computedProperties[key] = this.#getNewComputedProperty(this.#appContent.computed[key], key);
+                    this.#computedPropertyNames.push(key);
+                }
+            });
+        
+            Object.keys(this.#computedProperties).forEach(key => {
+                Object.defineProperty(this, key, {
+                    get: () => this.#computedProperties[key].value, 
+                    enumerable: true,
+                    configurable: true
+                });
+            });
+        }
+        
+        this.#trackDirectives();
+      
+    }
+
     getData()
     {
         if (!this.#mountStarted)
@@ -179,6 +221,7 @@ class BareaApp
         if (this.#isPrimitive(value))
             this.#enableHideUnloaded = value;
     }
+
    
     addHandler(functionName, handlerFunction) 
     {
@@ -458,7 +501,7 @@ class BareaApp
                         }
 
                         if (!tracking_obj.data || !tracking_obj.key){
-                            console.error(`Could not track directive ${attr.name}${attr.value} could not match data at the given path`);
+                            console.error(`Could not track directive ${attr.name} (${attr.value}) could not match data at the given path`);
                             return;
                         }
 
@@ -505,7 +548,7 @@ class BareaApp
                                             return;
                                     }
 
-                                    const log = this.#getConsoleLog(3);
+                                    let log = BareaHelper.getDebugLog(3);
                                     if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
                                         if (log.active)
                                             console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.checked);
@@ -713,8 +756,9 @@ class BareaApp
                         //SPECIAL: NO TRACKING, ONLY REGISTER HANDLER
                         if (attribute_value_type === BareaHelper.EXPR_TYPE_HANDLER)
                         {
+                     
                             el.addEventListener("click", (event) => {
-                  
+ 
                                 let eventdata = this.#appDataProxy;
                                 let bapath = el.getAttribute(BareaHelper.META_PATH);
                                 if (!bapath)
@@ -759,13 +803,9 @@ class BareaApp
                              console.error(`No path or computed function was found in the ${attr.name} expression`);
                              return;
                          }
-
-                        
-                        let templateHtml = el.innerHTML.trim()
-                            .replace(/>\s+</g, '><')  // Remove spaces between tags
-                            .replace(/(\S)\s{2,}(\S)/g, '$1 $2'); // Reduce multiple spaces to one inside text nodes
-        
-                        const tracking_obj = this.#createTemplateDirective(trackcontext,el,attr.name,attr.value,null,"", el.parentElement,templateHtml, el.localName);
+ 
+                        const tracking_obj = this.#createTemplateDirective(trackcontext,el,attr.name,attr.value,null,"", el.parentElement, el.innerHTML, el.localName);
+                        tracking_obj.elementnextsibling=el.nextSibling;
                         tracking_obj.expressiontype = attribute_value_type;
                         if (attribute_value_type!==BareaHelper.EXPR_TYPE_COMPUTED)
                         {
@@ -785,7 +825,7 @@ class BareaApp
                             this.#uiDependencyTracker.track('computed', tracking_obj);
                         }
 
-                        this.#renderTemplates(tracking_obj);
+                        this.#renderTemplates(tracking_obj,BareaHelper.ROOT_OBJECT,tracking_obj.data[tracking_obj.key]);
                           
                     }
                   
@@ -839,6 +879,27 @@ class BareaApp
                     tracking_obj.isrendered = false;
                     tracking_obj.iscomputed = false;
                     nodeexpressions.push(tracking_obj);
+
+                    if (!tracking_obj.key && tracking_obj.data){
+                        //If we're tracking an object make it aware of child objects
+                        let instance = this;
+
+                        function trackNestedObjects(obj) 
+                        {
+                            for (let key in obj) {
+                                if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
+                                    let tracking_child = instance.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,path,null,"",node, expr, node.nodeValue);
+                                    tracking_child.data =  obj[key];
+                                    tracking_child.isrendered = false;
+                                    tracking_child.iscomputed = false;
+                                    nodeexpressions.push(tracking_child);
+                                    trackNestedObjects(obj[key]); 
+                                }
+                            }
+                        }
+
+                        trackNestedObjects(tracking_obj.data);
+                    }
                       
                 }
                 else if (BareaHelper.INTERPOL_INDEX===attribute_value_type)
@@ -881,16 +942,18 @@ class BareaApp
             
        
            
-        let log = this.#getConsoleLog(4);
-        if (log.active){length
+        let log = BareaHelper.getDebugLog(4);
+        if (log.active)
+        {
             console.log(log.name);
             this.#uiDependencyTracker.getAllDependencies().forEach((value, key) => {
                 console.log(key, value);
             });
         }
 
-        log = this.#getConsoleLog(5);
-        if (log.active){length
+        log = BareaHelper.getDebugLog(5);
+        if (log.active)
+        {
             console.log(log.name);
             this.#computedPropertiesDependencyTracker.getAllDependencies().forEach((value, key) => {
                 console.log(key, value);
@@ -1341,7 +1404,7 @@ class BareaApp
    
                 let newItem = this.#getNewTemplateElement(template_directive, varname, row, counter);
                 fragment.appendChild(newItem);
-                this.#trackDirectives(newItem, {template:template_directive, rendereddata:row, renderedindex:counter, renderedvarname:varname, renderedobjid: this.#internalSystemCounter});
+                //this.#trackDirectives(newItem, {template:template_directive, rendereddata:row, renderedindex:counter, renderedvarname:varname, renderedobjid: this.#internalSystemCounter});
                 counter++;
             });
 
@@ -1515,37 +1578,6 @@ class BareaApp
     }
 
 
-    enableConsoleLog(id, active)
-    {
-        const logidx = this.#consoleLogs.findIndex(p=> p.id===id);
-        if (logidx!== -1)
-            this.#consoleLogs[logidx].active = active;
-    }
-
-    #getConsoleLog(id) 
-    {
-        const log = this.#consoleLogs.find(log => log.id === id);
-        if (!log)
-            return {id:-1, name:"", active:false};
-        return log;
-    }
-
-    printConsoleLogs()
-    {
-      console.log('barea.js available logs:');
-      this.#consoleLogs.forEach(p=> console.log(p));
-    }
-
-    #setConsoleLogs(){
-        this.#consoleLogs = [
-            {id: 1, name: "Proxy call back: ", active:false},
-            {id: 2, name: "Update dom on proxy change: ", active:false},
-            {id: 3, name: "Update proxy on user input: ", active:false},
-            {id: 4, name: "Print UI dependency tracking: ", active:false},
-            {id: 5, name: "Print computed dependency tracking: ", active:false}
-        ];
-    } 
-
     #loadedHandler =  (event) => {
        if (this.#enableHideUnloaded)
        {
@@ -1561,7 +1593,7 @@ class BareaApp
         let userinterface_tracker = this.#uiDependencyTracker;
         class BareaComputedProperty
         {
-            userInterfaces = new Set();
+            dependentDirectives = new Set();
 
             constructor(func, funcname) {
                 this.name=funcname;
@@ -1571,7 +1603,7 @@ class BareaApp
                 this.setDirty = (path) => 
                 {
                     this.dirty = true;
-                    userinterface_tracker.notifyDependentUserInterface(this.userInterfaces);
+                    userinterface_tracker.notifyDependentUserInterface(this.dependentDirectives);
                 };
             }
         
@@ -1582,7 +1614,12 @@ class BareaApp
 
             addDependentDirective(directive)
             {
-                this.userInterfaces.add(directive);
+                this.dependentDirectives.add(directive);
+            }
+
+            clearDependentDirectives()
+            {
+                this.dependentDirectives.clear();
             }
         
             get value() 
@@ -1749,7 +1786,6 @@ class BareaApp
         let instance;
         let computedProperties = this.#computedProperties;
         let barea = this;
-
         class UserInterfaceTracker
         {
             #dependencies = new Map();
@@ -1758,6 +1794,7 @@ class BareaApp
             #objectCounter=0;
             #trackingCalls=0;
             #notificationCalls=0;
+            #userTemplates=[];
 
             constructor(notifycallback) 
             {
@@ -1799,9 +1836,9 @@ class BareaApp
                 //Remove directive:s from computed functions too
                 Object.keys(computedProperties).forEach(key => {
                     //Create an array before deleting in the set
-                    for (let directive of [...computedProperties[key].userInterfaces]) {
+                    for (let directive of [...computedProperties[key].dependentDirectives]) {
                         if (directive.template && directive.template.id===templateid)
-                            computedProperties[key].userInterfaces.delete(directive);
+                            computedProperties[key].dependentDirectives.delete(directive);
                     }
                 });
 
@@ -1825,9 +1862,9 @@ class BareaApp
                 //Remove directive:s from computed functions too
                 Object.keys(computedProperties).forEach(key => {
                     //Create an array before deleting in the set
-                    for (let directive of [...computedProperties[key].userInterfaces]) {
+                    for (let directive of [...computedProperties[key].dependentDirectives]) {
                         if (directive.template && directive.template.id===templateid && directive.element && !directive.element.isConnected)
-                            computedProperties[key].userInterfaces.delete(directive);
+                            computedProperties[key].dependentDirectives.delete(directive);
                     }
                 });
 
@@ -1858,9 +1895,10 @@ class BareaApp
             {
                 this.#trackingCalls++;
 
-                if (!directive.data && !directive.isrendered && !BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename))
+                if (!directive.data && !directive.isrendered && !BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename)){
                     console.error(`Tracked UI has no data`,directive);
-
+                    return;
+                }
                 if (BareaHelper.DIR_GROUP_COMPUTED.includes(directive.directivename))
                     return;
 
@@ -1886,6 +1924,14 @@ class BareaApp
                     this.#dependencies.set(depKey, new Set());
                 }
                 this.#dependencies.get(depKey).add(directive);
+
+                //Store user templates such as ba-foreach to be able to restore them on refresh
+                if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename))
+                {
+                    if (directive.element && directive.parentelement){
+                       this.#userTemplates.push(directive);
+                    }
+                }
 
                 return true;
 
@@ -1916,9 +1962,8 @@ class BareaApp
                 }
                 else
                 {
-                    this.#dependencies.clear();
-                    barea.#trackDirectives();
-                  console.warn('UI dependency tracker was notified of an object that was not tracked', reasonobj);
+                  barea.refresh();
+                  //console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called', reasonobj);
                 }
               
             }
@@ -1929,6 +1974,25 @@ class BareaApp
                 {
                     this.#notifycallback(null, "", null, "", uiset, "");
                 }
+            }
+
+            restoreUITracker()
+            {
+                //restore templates
+                this.#userTemplates.forEach(directive => 
+                {
+                    if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename))
+                    {
+                        if (directive.element && directive.parentelement){
+                            directive.parentelement.innerHTML="";
+                            directive.parentelement.appendChild(directive.element);
+                        }
+                    }                           
+                });
+
+                this.#userTemplates=[];
+                this.#dependencies.clear();
+                this.#objectReference=new WeakMap();
             }
            
 
@@ -1941,9 +2005,761 @@ class BareaApp
 
 }
 
+export class BareaViewState extends EventTarget
+{
+    #views = [];
+    #appElement = null;
+    #dataModel=null;
+    #useHistoryAPI=false;
+
+    CurrentState = null;
+    CurrentView = null;
+
+    constructor(appelement, datamodel, useHistoryAPI=false) 
+    {
+        super();
+        this.CurrentState = {};
+        this.#appElement=appelement;
+        this.#dataModel=datamodel;
+        this.#buildViews();
+        if (useHistoryAPI)
+            this.#useHistoryAPI=useHistoryAPI;
+
+        this.#handleClicks();
+        this.#handleHashChange();
+        this.#handleHistoryAPI();
+
+    }
+
+    
+    get EntityId()
+    {
+        if (!this.CurrentState)
+            return "";
+
+        return this.CurrentState.entityId;
+    }
+
+    setStateAndNavigate(path,entityid="", force=false) 
+    {
+        if (!path)
+            return;
+
+        if (path.includes("/:"))
+            path = path.split("/:")[0];
+        
+        if (entityid){
+            if (!path.includes(`${entityid}`))
+            {
+                if (!path.endsWith("/"))
+                    path+="/";
+
+                path+=`${entityid}`;
+            }
+        }
+
+        let hash ="";
+        if (path.startsWith("/#")){
+            path= path.replace("/#","");
+            hash=path;
+        }
+        if (path.startsWith("#")){
+            path = path.replace("#","");
+            hash=path;
+        }
+
+        const url = new URL(path, window.location.origin);
+        url.hash=hash;
+        this.#registerNavigation(url,entityid,"programatic navigation", force); 
+    }
+
+    init()
+    {
+        const url = new URL(window.location.href);
+        let path = "";
+        if (url.hash)
+            path = url.hash;
+        else
+            path = url.pathname;
+
+        let entityId = "";
+        let viewAtPath = this.#getView(url);
+        if (viewAtPath){
+            if (viewAtPath.IsPersistedEntityView){
+                entityId = this.#getEntityIdFromUrl(url);
+            }
+        }
+
+        //Fake a last state since this is init
+        let state = { prevPath: "/" , currentPath: path, entityId: entityId, type:'init', stateTime:Date.now(), urlPathName: url.pathname, urlHash:url.hash };
+        localStorage.setItem("bareaState", JSON.stringify(state));
+        this.#registerNavigation(url,entityId,"init"); 
+    }
 
 
-class BareaHelper
+    onChange(callback) {
+        this.CurrentState = JSON.parse(localStorage.getItem("bareaState"));
+        this.addEventListener("stateChanged", () => callback());
+    }
+
+
+
+    #buildViews()
+    {
+      
+       let counter=0;
+       const templates = document.querySelectorAll("template"); 
+       templates.forEach(template=>{
+            const views = template.content.querySelectorAll("view"); 
+            if (views.length<=0)
+                return;
+
+            counter+=1;
+
+            views.forEach(view=>{
+               let viewid = view.getAttribute("id");
+               if (!viewid){
+                    console.error("BareaViewState - A view <view> in a template is missing id");
+                    return;
+               }
+               let viewpath = view.getAttribute("path");
+               if (!viewpath){
+                    console.error("BareaViewState - A view definition in a template is missing path");
+                    return;
+               }
+               let viewtitle = "";
+               let titletag = view.querySelector("title");
+               if (titletag)
+                  viewtitle=titletag.textContent; 
+               let viewdescription = "";
+               let viewdescriptiontag = view.querySelector("description");
+               if (viewdescriptiontag)
+                  viewdescription=viewdescriptiontag.textContent; 
+               let datatag = view.querySelector("data");
+               let viewInfo = getAttributesAsObject(datatag);
+               viewInfo.title=viewtitle;
+               viewInfo.description=viewdescription;
+
+               let registeredview = this.#views.find(p=> p.Id== viewid);
+               if (!registeredview)
+               {
+                    registeredview = new BareaView(viewid, viewpath, this.#dataModel); 
+                    registeredview.setViewDescription(viewInfo);
+                    this.#views.push(registeredview);
+
+               }
+               else
+               {
+                  let currentInfo = registeredview.getViewDescription();
+                  if (currentInfo.hasOwnProperty('title') && !currentInfo.title)
+                      currentInfo.title=viewtitle;
+                  if (currentInfo.hasOwnProperty('description') && !currentInfo.description)
+                     currentInfo.description=viewdescription;
+
+                  for (let key in viewInfo){
+                    if (!currentInfo.hasOwnProperty(key)){
+                         currentInfo[key] = viewInfo[key];
+                    }
+                  }
+                  registeredview.setViewDescription(currentInfo);
+               }
+
+               let design = template.content.querySelector("design");
+               if (!design)
+                   return;
+
+               let substitute = document.createElement("div");
+               substitute.setAttribute("id",`${registeredview.Id}_${counter}`);
+               template.insertAdjacentElement("afterend", substitute);
+               let cloned_design = design.cloneNode(true); 
+               const designcontent = document.createElement("div"); // New wrapper
+               designcontent.innerHTML = cloned_design.innerHTML; 
+               let markupinfo = { parent: substitute, markup:designcontent };
+
+               registeredview.addViewMarkUpInfo(markupinfo);
+
+           });
+
+           template.remove();
+
+       });
+
+       function getAttributesAsObject(element) 
+       {
+            let attributes = {};
+            if (!element)
+                return attributes;
+            for (let attr of element.attributes) {
+                attributes[attr.name] = attr.value;
+            }
+            return attributes;
+        }
+    }
+
+  
+    #handleClicks()
+    {
+        let instance = this;
+        document.addEventListener("click", (event) => 
+        {
+
+            const link = event.target.closest("a"); 
+            if (!link) return; 
+        
+            const isNonNavControl = 
+                link.hasAttribute("data-bs-toggle") || 
+                link.classList.contains("dropdown-toggle") || 
+                link.classList.contains("no-navigation");
+        
+            if (isNonNavControl) {
+                return; 
+            }
+
+            if (!event.target.href) 
+                return;
+
+            const url = new URL(event.target.href);
+
+            if (!this.#isInternalLink(url))
+                return;
+
+            event.preventDefault();
+            instance.#registerNavigation(url,"","link navigation");
+        });
+    }
+
+    #handleHashChange()
+    {
+        let instance = this;
+        window.addEventListener("hashchange", function(){
+            instance.#registerNavigation(window.location, "", "hash change navigation");
+        });
+      
+    }
+
+    #handleHistoryAPI()
+    {
+        if (!this.#useHistoryAPI)
+            return;
+
+        let instance = this;
+        window.addEventListener("popstate", function(event) 
+        {
+            instance.#registerNavigation(window.location, "", "pop state navigation");
+
+        });
+    }
+
+    
+    #getEntityIdFromUrl(url)
+    {
+        if (!url)
+            return "";
+
+        let path = "";
+        if (url.hash)
+            path=url.hash;
+        else
+            path = url.pathname;
+
+        let segments = path.split("/");
+        if (segments.length>1){
+            let entityid = segments[segments.length-1];
+            if (entityid)
+            {
+                let isNotInViewPath = this.#views.some(p=>p.RequestPath.includes(entityid));
+                if (!isNotInViewPath)
+                    return entityid;
+
+            }
+        }
+
+        return "";
+    }
+
+    #clearUI(){
+        this.#views.forEach(view=>
+            {
+                let markupinfo = view.getViewMarkUpInfo();
+                markupinfo.forEach(templ=>
+                {
+                    templ.parent.replaceChildren();
+                });
+            });
+    }
+  
+    /**
+     * Set navigation and issue state changed
+     */
+    #registerNavigation(url,entityid="",type="init", force) 
+    {
+        
+        if (!url){
+            return;
+        }
+
+        let laststate = this.#getPersistedState();
+     
+        let viewAtPath = this.#getView(url);
+        if (viewAtPath){
+
+            if (viewAtPath.IsPersistedEntityView && !entityid)
+                entityid=this.#getEntityIdFromUrl(url);
+    
+            if (this.#comparePaths(laststate.currentPath,viewAtPath.RequestPath, laststate.entityId, entityid) && this.CurrentView && !force)
+            {
+                //console.warn("BareaViewState.#registerNavigation returned early since the new state detected was the same as current.");
+                return;
+            }
+
+            this.CurrentView = viewAtPath;
+
+        }else{
+            this.CurrentView = null;
+        }
+
+        this.#clearUI();
+  
+        laststate.prevPath = laststate.currentPath;
+
+        //Don't affect the window if this is an init (infinity loop)
+        if (type!=="init"){
+            if (url.hash){
+                window.location.hash = url.hash;
+                laststate.currentPath=url.hash;
+            }else{
+                laststate.currentPath=url.pathname;
+                if (this.#useHistoryAPI){
+                    history.pushState(this.CurrentState, type, url);
+                }else{
+                    window.location.href = url;
+                }
+            }
+        }
+       
+        laststate.urlPathName = url.pathname;
+        laststate.urlHash = url.hash;
+        laststate.stateTime = Date.now();
+        laststate.type = type;
+        laststate.entityId  = entityid;
+        this.CurrentState=laststate;
+        localStorage.setItem("bareaState", JSON.stringify(this.CurrentState));
+
+        let log = BareaHelper.getDebugLog(10);
+        if (log.active)
+            console.info(`state engine: ${type}`, this.CurrentState);
+         
+        this.dispatchEvent(new Event("stateChanged"));
+    
+    }
+
+   
+    #isInternalLink(url) 
+    {
+        try 
+        {
+            const linkUrl = new URL(url, window.location.origin);
+            return linkUrl.origin === window.location.origin;
+        } 
+        catch (e) 
+        {
+            return false; 
+        }
+    }
+
+    #comparePaths(p1,p2, entityid1, entityid2)
+    {
+        if (!p1 || !p2)
+            return false;
+
+        if (p1.startsWith("/") && !p2.startsWith("/"))
+            p2="/"+p2;
+        if (p2.startsWith("/") && !p1.startsWith("/"))
+            p1="/"+p1;
+
+        if (p1==p2)
+            return true;
+
+        if (!entityid1 || !entityid2)
+            return false;
+
+        if (entityid1==entityid2){
+            if (p1.includes(entityid1))
+            {
+                if (p1 == p2+"/"+entityid2)
+                    return true;
+
+                if (p1 == p2+entityid2)
+                    return true;
+            }
+
+            if (p2.includes(entityid2))
+            {
+                    if (p2 == p1+"/"+entityid1)
+                        return true;
+                    
+                    if (p2 == p1+entityid1)
+                        return true;
+            }
+        }
+
+        return false;
+
+    }
+
+   
+    #getPersistedState(){
+        try{
+            return JSON.parse(localStorage.getItem("bareaState"));
+        }catch{}
+
+        return { prevPath: "" , currentPath: "", entityId: "", type:"new", stateTime:Date.now() };
+    }
+   
+    #getView(url){
+        let viewAtPath = null;
+        this.#views.forEach(view=>{
+            if (view.validForUrl(url)){
+                viewAtPath=view;
+            }
+        });
+        return viewAtPath;
+    }
+
+}
+
+
+export class BareaDataModel
+{
+
+    #dbTableName = "";
+    #dbColumns = [];
+    #dataBase=null;
+
+    constructor(dbtablename) 
+    {
+        if (dbtablename)
+            this.#dbTableName = dbtablename;
+        else
+            console.error('A new instance of BareaDataModel was created without a dbtablename');
+    }
+
+    useBareaLocalStorageDb()
+    {
+       this.#dataBase={engine: "BareaLocalStorageDb"};
+    }
+
+    get DbTableName(){
+        return this.#dbTableName;
+    }
+    get DbColumns(){
+        return this.#dbColumns;
+    }
+
+    addDbStringColumn(columnname, allownull = true)
+    {
+        this.#dbColumns.push({name:columnname, allownull:allownull, datatype:"string", autoincrement:false});
+    }
+
+    addDbIntegerColumn(columnname, autoincrement=false)
+    {
+        this.#dbColumns.push({name:columnname, allownull:false, datatype:"integer", autoincrement:autoincrement});
+    }
+
+    getBareaDataModel(){
+        let model = {};
+       
+       model[this.#dbTableName]={};
+       model['entityList'] =[];
+       this.#dbColumns.forEach(col=>{
+            if (col.datatype==="string")
+                model[this.#dbTableName][col.name] = "";
+            if (col.datatype==="text")
+                model[this.#dbTableName][col.name] = "";
+            if (col.datatype==="integer")
+                model[this.#dbTableName][col.name] = 0;
+            if (col.datatype==="boolean")
+                model[this.#dbTableName][col.name] = false;
+        });
+        
+        return model;
+    }
+
+    createEntity(obj)
+    {
+        const db = this.#getDataBase();
+        if (!db){
+            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            return false;
+        }
+        return db.createEntity(obj);
+    }
+
+    updateEntity(obj)
+    {
+        const db = this.#getDataBase();
+        if (!db){
+            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            return false;
+        }
+        return db.updateEntity(obj);
+    }
+
+    getEntities(sql="")
+    {
+        const db = this.#getDataBase();
+        if (!db){
+            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            return [];
+        }
+        return db.getEntities(sql);
+    }
+        
+    getEntity(id)
+    {
+        const db = this.#getDataBase();
+        if (!db){
+            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            return {};
+        }
+        return db.getEntity(id);
+    }
+        
+    deleteEntity(id)
+    { 
+        const db = this.#getDataBase();
+        if (!db){
+            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            return false;
+        }
+        return db.deleteEntity(id);
+    }
+
+    #getDataBase()
+    {
+        if (!this.#dataBase)
+            return;
+
+        if (this.#dataBase.engine==='BareaLocalStorageDb')
+            return this.#getBareaLocalStorageDb();
+
+        return null;
+    }
+
+    #getBareaLocalStorageDb()
+    {
+        const DataModel = this;
+
+        class BareaLocalStorageDb
+        {
+            #initializeDb()
+            {
+                let db=null;
+                let rawdata = localStorage.getItem("BareaDataBase");
+                if (rawdata)
+                    db = JSON.parse(rawdata);
+        
+                if (!db){
+                    db = {};
+                    db[DataModel.DbTableName+'_db'] =[];
+                    localStorage.setItem("BareaDataBase", JSON.stringify(db)); 
+                }
+
+                return db;
+            }
+
+            #getMaxId(arr)
+            {
+                let id=0;
+                arr.forEach(p=>{
+                    if (!p.id)
+                        return;
+                    if (p.id>id)
+                        id=p.id;
+                });
+                return id;
+            }
+
+            createEntity(obj)
+            {
+                const db =  this.#initializeDb();
+
+                if (!obj.id)
+                {
+                    obj.id=this.#getMaxId(db[DataModel.DbTableName+'_db'])+1;
+                }
+
+                db[DataModel.DbTableName+'_db'].push(obj);
+                localStorage.setItem("BareaDataBase", JSON.stringify(db)); 
+                return true;
+            }
+
+            updateEntity(obj)
+            {
+                const db =  this.#initializeDb();
+                let entityArray = db[DataModel.DbTableName+'_db'];
+                let index = entityArray.findIndex(p => p.id == obj.id);
+                if (index !== -1) {
+                    entityArray[index] = obj;  // Correctly update the object in the array
+                    localStorage.setItem("BareaDataBase", JSON.stringify(db));
+                    return true;
+                }
+                return false;
+            }
+
+            getEntities(sql="")
+            {
+                const db =  this.#initializeDb();
+                let entityArray =  db[DataModel.DbTableName+'_db'];
+                return entityArray;
+            }
+        
+            getEntity(id)
+            {
+                const db =  this.#initializeDb();
+        
+                if (id)
+                {
+                    let entityArray =  db[DataModel.DbTableName+'_db'];
+                    let entityObject = entityArray.find(p=> p.id==id);
+                    return entityObject;
+                }
+        
+                return {};
+            }
+        
+            deleteEntity(id)
+            {
+                const db =  this.#initializeDb();
+        
+                let entityArray =  db[DataModel.DbTableName+'_db'];
+                let index = entityArray.findIndex(p => p.id == id);
+                if (index !== -1) {
+                    entityArray.splice(index, 1);  // Remove the entity at the found index
+                    localStorage.setItem("BareaDataBase", JSON.stringify(db));
+                    return true;
+                }
+                return false;
+            }
+        
+        }
+        return new BareaLocalStorageDb();
+    }
+
+
+
+}
+
+export class BareaView
+{
+    #id = "";
+    #requestPath = "";
+    #viewDescription = {};
+    #dataModel = null;
+    #viewMarkupInfo = [];
+    #isPersistedEntityView=false;
+
+   
+    constructor(viewid, requestpath, datamodel=null, dbtablename = null) 
+    {
+      this.#id=viewid;
+      this.#requestPath=requestpath;
+      if (this.#requestPath.includes("/:")){
+        this.#isPersistedEntityView=true;
+        this.#requestPath=this.#requestPath.split("/:")[0];
+      }
+      if (datamodel){
+        this.#dataModel = datamodel;
+      }else{
+        this.#dataModel = new BareaDataModel(dbtablename);
+      }
+     
+    }
+
+    get Id() {
+        return this.#id;
+    }
+
+    get IsPersistedEntityView() {
+        return this.#isPersistedEntityView;
+    }
+
+    get RequestPath(){
+        return this.#requestPath;
+    }
+
+    getViewMarkUpInfo(){
+        return this.#viewMarkupInfo;
+    }
+
+    addViewMarkUpInfo(markupinfo)
+    {
+        this.#viewMarkupInfo.push(markupinfo);
+    }
+
+    getDataModel(){
+        return this.#dataModel;
+    }
+
+    setViewDescription(description)
+    {
+        this.#viewDescription  = description;
+    }
+
+    getViewDescription(){
+        return this.#viewDescription;
+    }
+
+    addDbStringColumn(columnname, allownull = true)
+    {
+        this.#dataModel.addDbStringColumn(columnname, allownull);
+    }
+
+    addDbIntegerColumn(columnname, autoincrement=false)
+    {
+        this.#dataModel.addDbIntegerColumn(columnname, autoincrement);
+    }
+
+    validForUrl(url)
+    {
+        if (!url)
+            return false;
+
+        if (url.hash)
+        {
+            let hash = url.hash;
+            if (hash.length<2)
+                return false;
+
+            if (hash.includes(this.#requestPath))
+                return true;
+
+            hash="/"+hash;
+            if (hash.includes(this.#requestPath))
+                return true;
+        }
+
+        if (url.pathname.includes(this.#requestPath))
+            return true;
+
+        return false;
+    }
+
+
+    render() 
+    {
+
+        this.#viewMarkupInfo.forEach(t=>
+        {
+            t.parent.replaceChildren(t.markup.cloneNode(true));
+        });
+
+    }
+
+}
+
+
+export class BareaHelper
 {
 
     //Directives
@@ -2004,6 +2820,15 @@ class BareaHelper
 
     //Array functions to handle in the proxy
     static ARRAY_FUNCTIONS = ['push', 'pop', 'splice', 'shift', 'unshift','reverse','sort']; 
+
+    static DebugLogs = [
+        {id: 1, name: "BareaApp - Proxy call back: ", active:false},
+        {id: 2, name: "BareaApp - Update dom on proxy change: ", active:false},
+        {id: 3, name: "BareaApp - Update proxy on user input: ", active:false},
+        {id: 4, name: "BareaApp - Print tracked UI dependencies: ", active:false},
+        {id: 5, name: "BareaApp - Print tracked computed dependencies: ", active:false},
+        {id: 10, name: "BareaViewState - On state changed: ", active:false}
+    ];
 
     static getLastBareaKeyName = function(path)
     {
@@ -2069,6 +2894,27 @@ class BareaHelper
     static hasAnyChar = function(str, chars) 
     {
         return chars.some(char => str.includes(char));
+    }
+
+    static enableDebugLog = function(id)
+    {
+        const logidx = BareaHelper.DebugLogs.findIndex(p=> p.id===id);
+        if (logidx!== -1)
+            BareaHelper.DebugLogs[logidx].active = true;
+    }
+
+    static getDebugLog = function(id) 
+    {
+        const log = BareaHelper.DebugLogs.find(log => log.id === id);
+        if (!log)
+            return {id:-1, name:"", active:false};
+        return log;
+    }
+
+    static printDebugLogs = function()
+    {
+      console.log('barea: available logs:');
+      BareaHelper.DebugLogs.forEach(p=> console.log(p));
     }
 
 }

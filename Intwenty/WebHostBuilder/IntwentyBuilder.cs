@@ -418,7 +418,6 @@ namespace Intwenty.WebHostBuilder
 
                 endpoints.MapDefaultControllerRoute();
 
-                //INTWENTY ENDPOINT ROUTING
                 using (var scope = builder.ApplicationServices.CreateScope())
                 {
                     var serviceProvider = scope.ServiceProvider;
@@ -435,23 +434,20 @@ namespace Intwenty.WebHostBuilder
                                     continue;
 
                                 var path = view.RequestPath.Trim();
+                                if (path.Contains("/:"))
+                                    path = path.Split("/:")[0];
+
                                 if (!path.EndsWith("/"))
-                                    path = path + "/";
+                                        path = path + "/";
 
-                                var lbc = path.Count(p => p == '{');
-                                var lbr = path.Count(p => p == '}');
+                               
+                                endpoints.MapControllerRoute(
+                                  name: "app_route_" + view.ApplicationId + "_" + view.Id,
+                                  pattern: path + "{id?}", // Allows an optional ID parameter
+                                  defaults: new { controller = "Application", action = "ModelView" }
+                                );
 
-                                if (lbc == lbr)
-                                {
-                                    //View Paths in the model will never be mapped, so default values will be used
-                                    endpoints.MapControllerRoute("app_route_" + view.ApplicationId + "_" + view.Id, path, defaults: new { controller = "Application", action = "View" });
-                                }
-                                else
-                                {
-                                    //
-                                }
-                                
-                            }
+                        }
                         
                     }
 
@@ -480,6 +476,7 @@ namespace Intwenty.WebHostBuilder
                 {
                     endpoints.MapBlazorHub();
                 }
+
                 /* Handle all responses
                 endpoints.MapGet("/{**slug}", async context =>
                 {

@@ -37,8 +37,6 @@ namespace Intwenty
 
         private IDataClient Client { get; }
 
-        private IMemoryCache ModelCache { get; }
-
         public IntwentySettings Settings { get; }
 
         private IntwentyUserManager UserManager { get; }
@@ -51,79 +49,28 @@ namespace Intwenty
 
         public List<IntwentyDataClientTypeMap> DataTypes { get; }
 
-        private static readonly string DefaultVersioningTableColumnsCacheKey = "DEFVERTBLCOLS";
-
 
         public IntwentyModelService(IOptions<IntwentySettings> settings, IntwentyModel model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
         {
 
             Model = model;
-            IntwentyModel.EnsureModel(Model);
             DbLogger = dblogger;
             OrganizationManager = orgmanager;
             UserManager = usermanager;
-            ModelCache = cache;
             Settings = settings.Value;
-            Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-            DataTypes = IntwentyDataClientTypeMap.GetTypeMap(Client.GetDbTypeMap());
             CurrentCulture = Settings.LocalizationDefaultCulture;
             if (Settings.LocalizationMethod == LocalizationMethods.UserLocalization)
             {
-
                 if (Settings.LocalizationSupportedLanguages != null && Settings.LocalizationSupportedLanguages.Count > 0)
                     CurrentCulture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
                 else
                     CurrentCulture = Settings.LocalizationDefaultCulture;
             }
+            IntwentyModel.EnsureModel(Model, CurrentCulture);
+            Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
+            DataTypes = IntwentyDataClientTypeMap.GetTypeMap(Client.GetDbTypeMap());
+           
 
-        }
-
-        public virtual IntwentyView GetViewToRender(string viewid, HttpRequest httprequest)
-        {
-
-
-            IntwentyView viewtorender = null;
-            if (!string.IsNullOrEmpty(viewid))
-            {
-                viewtorender = GetLocalizedViewModelById(viewid);
-            }
-            else
-            {
-                viewtorender = GetLocalizedViewModelByPath(httprequest.Path.Value);
-            }
-
-            if (viewtorender == null)
-                return null;
-
-
-            return viewtorender;
-
-        }
-
-
-        public IntwentyView GetLocalizedViewModelById(string id)
-        {
-
-            if (string.IsNullOrEmpty(id))
-                return null;
-
-            foreach (var sys in this.Model.Systems)
-            {
-                foreach (var app in sys.Applications)
-                {
-                    foreach (var view in app.Views)
-                    {
-                        if (view.Id == id)
-                        {
-                            LocalizeTitle(view);
-                            return view;
-
-                        }
-                    }
-                }
-            }
-
-            return null;
         }
 
 
@@ -140,16 +87,12 @@ namespace Intwenty
                     {
                         if (view.IsOnPath(path))
                         {
-                            LocalizeTitle(view);
                             return view;
 
                         }
                     }
                 }
             }
-
-
-
 
             return null;
 
@@ -181,77 +124,7 @@ namespace Intwenty
 
 
 
-        private void LocalizeTitles(List<ILocalizableTitle> list)
-        {
-            var translations = Model.Localizations;
-
-            foreach (var item in list)
-            {
-                if (string.IsNullOrEmpty(item.TitleLocalizationKey))
-                    continue;
-
-                var trans = translations.Find(p => p.Culture == CurrentCulture && p.Key == item.TitleLocalizationKey);
-                if (trans != null)
-                {
-                    item.LocalizedTitle = trans.Text;
-                    if (string.IsNullOrEmpty(trans.Text))
-                        item.LocalizedTitle = item.Title;
-                }
-                else
-                {
-                    item.LocalizedTitle = item.Title;
-                }
-
-            }
-        }
-
-        private void LocalizeTitle(ILocalizableTitle item)
-        {
-            if (item == null)
-                return;
-            if (string.IsNullOrEmpty(item.TitleLocalizationKey))
-                return;
-
-            //Localization
-            var translations = Model.Localizations;
-            var trans = translations.Find(p => p.Culture == CurrentCulture && p.Key == item.TitleLocalizationKey);
-            if (trans != null)
-            {
-                item.LocalizedTitle = trans.Text;
-                if (string.IsNullOrEmpty(trans.Text))
-                    item.LocalizedTitle = item.Title;
-            }
-            else
-            {
-                item.LocalizedTitle = item.Title;
-            }
-
-
-        }
-
-        private void LocalizeDescription(ILocalizableDescription item)
-        {
-            if (item == null)
-                return;
-            if (string.IsNullOrEmpty(item.DescriptionLocalizationKey))
-                return;
-
-            //Localization
-            var translations = Model.Localizations;
-            var trans = translations.Find(p => p.Culture == CurrentCulture && p.Key == item.DescriptionLocalizationKey);
-            if (trans != null)
-            {
-                item.LocalizedDescription = trans.Text;
-                if (string.IsNullOrEmpty(trans.Text))
-                    item.LocalizedDescription = item.Description;
-            }
-            else
-            {
-                item.LocalizedDescription = item.Description;
-            }
-
-
-        }
+       
 
 
         public async Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal)

@@ -1,1 +1,246 @@
-﻿Hello
+﻿@model Intwenty.Model.Dto.RenderModel
+@{
+    var listPath = "";
+}
+
+<br />
+<br />
+
+    <div id="app">
+
+        <template>
+            @foreach (var view1 in Model.ApplicationModel.Views)
+            {
+                if (view1.Id!= Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState)
+                {
+                    continue;
+                }
+
+                 <view id="@view1.Id" path="@view1.RequestPath">
+                     <title>@view1.LocalizedTitle</title>
+                     <description>@view1.LocalizedDescription</description>
+                     <data isNewEntityView="@view1.IsNewEntityView" isListView="@view1.IsListView" />
+                </view>
+            }
+            <design>
+                <div class="card">
+                    <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                    <div class="card-body">
+                        <p>{{root.viewInfo.description}}</p>
+                        <ul class="nav" ba-if="root.viewInfo.islistview">
+                            <li class="nav-item">
+                                <a class="btn btn-primary btn-sm" tabindex="-1" role="button" href="/Customers/Create" style="margin:5px">Create New</a>
+                            </li>
+                        </ul>
+                        <ul class="nav" ba-if="!root.viewInfo.islistview">
+                            <li class="nav-item">
+                                <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </design>
+        
+        </template>
+
+
+        <br />
+        <br />
+
+        <!-- Define the ui for the list view -->
+        <template>
+
+            @foreach (var view2 in Model.ApplicationModel.Views)
+            {
+            
+                if (!view2.IsListView){
+                    continue;
+                }
+
+                listPath=view2.RequestPath;
+
+                if (view2.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
+                    continue;
+                }
+
+                <view id="@view2.Id" path="@view2.RequestPath" />
+            }
+            <design>
+                <div>
+                    <table class="table table-responsive-sm">
+                        <thead>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                @foreach(var col in Model.GetRenderedColumns()){
+                                     <td>@col.DbColumnName</td>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ba-foreach="row in root.model.entityList">
+                                <td><button class="btn btn-danger btn-sm" ba-click="deleteApplication()" style="margin:5px">Delete</button></td>
+                                <td><button class="btn btn-primary btn-sm" ba-click="editApplication('/Customers/Edit/:ID')" style="margin:5px">Edit</button></td>
+                                @foreach (var col in Model.GetRenderedColumns()){
+                                   <td>{{row.@col.DbColumnName}}</td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </design>
+         
+        </template>
+
+        <!-- Define the ui for the new / edit views -->
+        <template>
+            @foreach (var view3 in Model.ApplicationModel.Views)
+            {
+                if (view3.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState)
+                {
+                    continue;
+                }
+
+                if (!view3.IsNewEntityView && !view3.IsPersistedEntityView)
+                    continue;
+
+                <view id="@view3.Id" path="@view3.RequestPath" />
+            }
+            <design>
+                <div>
+                    <div class="col-md-12">
+                        @foreach (var col in Model.GetRenderedColumns())
+                        {
+                            <div class="mb-3">
+                                <label for="tbName" class="form-label">@col.DbColumnName</label>
+                                <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                            </div>
+                         }
+                    <div>
+                </div>
+            </design>
+        
+        </template>
+
+    </div>
+
+ @section Scripts
+ {
+
+<script type="module">
+
+
+     import {BareaApp,BareaViewState,BareaDataModel,BareaHelper} from '/lib/barea/barea.js';
+
+     //Just for debugging
+     //BareaHelper.printDebugLogs();
+     //BareaHelper.enableDebugLog(10);
+
+     //Barea app element
+      const appElement = document.getElementById("app");
+
+     //Createa a data model and database helper
+     let db = new BareaDataModel("@Model.ApplicationModel.DbTableName");
+     @foreach (var col in Model.ApplicationModel.DataColumns)
+      {
+            var columnName = col.Name;
+            var isIdColumn = col.DataType == IntwentyDataType.Int && columnName.Equals("id", StringComparison.OrdinalIgnoreCase);
+            switch (col.DataType)
+            {
+                case IntwentyDataType.Int:
+                    if (isIdColumn)
+                    {
+                        @:db.addDbIntegerColumn("id", true);
+                    }
+                    else
+                    {
+                        @:db.addDbIntegerColumn("@columnName");
+                    }
+                    break;
+
+                case IntwentyDataType.String:
+                    @:db.addDbStringColumn("@columnName");
+                    break;
+            }
+       }
+    
+     db.useBareaLocalStorageDb();
+
+     const state = new BareaViewState(appElement, db, @(Model.ApplicationModel.UseBrowserState.ToString().ToLower()));
+
+     const appcontent = {
+         data:{model:{}},
+         methods:{
+             saveApplication: function()
+             {
+                 let data = this.getData();
+                 let editobj = data.model[db.DbTableName];
+                 if (editobj.id)
+                     db.updateEntity(editobj);
+                 else
+                     db.createEntity(editobj);
+
+                 //After save, go back to the list
+                 state.setStateAndNavigate("@listPath", "", true);
+             },
+             editApplication: function(event,element,data,path)
+             {
+                 state.setStateAndNavigate(path, data.id);
+             },
+             deleteApplication: function(event,element,data)
+             {
+                 db.deleteEntity(data.id);
+                 state.setStateAndNavigate(state.CurrentState.currentPath, "",true);
+             }
+         },
+         computed:{},
+         mounted: function(data) {}
+     };
+
+
+     //Get the data model on page load
+     appcontent.data.model = db.getBareaDataModel();
+
+    state.onChange(()=>
+    {
+         //Determine app/view from path
+         if (state.CurrentView)
+         {
+              //Create Barea App
+             const app = new BareaApp();
+
+             //Render the view from the model
+             state.CurrentView.render();
+
+             //Optional but useful if you would like to present info that belons to the view itself
+             appcontent.data.viewInfo = state.CurrentView.getViewDescription();
+
+             //The listview is the primary view in this example
+             if (state.CurrentView &&  appcontent.data.viewInfo.islistview)
+             {
+                 appcontent.data.model.entityList = db.getEntities();
+             }
+             else if (state.CurrentView && state.CurrentView.IsPersistedEntityView && state.EntityId)
+             {
+                 //Typical edit mode, when an id of the data to present is feteched from the path
+                 appcontent.data.model[db.DbTableName] = db.getEntity(state.EntityId);
+             }
+             else if (state.CurrentView && appcontent.data.viewInfo.isnewentityview)
+             {
+                 //Typical edit mode, when an id of the data to present is feteched from the path
+                 appcontent.data.model[db.DbTableName] = {};
+             }
+
+             //Bind the datamodel with the UI
+             let bareadata = app.mount(appElement, appcontent);
+
+         }
+
+     });
+
+     //Init state
+     state.init();
+
+</script>
+
+}

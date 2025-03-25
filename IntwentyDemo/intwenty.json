@@ -4,173 +4,69 @@
 		{
 			"Id": "Demo",
 			"Title": "The Demo System",
-			"TitleLocalizationKey": "CUSTSYS",
-			"DbPrefix": "demo",
+			"TitleLocalizationKey": "",
 			"Applications": [
 				{
 					"Id": "Customers",
-					"SystemId": "Demo",
 					"Title": "Customers",
 					"TitleLocalizationKey": "CUSTAPP",
 					"DbTableName": "Customers",
-					"DataMode": "Simple",
-					"UseVersioning": true,
-					"TenantIsolationLevel": "None",
-					"TenantIsolationMethod": "None",
+					"UseBrowserState": true,
 					"DataColumns": [
 						{
-							"Id": "CustomerId",
-							"DbTableName": "Customers",
-							"DbColumnName": "CustomerId",
-							"DataType": "STRING",
-							"Properties": "DEFVALUE=AUTO#DEFVALUE_START=1000#DEFVALUE_PREFIX=CUST#DEFVALUE_SEED=100#UNIQUE=TRUE#MANDATORY=TRUE"
-						},
-						{
 							"Id": "CustomerName",
-							"DbTableName": "Customers",
 							"DbColumnName": "CustomerName",
-							"DataType": "STRING",
-							"Properties": ""
+							"DataType": "String",
+							"Title": "Name",
+							"TitleLocalizationKey": ""
 						},
 						{
 							"Id": "CustomerPhone",
-							"DbTableName": "Customers",
 							"DbColumnName": "CustomerPhone",
-							"DataType": "STRING",
-							"Properties": ""
-						},
-						{
-
-							"Id": "CustomerEmail",
-							"DbTableName": "Customers",
-							"DbColumnName": "CustomerEmail",
-							"DaDataTypetaType": "STRING",
-							"Properties": "MANDATORY=TRUE"
-						},
-						{
-							"Id": "CustomerStatus",
-							"DbTableName": "Customers",
-							"DbColumnName": "CustomerStatus",
-							"DataType": "STRING",
-							"Properties": ""
-						},
-						{
-							"Id": "CustomerTags",
-							"DbTableName": "Customers",
-							"DbColumnName": "CustomerTags",
-							"DataType": "STRING",
-							"Properties": ""
-						},
-						{
-							"Id": "CustomerTagsText",
-							"DbTableName": "Customers",
-							"DbColumnName": "CustomerTagsText",
-							"DataType": "TEXT",
-							"Properties": ""
+							"DataType": "String",
+							"Title": "Phone",
+							"TitleLocalizationKey": ""
 						}
 					],
 					"Views": [
 						{
 							"Id": "CustomerListView",
-							"SystemId": "Demo",
-							"ApplicationId": "Customer",
 							"Title": "Customer List",
-							"TitleLocalizationKey": "CUSTLIST",
-							"RequestPath": "Customers/List/{requestinfo}",
+							"TitleLocalizationKey": "",
+							"Description": "This view lists registered customers",
+							"DescriptionLocalizationKey": "",
+							"RequestPath": "/Customers/List",
 							"FilePath": "",
-							"IsPrimary": true,
-							"IsPublic": false,
-							"Properties": "",
-							"HeaderPanel": {
-								"EnableCreateNew": true,
-								"EnableSave": true,
-								"EnableExport": false
-							},
-							"VerticalSections": [
-								{
-									"Id": "MainSection",
-									"Expandable": true,
-									"Panels": [],
-									"ListView": {
-										"Sortable": false,
-										"EnableDelete": true,
-										"EditMode": "None",
-										"DbTableName": "Customers",
-										"Columns": [
-											{
-												"Id": "LV_ID",
-												"ColumnType": "TextColumn",
-												"Title": "ID",
-												"TitleLocalizationKey": "",
-												"DbColumnName": "Id"
-											},
-											{
-												"Id": "LV_CUSTID",
-												"ColumnType": "TextColumn",
-												"Title": "Customer ID",
-												"TitleLocalizationKey": "CUSTID",
-												"DbColumnName": "CustomerId"
-											},
-											{
-												"Id": "LV_CUSTName",
-												"ColumnType": "TextColumn",
-												"Title": "Customer Id",
-												"TitleLocalizationKey": "CUSTName",
-												"DbColumnName": "CustomerName"
-											}
-										]
-									}
-								}
-							]
+							"IsListView": true,
+							"IsNewEntityView": false,
+							"IsPersistedEntityView": false,
+							"RenderedColumns": [ "Id", "CustomerName", "CustomerPhone" ]
 						},
 						{
 							"Id": "CustomerCreateView",
-							"SystemId": "Demo",
-							"ApplicationId": "Customer",
 							"Title": "Create Customer",
-							"RequestPath": "Customers/Create/{requestinfo}",
-							"FilePath": null,
-							"IsPrimary": false,
-							"IsPublic": false,
-							"Properties": "",
-							"HeaderPanel": {
-								"EnableCreateNew": false,
-								"EnableSave": true,
-								"EnableExport": false
-							},
-							"VerticalSections": [
-								{
-									"Id": "MainSection",
-									"Expandable": true,
-									"Panels": [],
-									"ListView": {}
-								}
-							]
+							"TitleLocalizationKey": "",
+							"Description": "This view lets you create a new customer",
+							"DescriptionLocalizationKey": "",
+							"RequestPath": "/Customers/Create",
+							"FilePath": "",
+							"IsListView": false,
+							"IsNewEntityView": true,
+							"IsPersistedEntityView": false,
+							"RenderedColumns": [ "CustomerName", "CustomerPhone" ]
 						},
 						{
-
 							"Id": "CustomerEditView",
-							"SystemId": "Demo",
-							"ApplicationId": "Customer",
 							"Title": "Edit Customer",
-							"RequestPath": "Customers/Edit/{id}/{requestinfo}",
-							"FilePath": null,
-							"IsPrimary": false,
-							"IsPublic": false,
-							"Properties": "",
-							"HeaderPanel": {
-								"EnableCreateNew": false,
-								"EnableSave": true,
-								"EnableExport": false
-							},
-							"VerticalSections": [
-								{
-									"Id": "MainSection",
-									"Expandable": true,
-									"Panels": [],
-									"ListView": {}
-								}
-							]
+							"TitleLocalizationKey": "",
+							"Description": "This view lets you edit a customer",
+							"DescriptionLocalizationKey": "",
+							"RequestPath": "/Customers/Edit/:ID",
+							"FilePath": "",
+							"IsListView": false,
+							"IsNewEntityView": false,
+							"IsPersistedEntityView": true,
+							"RenderedColumns": [ "CustomerName", "CustomerPhone" ]
 						}
 					]
 				}
@@ -187,34 +83,6 @@
 			"Key": "LOCKED_OUT_ACCOUNT",
 			"Culture": "sv-SE",
 			"Text": "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig"
-		}
-	],
-	"Endpoints": [
-		{
-			"Id": "EP_CUSTOMER_GETALL",
-			"SystemId": "Demo",
-			"ApplicationId": "Customer",
-			"Method": "",
-			"EndpointType": "TableList",
-			"Title": "Get all customers",
-			"RequestPath": "MyAPI/Customers",
-			"Description": "Get all customers in the database",
-			"DbTableName": "Customer",
-			"OrderNo": 0,
-			"Properties": ""
-		},
-		{
-			"Id": "EP_CUST_1",
-			"SystemId": "Demo",
-			"ApplicationID": "",
-			"Method": "POST",
-			"EndpointType": "Custom",
-			"Title": "Post Anything",
-			"RequestPath": "MyAPI/PostAnyThing",
-			"Description": "This endpoint must be implemented in a custom controller",
-			"DbTableName": "",
-			"OrderNo": 0,
-			"Properties": ""
 		}
 	],
 	"ValueDomains": [

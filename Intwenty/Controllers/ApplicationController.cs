@@ -18,18 +18,34 @@ namespace Intwenty.Controllers
     {
         private IntwentyUserManager UserManager { get; }
 
-        public ApplicationController(IntwentyUserManager usermanager)
+        private IIntwentyModelService ModelService { get; }
+
+        public ApplicationController(IIntwentyModelService modelService, IntwentyUserManager usermanager)
         {
 
             UserManager = usermanager;
+            ModelService = modelService;
         }
 
 
 
-        public virtual async Task<IActionResult> View(string id)
+        public virtual async Task<IActionResult> ModelView(string? id)
         {
-           
-            return View("view","");
+            if (!User.Identity.IsAuthenticated)
+                return Forbid();
+
+            var path = this.HttpContext.Request.Path;
+            var view = this.ModelService.GetLocalizedViewModelByPath(path);
+            if (view == null) 
+            {
+                return NotFound();
+            }
+            var system = this.ModelService.Model.Systems.Find(p=> p.Id== view.SystemId);
+            var app = system.Applications.Find(p=> p.Id == view.ApplicationId);
+            var model = new RenderModel(){ApplicationModel = app, RequestedView=view};
+
+
+            return View("View", model);
 
         }
 

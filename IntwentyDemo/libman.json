@@ -27,13 +27,8 @@
       "destination": "wwwroot/lib/croppie/"
     },
     {
-      "provider": "cdnjs",
-      "library": "selectize.js@0.13.6",
-      "destination": "wwwroot/lib/selectize.js/"
-    },
-    {
       "provider": "jsdelivr",
-      "library": "barea.js@1.2.1",
+      "library": "barea.js@1.2.3",
       "destination": "wwwroot/lib/barea/",
       "files": [
         "barea.js",

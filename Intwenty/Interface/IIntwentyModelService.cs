@@ -23,22 +23,11 @@ namespace Intwenty.Interface
         IntwentyModel Model { get; }
 
         List<IntwentyDataClientTypeMap> DataTypes { get; }
-
-
-
-        IntwentyView GetViewToRender(string viewid, HttpRequest httprequest);
         Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal);
-
-
-        //Views
-        IntwentyView GetLocalizedViewModelById(string id);
         IntwentyView GetLocalizedViewModelByPath(string path);
         string GetLocalizedString(string localizationkey);
-
-
-        //VALUE DOMAINS
         List<IntwentyValueDomainItem> GetValueDomains();
       
 
