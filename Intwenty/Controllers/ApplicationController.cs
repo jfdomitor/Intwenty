@@ -53,29 +53,51 @@ namespace Intwenty.Controllers
         }
 
         [HttpPost("/Applications/Api/GetEntities")]
-        public virtual async Task<JsonResult> GetEntities([FromBody] JsonElement payload)
+        public async Task<IActionResult> GetEntities([FromBody] JsonElement payload)
         {
-            var model = payload.GetProperty("model");
-            var sql = payload.GetProperty("sqlStatement").GetString();
-            var tablename = model.GetProperty("dbTableName").GetString();
+            var dbclient = ModelService.Client;
 
-            if (ModelService.CreateDbTable(tablename)){
-                if (string.IsNullOrEmpty(sql))
+            try
+            {
+                JsonElement model, sqlElement, tableNameElement;
+
+                bool hasModel = payload.TryGetProperty("model", out model);
+                bool hasSql = payload.TryGetProperty("sqlStatement", out sqlElement);
+                bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
+
+                if (!hasModel || !hasSql || !hasTableName)
                 {
-                    sql = "SELECT * FROM " + tablename;
+                    return BadRequest(new { error = "Invalid request payload." });
                 }
-                var dbclient = ModelService.Client;
-                dbclient.Open();
-                var res = dbclient.GetJsonArray(sql);
-                dbclient.Close();
-                return new JsonResult(new { entities = res.JsonObjects });
+
+                //string sql = sqlElement.GetString() ?? "";
+                string tablename = tableNameElement.GetString() ?? "";
+                if (string.IsNullOrWhiteSpace(tablename))
+                {
+                    return BadRequest(new { error = "Table name cannot be empty." });
+                }
+
+                if (!ModelService.CreateDbTable(tablename))
+                {
+                    return NotFound(new { error = "Database table not found." });
+                }
+
               
+                dbclient.Open();
+                var res = dbclient.GetJsonArray(tablename);
+                return Ok(new { entities = res });
             }
-
-
-            return new JsonResult(new { entities = new object[] { } });
-
+            catch
+            {
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
+            }
+            finally
+            {
+                dbclient.Close();
+            }
         }
+
+
 
         [HttpPost("/Applications/Api/CreateEntity")]
         public virtual async Task<JsonResult> CreateEntity([FromBody] JsonElement payload)

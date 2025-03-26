@@ -45,7 +45,6 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Intwenty.DataClient" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.5" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.2" />
@@ -56,6 +55,11 @@
   
    <ItemGroup Label="Packaging">
     <Content Include="Build\Intwenty.targets" PackagePath="build\Intwenty.targets" />
+   </ItemGroup>
+
+  
+   <ItemGroup>
+     <ProjectReference Include="..\..\Intwenty.DataClient\Intwenty.DataClient\Intwenty.DataClient.csproj" />
    </ItemGroup>
 
   <ItemGroup>

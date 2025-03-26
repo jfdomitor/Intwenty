@@ -2483,46 +2483,46 @@ export class BareaDataModel {
         return model;
     }
 
-    createEntity(obj) {
+    async createEntity(obj) {
         const db = this.#getDataBase();
         if (!db) {
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
         return db.createEntity(obj);
     }
 
-    updateEntity(obj) {
+    async updateEntity(obj) {
         const db = this.#getDataBase();
         if (!db) {
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
         return db.updateEntity(obj);
     }
 
-    getEntities(sql = "") {
+    async getEntities(sql = "") {
         const db = this.#getDataBase();
         if (!db) {
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return [];
         }
         return db.getEntities(sql);
     }
 
-    getEntity(id) {
+    async getEntity(id) {
         const db = this.#getDataBase();
         if (!db) {
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return {};
         }
         return db.getEntity(id);
     }
 
-    deleteEntity(id) {
+    async deleteEntity(id) {
         const db = this.#getDataBase();
         if (!db) {
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
         return db.deleteEntity(id);

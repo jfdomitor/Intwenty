@@ -206,14 +206,14 @@
      const appcontent = {
          data:{model:{}},
          methods:{
-             saveApplication: function()
+             saveApplication: async function()
              {
                  let data = this.getData();
                  let editobj = data.model[db.DbTableName];
                  if (editobj.id)
-                     db.updateEntity(editobj);
+                     await db.updateEntity(editobj);
                  else
-                     db.createEntity(editobj);
+                     await db.createEntity(editobj);
 
                  //After save, go back to the list
                  state.setStateAndNavigate("@listPath", "", true);
@@ -222,9 +222,9 @@
              {
                  state.setStateAndNavigate(path, data.id);
              },
-             deleteApplication: function(event,element,data)
+             deleteApplication: async function(event,element,data)
              {
-                 db.deleteEntity(data.id);
+                 await db.deleteEntity(data.id);
                  state.setStateAndNavigate(state.CurrentState.currentPath, "",true);
              }
 
@@ -238,7 +238,7 @@
      //Get the data model on page load
      appcontent.data.model = db.getBareaDataModel();
 
-    state.onChange(()=>
+     state.onChange(async ()=>
     {
          //Determine app/view from path
          if (state.CurrentView)
@@ -255,12 +255,12 @@
              //The listview is the primary view in this example
              if (state.CurrentView &&  appcontent.data.viewInfo.islistview)
              {
-                 appcontent.data.model.entityList = db.getEntities();
+                 appcontent.data.model.entityList = await db.getEntities();
              }
              else if (state.CurrentView && state.CurrentView.IsPersistedEntityView && state.EntityId)
              {
                  //Typical edit mode, when an id of the data to present is feteched from the path
-                 appcontent.data.model[db.DbTableName] = db.getEntity(state.EntityId);
+                 appcontent.data.model[db.DbTableName] = await db.getEntity(state.EntityId);
              }
              else if (state.CurrentView && appcontent.data.viewInfo.isnewentityview)
              {
