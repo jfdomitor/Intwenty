@@ -12,55 +12,7 @@ using System.Threading.Tasks;
 namespace Intwenty.Model
 {
 
-    public enum IntwentyDataType
-    {
-        Bool = 0
-        , String = 1
-        , Text = 2
-        , Int = 3
-        , DateTime = 4
-        , OneDecimal = 5
-        , TwoDecimal = 6
-        , ThreeDecimal = 7
-        , Blob = 8
-    }
-
-    public class IntwentyDataClientTypeMap : TypeMapItem
-    {
-        public IntwentyDataType IntwentyDataTypeEnum { get; set; }
-
-        public static List<IntwentyDataClientTypeMap> GetTypeMap(List<TypeMapItem> clientmaps)
-        {
-
-            var res = new List<IntwentyDataClientTypeMap>();
-            foreach (var item in clientmaps)
-            {
-                var itemmap = new IntwentyDataClientTypeMap() { DataDbType = item.DataDbType, DbEngine = item.DbEngine, DBMSDataType = item.DBMSDataType, IntwentyType = item.IntwentyType, Length = item.Length, NetType = item.NetType };
-                if (itemmap.IntwentyType == "BOOLEAN")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.Bool;
-                if (itemmap.IntwentyType == "STRING")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.String;
-                if (itemmap.IntwentyType == "TEXT")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.Text;
-                if (itemmap.IntwentyType == "INTEGER")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.Int;
-                if (itemmap.IntwentyType == "DATETIME")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.DateTime;
-                if (itemmap.IntwentyType == "1DECIMAL")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.OneDecimal;
-                if (itemmap.IntwentyType == "2DECIMAL")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.TwoDecimal;
-                if (itemmap.IntwentyType == "3DECIMAL")
-                    itemmap.IntwentyDataTypeEnum = IntwentyDataType.ThreeDecimal;
-
-                res.Add(itemmap);
-
-            }
-            return res;
-        }
-
-
-    }
+  
 
     public class IntwentyModelBase : ILocalizableTitle
     {

@@ -65,24 +65,18 @@ namespace Intwenty.Controllers
                 bool hasSql = payload.TryGetProperty("sqlStatement", out sqlElement);
                 bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
 
-                if (!hasModel || !hasSql || !hasTableName)
+                if (!hasModel || !hasTableName)
                 {
                     return BadRequest(new { error = "Invalid request payload." });
                 }
 
-                //string sql = sqlElement.GetString() ?? "";
                 string tablename = tableNameElement.GetString() ?? "";
                 if (string.IsNullOrWhiteSpace(tablename))
-                {
-                    return BadRequest(new { error = "Table name cannot be empty." });
-                }
-
+                    return BadRequest(new { error = "dbTableName name cannot be empty." });
+             
                 if (!ModelService.CreateDbTable(tablename))
-                {
                     return NotFound(new { error = "Database table not found." });
-                }
-
-              
+                
                 dbclient.Open();
                 var res = dbclient.GetJsonArray(tablename);
                 return Ok(new { entities = res });
@@ -100,22 +94,39 @@ namespace Intwenty.Controllers
 
 
         [HttpPost("/Applications/Api/CreateEntity")]
-        public virtual async Task<JsonResult> CreateEntity([FromBody] JsonElement payload)
+        public virtual async Task<IActionResult> CreateEntity([FromBody] JsonElement payload)
         {
-            var model = payload.GetProperty("model");
-            var data = payload.GetProperty("data");
-            var sql = payload.GetProperty("sqlStatement").GetString();
-            var tablename = model.GetProperty("dbTableName").GetString();
-          
+            
 
-            if (ModelService.CreateDbTable(tablename))
+            try
             {
-                var result = ModelService.InsertDbTable(tablename, data);
-                return new JsonResult(new { entities = new object[] { } });
+                JsonElement model, sqlElement, tableNameElement, data;
 
+                bool hasModel = payload.TryGetProperty("model", out model);
+                var hasData = payload.TryGetProperty("data", out data);
+                bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
+
+                if (!hasModel || !hasData || !hasTableName)
+                    return BadRequest(new { error = "Invalid request payload." });
+                
+                string tablename = tableNameElement.GetString() ?? "";
+                if (string.IsNullOrWhiteSpace(tablename))
+                    return BadRequest(new { error = "dbTableName name cannot be empty." });
+                
+                if (!ModelService.CreateDbTable(tablename))
+                    return NotFound(new { error = "Database table not found." });
+                
+
+                ModelService.InsertDbTable(tablename, data);
+
+               
+                return Ok();
             }
-
-            return new JsonResult(new { entities = new object[] { } });
+            catch
+            {
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
+            }
+           
         }
 
 

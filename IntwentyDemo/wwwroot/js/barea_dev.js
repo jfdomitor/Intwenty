@@ -2661,8 +2661,10 @@ export class BareaDataModel {
                         body: JSON.stringify(payload)
                     });
 
-                    const answer = await response.json();
-                    console.log('Entity created:', answer);
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
                     return true;
 
                 }
@@ -2685,8 +2687,10 @@ export class BareaDataModel {
                         body: JSON.stringify(payload) // Convert object to JSON string
                     });
 
-                    const answer = await response.json();
-                    console.log('Entity updated:', answer);
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
                     return true;
 
                 }
@@ -2709,6 +2713,10 @@ export class BareaDataModel {
                         },
                         body: JSON.stringify(payload) // Convert object to JSON string
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
 
                     const answer = await response.json();
                     return answer.entities;
@@ -2734,8 +2742,12 @@ export class BareaDataModel {
                         body: JSON.stringify(payload) // Convert object to JSON string
                     });
 
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
                     const answer = await response.json();
-                    return answer.entities;
+                    return answer.entity;
 
                 }
                 catch (error) {
@@ -2757,8 +2769,10 @@ export class BareaDataModel {
                         body: JSON.stringify(payload) // Convert object to JSON string
                     });
 
-                    const answer = await response.json();
-                    console.log('Entity updated:', answer);
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
                     return true;
 
                 }

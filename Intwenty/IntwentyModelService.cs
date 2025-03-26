@@ -51,7 +51,7 @@ namespace Intwenty
 
         private string CurrentCulture { get; }
 
-        public List<IntwentyDataClientTypeMap> DataTypes { get; }
+        private List<TypeMapItem> DataTypes { get; }
 
 
         public IntwentyModelService(IOptions<IntwentySettings> settings, IntwentyModel model, IMemoryCache cache, IntwentyUserManager usermanager, IIntwentyOrganizationManager orgmanager, IIntwentyDbLoggerService dblogger)
@@ -72,7 +72,7 @@ namespace Intwenty
             }
             IntwentyModel.EnsureModel(Model, CurrentCulture);
             Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-            DataTypes = IntwentyDataClientTypeMap.GetTypeMap(Client.GetDbTypeMap());
+            DataTypes = Client.GetDbTypeMap();
            
 
         }

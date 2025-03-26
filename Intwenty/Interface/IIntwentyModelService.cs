@@ -23,7 +23,6 @@ namespace Intwenty.Interface
         IntwentySettings Settings { get; }
         IntwentyModel Model { get; }
         IDataClient Client { get; }
-        List<IntwentyDataClientTypeMap> DataTypes { get; }
         Task<List<IntwentyView>> GetAuthorizedViewModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentyApplication>> GetAuthorizedApplicationModelsAsync(ClaimsPrincipal claimprincipal);
         Task<List<IntwentySystem>> GetAuthorizedSystemModelsAsync(ClaimsPrincipal claimprincipal);
