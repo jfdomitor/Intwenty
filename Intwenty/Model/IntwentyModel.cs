@@ -44,7 +44,7 @@ namespace Intwenty.Model
 
                     if (!app.DataColumns.Exists(p => p.IsFrameworkColumn))
                     {
-                        app.DataColumns.Insert(0, new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = app.DbTableName, DbColumnName = "Id" });
+                        app.DataColumns.Insert(0, new IntwentyDataBaseColumn(true) { Id = "Id", DataType = IntwentyDataType.Int, DbTableName = app.DbTableName, DbColumnName = "Id", IsAutoIncremental=true, IsPrimaryKey=true });
                         app.DataColumns.Insert(1, new IntwentyDataBaseColumn(true) { Id = "CreatedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "CreatedBy" });
                         app.DataColumns.Insert(2, new IntwentyDataBaseColumn(true) { Id = "ChangedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "ChangedBy" });
                         app.DataColumns.Insert(3, new IntwentyDataBaseColumn(true) { Id = "OwnedBy", DataType = IntwentyDataType.String, DbTableName = app.DbTableName, DbColumnName = "OwnedBy" });
@@ -146,7 +146,7 @@ namespace Intwenty.Model
         public List<IntwentyApplication> Applications { get; set; }
     }
 
-    public class IntwentyApplication : IntwentyModelBase
+    public class IntwentyApplication : IntwentyModelBase, IIBasicDbTable
     {
         public string SystemId { get; set; }
         public string Description { get; set; }
@@ -155,9 +155,29 @@ namespace Intwenty.Model
         public List<IntwentyView> Views { get; set; }
         public bool UseBrowserState { get; set; }
 
+        public IBasicDbColumn PrimaryKeyColumn
+        {
+            get 
+            {
+                return DataColumns.Find(p => p.IsPrimaryKey);
+            }
+        }
+
+        List<IBasicDbColumn> IIBasicDbTable.DataColumns
+        {
+            get 
+            { 
+                var t = new List<IBasicDbColumn>();
+                foreach (var c in DataColumns) { t.Add(c); }
+                return t;
+            }
+
+        }
+
+    
     }
 
-    public class IntwentyDataBaseColumn : IntwentyModelBase, IIntwentyResultColumn
+    public class IntwentyDataBaseColumn : IntwentyModelBase, IBasicDbColumn
     {
         public string Name { get => DbColumnName; }
         public string DbTableName { get; set; }
@@ -166,7 +186,8 @@ namespace Intwenty.Model
         [JsonIgnore]
         public bool IsFrameworkColumn { get; set; }
         public IntwentyDataType DataType { get; set; }
-        public bool Render { get; set; }
+        public bool IsAutoIncremental { get; set; }
+        public bool IsPrimaryKey { get; set; }
 
 
         public IntwentyDataBaseColumn()

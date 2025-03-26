@@ -29,9 +29,7 @@ namespace Intwenty.Interface
         IntwentyView GetLocalizedViewModelByPath(string path);
         string GetLocalizedString(string localizationkey);
         List<IntwentyValueDomainItem> GetValueDomains();
-        bool CreateDbTable(string dbtablename);
-        bool UpdateDbTable(string dbtablename, int id, JsonElement data);
-        int InsertDbTable(string dbtablename, JsonElement data);
+        IIBasicDbTable GetBasicTableModel(string dbtablename);
 
 
     }

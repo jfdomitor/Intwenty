@@ -73,13 +73,16 @@ namespace Intwenty.Controllers
                 string tablename = tableNameElement.GetString() ?? "";
                 if (string.IsNullOrWhiteSpace(tablename))
                     return BadRequest(new { error = "dbTableName name cannot be empty." });
-             
-                if (!ModelService.CreateDbTable(tablename))
-                    return NotFound(new { error = "Database table not found." });
-                
+
+                var basicmodel = ModelService.GetBasicTableModel(tablename);
+                if (basicmodel == null)
+                    return BadRequest(new { error = "could not find basic table model for: " + tablename });
+
                 dbclient.Open();
+                dbclient.CreateTable(basicmodel);
                 var res = dbclient.GetJsonArray(tablename);
                 return Ok(new { entities = res });
+
             }
             catch
             {
@@ -96,7 +99,8 @@ namespace Intwenty.Controllers
         [HttpPost("/Applications/Api/CreateEntity")]
         public virtual async Task<IActionResult> CreateEntity([FromBody] JsonElement payload)
         {
-            
+
+            var dbclient = ModelService.Client;
 
             try
             {
@@ -112,21 +116,162 @@ namespace Intwenty.Controllers
                 string tablename = tableNameElement.GetString() ?? "";
                 if (string.IsNullOrWhiteSpace(tablename))
                     return BadRequest(new { error = "dbTableName name cannot be empty." });
-                
-                if (!ModelService.CreateDbTable(tablename))
-                    return NotFound(new { error = "Database table not found." });
-                
 
-                ModelService.InsertDbTable(tablename, data);
+                var basicmodel = ModelService.GetBasicTableModel(tablename);
+                if (basicmodel == null)
+                    return BadRequest(new { error = "could not find basic table model for: " + tablename });
 
-               
+                dbclient.Open();
+                if (dbclient.CreateTable(basicmodel))
+                {
+                    dbclient.InsertEntity(basicmodel, data);
+                }
+                   
                 return Ok();
             }
             catch
             {
                 return StatusCode(500, new { error = "Internal server error. Please try again later." });
             }
-           
+            finally
+            {
+                dbclient.Close();
+            }
+
+        }
+
+        [HttpPost("/Applications/Api/UpdateEntity")]
+        public virtual async Task<IActionResult> UpdateEntity([FromBody] JsonElement payload)
+        {
+
+            var dbclient = ModelService.Client;
+
+            try
+            {
+                JsonElement model, sqlElement, tableNameElement, data;
+
+                bool hasModel = payload.TryGetProperty("model", out model);
+                var hasData = payload.TryGetProperty("data", out data);
+                bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
+
+                if (!hasModel || !hasData || !hasTableName)
+                    return BadRequest(new { error = "Invalid request payload." });
+
+                string tablename = tableNameElement.GetString() ?? "";
+                if (string.IsNullOrWhiteSpace(tablename))
+                    return BadRequest(new { error = "dbTableName name cannot be empty." });
+
+                var basicmodel = ModelService.GetBasicTableModel(tablename);
+                if (basicmodel == null)
+                    return BadRequest(new { error = "could not find basic table model for: " + tablename });
+
+                dbclient.Open();
+                if (dbclient.CreateTable(basicmodel))
+                {
+                    dbclient.UpdateEntity(basicmodel, data);
+                }
+
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
+            }
+            finally
+            {
+                dbclient.Close();
+            }
+
+        }
+
+        [HttpPost("/Applications/Api/GetEntity")]
+        public virtual async Task<IActionResult> GetEntity([FromBody] JsonElement payload)
+        {
+
+            var dbclient = ModelService.Client;
+
+            try
+            {
+                JsonElement model, entityId, tableNameElement;
+
+                bool hasModel = payload.TryGetProperty("model", out model);
+                var hasEntityId = payload.TryGetProperty("entityId", out entityId);
+                bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
+
+                if (!hasModel || !hasEntityId || !hasTableName)
+                    return BadRequest(new { error = "Invalid request payload." });
+
+                string tablename = tableNameElement.GetString() ?? "";
+                if (string.IsNullOrWhiteSpace(tablename))
+                    return BadRequest(new { error = "dbTableName name cannot be empty." });
+
+                var basicmodel = ModelService.GetBasicTableModel(tablename);
+                if (basicmodel == null)
+                    return BadRequest(new { error = "could not find basic table model for: " + tablename });
+
+                dbclient.Open();
+                if (dbclient.CreateTable(basicmodel))
+                {
+                    var res = dbclient.GetEntity(basicmodel, entityId.GetInt32());
+                    return Ok(new { entity = res });
+                }
+
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
+            }
+            finally
+            {
+                dbclient.Close();
+            }
+
+        }
+
+        [HttpPost("/Applications/Api/DeleteEntity")]
+        public virtual async Task<IActionResult> DeleteEntity([FromBody] JsonElement payload)
+        {
+
+            var dbclient = ModelService.Client;
+
+            try
+            {
+                JsonElement model, entityId, tableNameElement;
+
+                bool hasModel = payload.TryGetProperty("model", out model);
+                var hasEntityId = payload.TryGetProperty("entityId", out entityId);
+                bool hasTableName = model.TryGetProperty("dbTableName", out tableNameElement);
+
+                if (!hasModel || !hasEntityId || !hasTableName)
+                    return BadRequest(new { error = "Invalid request payload." });
+
+                string tablename = tableNameElement.GetString() ?? "";
+                if (string.IsNullOrWhiteSpace(tablename))
+                    return BadRequest(new { error = "dbTableName name cannot be empty." });
+
+                var basicmodel = ModelService.GetBasicTableModel(tablename);
+                if (basicmodel == null)
+                    return BadRequest(new { error = "could not find basic table model for: " + tablename });
+
+                dbclient.Open();
+                if (dbclient.CreateTable(basicmodel))
+                {
+                     dbclient.DeleteEntity(basicmodel, entityId.GetInt32());
+                    return Ok();
+                }
+
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
+            }
+            finally
+            {
+                dbclient.Close();
+            }
+
         }
 
 
