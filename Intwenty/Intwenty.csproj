@@ -27,7 +27,6 @@
   <ItemGroup>
     <Compile Remove="Model\UIRendering\**" />
     <Compile Remove="Pages\**" />
-    <Compile Remove="Views\Model\**" />
     <Content Remove="Model\UIRendering\**" />
     <Content Remove="Pages\**" />
     <EmbeddedResource Remove="Model\UIRendering\**" />
