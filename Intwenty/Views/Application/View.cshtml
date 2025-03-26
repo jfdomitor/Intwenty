@@ -179,13 +179,12 @@
      @foreach (var col in Model.ApplicationModel.DataColumns)
       {
             var columnName = col.Name;
-            var isIdColumn = col.DataType == IntwentyDataType.Int && columnName.Equals("id", StringComparison.OrdinalIgnoreCase);
             switch (col.DataType)
             {
                 case IntwentyDataType.Int:
-                    if (isIdColumn)
+                    if (col.IsPrimaryKey)
                     {
-                        @:db.addDbIntegerColumn("id", true);
+                        @:db.addDbIntegerColumn("@columnName",@col.IsAutoIncremental.ToString().ToLower(),@col.IsPrimaryKey.ToString().ToLower());
                     }
                     else
                     {
@@ -194,12 +193,20 @@
                     break;
 
                 case IntwentyDataType.String:
-                    @:db.addDbStringColumn("@columnName");
+                    if (col.IsPrimaryKey)
+                    {
+                        @:db.addDbStringColumn("@columnName",@col.IsPrimaryKey.ToString().ToLower());
+                    }
+                    else
+                    {
+                        @:db.addDbStringColumn("@columnName");
+                    }
                     break;
             }
        }
     
      db.useIntwentyAPI();
+     //db.useBareaLocalStorageDb();
 
      const state = new BareaViewState(appElement, db, @(Model.ApplicationModel.UseBrowserState.ToString().ToLower()));
 
@@ -210,8 +217,8 @@
              {
                  let data = this.getData();
                  let editobj = data.model[db.DbTableName];
-                 if (editobj.id)
-                     await db.updateEntity(editobj);
+                 if (BareaHelper.isValue(editobj,"Id"))
+                     await db.updateEntity(editobj, BareaHelper.getValue(editobj,"Id"));
                  else
                      await db.createEntity(editobj);
 
@@ -220,11 +227,11 @@
              },
              editApplication: function(event,element,data,path)
              {
-                 state.setStateAndNavigate(path, data.id);
+                  state.setStateAndNavigate(path, BareaHelper.getValue(data,"Id"));
              },
              deleteApplication: async function(event,element,data)
              {
-                 await db.deleteEntity(data.id);
+                   await db.deleteEntity(BareaHelper.getValue(data,"Id"));
                  state.setStateAndNavigate(state.CurrentState.currentPath, "",true);
              }
 

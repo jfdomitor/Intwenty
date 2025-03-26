@@ -1,8 +1,9 @@
 ﻿getTag = function (id) { return document.getElementById(id) };
 
+
 handleIntwentyViewMode = function (istoogle) {
-    var menucontainer = $("#main_menu_container");
-    var contentcontainer = $("#main_content_container");
+    var menucontainer = getTag("main_menu_container");
+    var contentcontainer = getTag("main_content_container");
     if (!menucontainer)
         return;
     if (!contentcontainer)

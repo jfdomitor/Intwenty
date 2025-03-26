@@ -2456,12 +2456,12 @@ export class BareaDataModel {
         return this.#dbColumns;
     }
 
-    addDbStringColumn(columnname, allownull = true) {
-        this.#dbColumns.push({ name: columnname, allownull: allownull, datatype: "string", autoincrement: false });
+    addDbStringColumn(columnname, primarykey=false) {
+        this.#dbColumns.push({ name: columnname, datatype: "string", autoincrement: false, primarykey:primarykey });
     }
 
-    addDbIntegerColumn(columnname, autoincrement = false) {
-        this.#dbColumns.push({ name: columnname, allownull: false, datatype: "integer", autoincrement: autoincrement });
+    addDbIntegerColumn(columnname, autoincrement = false, primarykey = false) {
+        this.#dbColumns.push({ name: columnname, datatype: "integer", autoincrement: autoincrement, primarykey: primarykey });
     }
 
     getBareaDataModel() {
@@ -2492,13 +2492,13 @@ export class BareaDataModel {
         return db.createEntity(obj);
     }
 
-    async updateEntity(obj) {
+    async updateEntity(obj, id) {
         const db = this.#getDataBase();
         if (!db) {
             console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
-        return db.updateEntity(obj);
+        return db.updateEntity(obj, id);
     }
 
     async getEntities(sql = "") {
@@ -2562,19 +2562,24 @@ export class BareaDataModel {
             #getMaxId(arr) {
                 let id = 0;
                 arr.forEach(p => {
-                    if (!p.id)
+                    if (!BareaHelper.isValue(p,"id"))
                         return;
-                    if (p.id > id)
-                        id = p.id;
+                    if (BareaHelper.getValue(p, "id") > id)
+                        id = BareaHelper.getValue(p, "id");
                 });
                 return id;
             }
 
             createEntity(obj) {
                 const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype=="integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
 
-                if (!obj.id) {
-                    obj.id = this.#getMaxId(db[DataModel.DbTableName + '_db']) + 1;
+                if (!obj[idcol.name]) {
+                    obj[idcol.name] = this.#getMaxId(db[DataModel.DbTableName + '_db']) + 1;
                 }
 
                 db[DataModel.DbTableName + '_db'].push(obj);
@@ -2582,10 +2587,15 @@ export class BareaDataModel {
                 return true;
             }
 
-            updateEntity(obj) {
+            updateEntity(obj, id) {
                 const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
                 let entityArray = db[DataModel.DbTableName + '_db'];
-                let index = entityArray.findIndex(p => p.id == obj.id);
+                let index = entityArray.findIndex(p => BareaHelper.getValue(p, idcol.name) == id);
                 if (index !== -1) {
                     entityArray[index] = obj;  // Correctly update the object in the array
                     localStorage.setItem("BareaDataBase", JSON.stringify(db));
@@ -2596,16 +2606,25 @@ export class BareaDataModel {
 
             getEntities(sql = "") {
                 const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
                 let entityArray = db[DataModel.DbTableName + '_db'];
                 return entityArray;
             }
 
             getEntity(id) {
                 const db = this.#initializeDb();
-
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
                 if (id) {
                     let entityArray = db[DataModel.DbTableName + '_db'];
-                    let entityObject = entityArray.find(p => p.id == id);
+                    let entityObject = entityArray.find(p => BareaHelper.getValue(p, idcol.name) == id);
                     return entityObject;
                 }
 
@@ -2614,9 +2633,13 @@ export class BareaDataModel {
 
             deleteEntity(id) {
                 const db = this.#initializeDb();
-
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
                 let entityArray = db[DataModel.DbTableName + '_db'];
-                let index = entityArray.findIndex(p => p.id == id);
+                let index = entityArray.findIndex(p => BareaHelper.getValue(p, idcol.name) == id);
                 if (index !== -1) {
                     entityArray.splice(index, 1);  // Remove the entity at the found index
                     localStorage.setItem("BareaDataBase", JSON.stringify(db));
@@ -2675,9 +2698,9 @@ export class BareaDataModel {
                 return false;
             }
 
-            async updateEntity(obj) {
+            async updateEntity(obj, id) {
                 const db = this.#initializeDb();
-                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: obj.id, sqlStatement: "" };
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: id, sqlStatement: "" };
                 try {
                     const response = await fetch(db.editEntityPath, {
                         method: 'POST',
@@ -2704,7 +2727,7 @@ export class BareaDataModel {
             async getEntities(sql = "") {
                 const db = this.#initializeDb();
                 const payload = {
-                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: 0, sqlStatement: sql };
+                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: "", sqlStatement: sql };
                 try {
                     const response = await fetch(db.getEntitiesPath, {
                         method: 'POST',
@@ -2985,6 +3008,24 @@ export class BareaHelper
         let key = "";
         keys.forEach(t=>{key=t});
         return key;
+    }
+
+    static isValue =function(object, key) {
+        if (!object || typeof object !== 'object' || !key) return false;
+        const lowerKey = key.toLowerCase();
+        return Object.keys(object).some(objKey => objKey.toLowerCase() === lowerKey && object[objKey] != null);
+    }
+
+    static getValue = function getValue(object, key)
+    {
+        if (!object || typeof object !== 'object' || !key) return undefined;
+        const lowerKey = key.toLowerCase();
+        for (const objKey in object) {
+            if (objKey.toLowerCase() === lowerKey) {
+                return object[objKey];
+            }
+        }
+        return undefined;
     }
 
     static getLastBareaObjectName = function(path)

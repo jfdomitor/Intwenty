@@ -140,8 +140,8 @@ namespace Intwenty.Controllers
 
         }
 
-        [HttpPost("/Applications/Api/UpdateEntity")]
-        public virtual async Task<IActionResult> UpdateEntity([FromBody] JsonElement payload)
+        [HttpPost("/Applications/Api/EditEntity")]
+        public virtual async Task<IActionResult> EditEntity([FromBody] JsonElement payload)
         {
 
             var dbclient = ModelService.Client;
@@ -173,8 +173,9 @@ namespace Intwenty.Controllers
 
                 return Ok();
             }
-            catch
+            catch (Exception ex) 
             {
+                var x = ex;
                 return StatusCode(500, new { error = "Internal server error. Please try again later." });
             }
             finally
