@@ -569,16 +569,9 @@ export class BareaApp
                                     }
                                 }.bind(this);
 
-
-                               
-                                if (!el.dataset.listenerAdded) {
-                                    el.removeEventListener(eventtype, handler);
-                                    el.addEventListener(eventtype, handler);
-                                    el.dataset.listenerAdded = "true";
-                                }
-
-                                   
-                                
+                                el.removeEventListener(eventtype, handler);
+                                el.addEventListener(eventtype, handler);
+                 
                             }
                             else if (tracking_obj.directivename===BareaHelper.DIR_CLASS){
                                 let classnames = el.getAttribute('classNames');
@@ -873,47 +866,59 @@ export class BareaApp
                 }
                 else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type))
                 {
-                    //Find data
-                    let objpath=BareaHelper.ROOT_OBJECT;
-                    if (!trackcontext.rendereddata || path.startsWith(BareaHelper.ROOT_OBJECT)){
-                        objpath = BareaHelper.getLastBareaObjectName(path);
-                        tracking_obj.data=this.getProxifiedPathData(objpath);
-                    }else{
+
+
+ 
+                    if (!trackcontext.rendereddata || path.startsWith(BareaHelper.ROOT_OBJECT))
+                    {
+                        const value = this.getProxifiedPathData(path);
+                        if (typeof value === "object" && value !== null) {
+                            tracking_obj.isobjectexpression = true;
+                            tracking_obj.data = value;
+                            tracking_obj.key = BareaHelper.getLastBareaKeyName(path);
+                            if (tracking_obj.key === BareaHelper.ROOT_OBJECT)
+                                tracking_obj.key = "";
+                            
+                        }
+                        else
+                        {
+                            tracking_obj.isobjectexpression = false;
+                            let objpath = BareaHelper.getLastBareaObjectName(path);
+                            tracking_obj.data = this.getProxifiedPathData(objpath);
+                            tracking_obj.key = BareaHelper.getLastBareaKeyName(path);
+                            if (tracking_obj.key === BareaHelper.ROOT_OBJECT) {
+                                tracking_obj.key = "";
+                                tracking_obj.isobjectexpression = true;
+                            }
+                        }
+                       
+                    } else {
+
+                        tracking_obj.isobjectexpression = false;
                         tracking_obj.data = trackcontext.rendereddata;
+                        tracking_obj.key = BareaHelper.getLastBareaKeyName(path);
+                        if (tracking_obj.key === trackcontext.renderedvarname)
+                            tracking_obj.key = "";
+
+                        if (!tracking_obj.key) {
+                            tracking_obj.isobjectexpression = true;
+                        } else {
+                            const value = tracking_obj.data[tracking_obj.key];
+                            if (typeof value === "object" && value !== null) {
+                                tracking_obj.isobjectexpression = true;
+                            } else {
+                                tracking_obj.isobjectexpression = false;
+                            }
+                        }
+                       
                     }
 
-                    //Find key
-                    tracking_obj.key="";
-                    let interpolation_key = BareaHelper.getLastBareaKeyName(path);
-                    const value = tracking_obj.data[interpolation_key];
-                    if (interpolation_key && interpolation_key !== BareaHelper.ROOT_OBJECT && (typeof value !== "object")){
-                        tracking_obj.key=interpolation_key;
-                    }
 
                     tracking_obj.isrendered = false;
                     tracking_obj.iscomputed = false;
                     nodeexpressions.push(tracking_obj);
 
-                    if (!tracking_obj.key && tracking_obj.data){
-                        //If we're tracking an object make it aware of child objects
-                        let instance = this;
-
-                        function trackNestedObjects(obj) 
-                        {
-                            for (let key in obj) {
-                                if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
-                                    let tracking_child = instance.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,"",null,"",node, expr, node.nodeValue);
-                                    tracking_child.data =  obj[key];
-                                    tracking_child.isrendered = false;
-                                    tracking_child.iscomputed = false;
-                                    nodeexpressions.push(tracking_child);
-                                    trackNestedObjects(obj[key]); 
-                                }
-                            }
-                        }
-
-                        trackNestedObjects(tracking_obj.data);
-                    }
+     
                       
                 }
                 else if (BareaHelper.INTERPOL_INDEX===attribute_value_type)
@@ -1316,26 +1321,29 @@ export class BareaApp
     
             if (attribute_value_type===BareaHelper.EXPR_TYPE_COMPUTED){
                 interpol_value=this.#computedProperties[ipstmt.directivevalue].value;
-            }else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type))
-            {
-                if (ipstmt.key && ipstmt.data){
+            }else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type)){
+               
+                if (!ipstmt.isobjectexpression){
                     interpol_value = ipstmt.data[ipstmt.key];
                 }else{
-                    if (ipstmt.data)
-                        interpol_value = ipstmt.data;
+                    interpol_value = JSON.stringify(ipstmt.data); 
                 } 
+
             }
             else if (attribute_value_type === BareaHelper.INTERPOL_INDEX)
             {
                 interpol_value = String(directive.renderedindex);
             }
     
-            if (!interpol_value)
-                interpol_value ="";
-    
-            if (typeof interpol_value === "object") 
-                interpol_value = JSON.stringify(interpol_value)
+            if (!interpol_value) {
+                if (typeof interpol_value === "boolean")
+                    interpol_value = "false";
 
+                interpol_value = "";
+            }
+              
+    
+       
             nodetemplate = nodetemplate.replaceAll(ipstmt.expression, interpol_value);
 
         });
@@ -1979,7 +1987,8 @@ export class BareaApp
                 }
                 else
                 {
-                  barea.refresh();
+                    barea.refresh();
+                  //TODO: Revert back to saved UI, with interpolations and templates
                   console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
                 }
               
