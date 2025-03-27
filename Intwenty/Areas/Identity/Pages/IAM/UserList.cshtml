@@ -27,7 +27,7 @@
 
     <div>
 
-        <div class="btn btn-sm btn-secondary" v-on:click="addEntity">
+        <div class="btn btn-sm btn-secondary" ba-click="addEntity()">
             <span class="fa fa-plus"></span>
         </div>
     </div>
@@ -49,20 +49,20 @@
 
             </tr>
         </thead>
-        <tbody v-for="entry in users">
+        <tbody ba-foreach="entry in root.users">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="deleteEntity(entry)" title=" Delete user"><i class="fa fa-trash"></i></div></td>
-                <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'User/' + entry.id" title="Edit"><i class="fas fa-edit"></i></a></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete user"><i class="fa fa-trash"></i></div></td>
+                <td><a role="button" class="btn btn-sm btn-secondary" ba-href="entry.editpath" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{entry.userName}}</td>
                 <td>{{entry.isBlocked}}</td>
                 <td>{{entry.mfaActive}}</td>
                 <td>{{entry.lastLogin}}</td>
                 <td>{{entry.lastLoginProduct}}</td>
                 <td>{{entry.lastLoginMethod}}</td>
-                <td v-if="!entry.isBlocked"><div class="btn btn-sm btn-secondary" v-on:click="blockUser(entry)" title="Block"><i class="fas fa-lock"></i></div></td>
-                <td v-if="entry.isBlocked"><div class="btn btn-sm btn-secondary" v-on:click="unblockUser(entry)" title="Unblock"><i class="fas fa-lock-open"></i></div></td>
-                <td v-if="entry.mfaActive"><div class="btn btn-sm btn-secondary" v-on:click="resetMFA(entry)" title="Reset MFA"><i class="fas fa-key"></i></div></td>
-                <td v-if="!entry.mfaActive"></td>
+                <td ba-if="!entry.isBlocked"><div class="btn btn-sm btn-secondary" ba-click="blockUser()" title="Block"><i class="fas fa-lock"></i></div></td>
+                <td ba-if="entry.isBlocked"><div class="btn btn-sm btn-secondary" ba-click="unblockUser()" title="Unblock"><i class="fas fa-lock-open"></i></div></td>
+                <td ba-if="entry.mfaActive"><div class="btn btn-sm btn-secondary" ba-click="resetMFA()" title="Reset MFA"><i class="fas fa-key"></i></div></td>
+                <td ba-if="!entry.mfaActive"></td>
 
             </tr>
         </tbody>
@@ -82,20 +82,20 @@
                     {
                         <div class="form-group">
                             <label class="control-label">User Name<span style="color: red"> *</span></label>
-                            <input id="tb_username" type="text" class="form-control form-control-sm" v-model="model.userName" />
+                            <input id="tb_username" type="text" class="form-control form-control-sm" ba-bind="root.model.userName" />
                         </div>
                     }
                     <div class="form-group">
                         <label class="control-label">Email<span style="color: red"> *</span></label>
-                        <input id="tb_email" type="email" class="form-control form-control-sm" v-model="model.email" />
+                        <input id="tb_email" type="email" class="form-control form-control-sm" ba-bind="root.model.email" />
                     </div>
                     <div class="form-group">
                         <label class="control-label">First Name<span style="color: red"> *</span></label>
-                        <input id="tb_firstname" type="text" class="form-control form-control-sm" v-model="model.firstName" />
+                        <input id="tb_firstname" type="text" class="form-control form-control-sm" ba-="root.model.firstName" />
                     </div>
                     <div class="form-group">
                         <label class="control-label">Last Name<span style="color: red"> *</span></label>
-                        <input id="tb_lastname" type="text" class="form-control form-control-sm" v-model="model.lastName" />
+                        <input id="tb_lastname" type="text" class="form-control form-control-sm" ba-="root.model.lastName" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -109,15 +109,16 @@
 </div>
 
 @section Scripts
-    {
+ {
 
-    <script>
+    <script type="module">
 
-        var app = new Vue({
-            el: '#app',
+        import {BareaApp} from '/js/barea_dev.js';
+
+        const appcontent = {
             data:
             {
-                model: {  },
+                model: {},
                 users: [],
                 idgen: -1
             },
@@ -126,152 +127,156 @@
 
                 addEntity: function ()
                 {
-                     var context = this;
-
                     var okfunc = function ()
                     {
                         var baseurl = '@Url.Content("~/Identity/IAM/")';
                         var endpointurl = baseurl + "UserList?handler=AddUser";
                         var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.model),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response)
-                            {
-                                context.model = {};
-                                context.users = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
+                        fetch(endpointurl, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": antiforgerytoken
+                          },
+                          body: JSON.stringify(context.model)
+                        })
+                        .then(response => response.json())  
+                        .then(data => {
+                          clientdata.model = {};
+                          clientdata.users = data;
+                        })
+                        .catch(error => {
+                          console.error("Error:", error);
                         });
                     }
-
-                    $("#addEntityModal_okBtn").off().on('click', okfunc);
-                    $("#addEntityModal").modal('show');
+                    document.getElementById("addEntityModal_okBtn").removeEventListener("click", okfunc);
+                    document.getElementById("addEntityModal_okBtn").addEventListener("click", okfunc);
+                    document.getElementById("addEntityModal").style.display = "block";
+                    document.getElementById("addEntityModal").classList.add("show");
                 },
-                blockUser: function (entry)
+                blockUser: function (a,b,c,entry)
                 {
-                    var context = this;
 
-                    var yesfunc = function ()
-                    {
+                    var yesfunc = async function () {
                         var baseurl = '@Url.Content("~/Identity/IAM/")';
                         var endpointurl = baseurl + "UserList?handler=BlockUser";
                         var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(entry),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response) {
-                                context.users = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(entry)
+                            });
+
+                            if (!response.ok) {
+                                throw await response.json();
                             }
-                        });
-                    }
+
+                            clientdata.users = await response.json();
+                        } catch (error) {
+                            raiseErrorModal(error);
+                        }
+                    };
 
                     raiseYesNoModal("Block user ?", "The user will be blocked, continue ?", yesfunc);
 
-                },
-                unblockUser: function (entry)
-                {
-                    var context = this;
 
-                    var yesfunc = function ()
-                    {
+                },
+                unblockUser: function (a,b,c, entry)
+                {
+                    var yesfunc = async function () {
                         var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=UnblockUser";
+                        var endpointurl = baseurl + "UserList?handler=UnBlockUser";
                         var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(entry),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response) {
-                                context.users = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(entry)
+                            });
+
+                            if (!response.ok) {
+                                throw await response.json();
                             }
-                        });
-                    }
+
+                            clientdata.users = await response.json();
+                        } catch (error) {
+                            raiseErrorModal(error);
+                        }
+                    };
 
                     raiseYesNoModal("Unblock user ?", "The user will gain access again, continue ?", yesfunc);
 
                 },
-                resetMFA: function ()
+                resetMFA: function (a,b,c,entry)
                 {
                     var context = this;
-                    var yesfunc = function ()
-                    {
-
+                    var yesfunc = async function () {
                         var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=ResetMFA";
+                        var endpointurl = baseurl + "UserList?handler=resetMfa";
                         var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(entry),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response) {
-                                context.users = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(entry)
+                            });
+
+                            if (!response.ok) {
+                                throw await response.json();
                             }
-                        });
-                    }
+
+                            clientdata.users = await response.json();
+                        } catch (error) {
+                            raiseErrorModal(error);
+                        }
+                    };
 
                     raiseYesNoModal("Reset Twofactor Authentication ?", "Twofactor authentication will be removed from the user. The user can configure it again.", yesfunc);
 
                 },
-                deleteEntity: function (entry)
+                deleteEntity: function (a,b,c,entry)
                 {
                     var context = this;
-                    var yesfunc = function () {
 
+                    var yesfunc = async function () 
+                    {
                         var baseurl = '@Url.Content("~/Identity/IAM/")';
                         var endpointurl = baseurl + "UserList?handler=DeleteEntity";
                         var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(entry),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response) {
-                                context.users = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(entry)
+                            });
+
+                            if (!response.ok) {
+                                throw await response.json();
                             }
-                        });
-                    }
+
+                            clientdata.users = await response.json();
+                        } catch (error) {
+                            raiseErrorModal(error);
+                        }
+                    };
 
                     raiseYesNoModal("Delete user ?", "The user will be deleted, continue ?", yesfunc);
                 }
@@ -290,12 +295,20 @@
                 var context = this;
                 var baseurl = '@Url.Content("~/Identity/IAM/")';
                 var endpointurl = baseurl + "UserList?handler=Load";
-                $.get(endpointurl, function (response) {
-                  context.users = response;
-                });
+                     fetch(endpointurl)
+                    .then(response => response.json()) 
+                    .then(data => {
+                        data.forEach(p=> { p.editpath= `User/${p.id}`});
+                        clientdata.users = data;
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
 
             }
-        });
+        };
+
+        const app = new BareaApp();
+        let clientdata = app.mount("app", appcontent);
+
     </script>
 
 }
