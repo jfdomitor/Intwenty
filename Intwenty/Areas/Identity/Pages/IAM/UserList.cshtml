@@ -52,7 +52,7 @@
         <tbody ba-foreach="entry in root.users">
             <tr>
                 <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete user"><i class="fa fa-trash"></i></div></td>
-                <td><a role="button" class="btn btn-sm btn-secondary" ba-href="entry.editpath" title="Edit"><i class="fas fa-edit"></i></a></td>
+                <td><a role="button" class="btn btn-sm btn-secondary" ba-href="entry.editPath" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{entry.userName}}</td>
                 <td>{{entry.isBlocked}}</td>
                 <td>{{entry.mfaActive}}</td>
@@ -293,7 +293,6 @@
                      fetch(endpointurl)
                     .then(response => response.json()) 
                     .then(data => {
-                        data.forEach(p=> { p.editpath= `User/${p.id}`});
                         clientdata.users = data;
                     })
                     .catch(error => console.error("Error fetching data:", error));

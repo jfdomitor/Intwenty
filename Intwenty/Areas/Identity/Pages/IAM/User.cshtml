@@ -14,7 +14,7 @@
     <div class="card">
         <div class="card-header"><h2>User</h2></div>
         <div class="card-body">
-            Manage the user <b>{{model.userName}}</b>
+            Manage the user <b>{{root.model.userName}}</b>
             <br />
             <br />
             <ul class="nav">
@@ -22,7 +22,7 @@
                     <a asp-area="Identity" asp-page="/IAM/UserList" role="button" class="btn btn-sm btn-outline-secondary"><span class="far fa-hand-point-left" style="font-size:large"></span> Back to list</a>
                 </li>
                 <li class="nav-item">
-                    <button class="btn btn-sm btn-outline-primary" type="button" v-on:click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button>
+                    <button class="btn btn-sm btn-outline-primary" type="button" ba-click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button>
                 </li>
             </ul>
         </div>
@@ -30,7 +30,7 @@
 
     <br />
 
-    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" ba-if="root.model.modelSaved">
         <strong>Changes have been saved !</strong><br />
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -45,55 +45,55 @@
         <div class="col-lg-4">
             <div class="form-group">
                 <label class="control-label">Email<span style="color: red"> *</span></label>
-                <input id="tb_email" type="text" class="form-control form-control-sm" v-model="model.email" />
+                <input id="tb_email" type="text" class="form-control form-control-sm" ba-bind="root.model.email" />
             </div>
             <div class="form-group">
                 <label class="control-label">Phone</label>
-                <input id="tb_phone" type="text" class="form-control form-control-sm" v-model="model.phoneNumber" />
+                <input id="tb_phone" type="text" class="form-control form-control-sm" ba-bind="root.model.phoneNumber" />
             </div>
             <div class="form-group">
                 <label class="control-label">First Name<span style="color: red"> *</span></label>
-                <input id="tb_firstname" type="text" class="form-control form-control-sm" v-model="model.firstName" />
+                <input id="tb_firstname" type="text" class="form-control form-control-sm" ba-bind="root.model.firstName" />
             </div>
             <div class="form-group">
                 <label class="control-label">Last Name<span style="color: red"> *</span></label>
-                <input id="tb_lastname" type="text" class="form-control form-control-sm" v-model="model.lastName" />
+                <input id="tb_lastname" type="text" class="form-control form-control-sm" ba-bind="root.model.lastName" />
             </div>
             <div class="form-group">
                 <label class="control-label">Legal ID</label>
-                <input id="tb_legalid" type="text" class="form-control form-control-sm" v-model="model.legalIdNumber" />
+                <input id="tb_legalid" type="text" class="form-control form-control-sm" ba-bind="root.model.legalIdNumber" />
             </div>
         </div>
         <div class="col-lg-4">
             <div class="form-group">
                 <label class="control-label">Address</label>
-                <input id="tb_address" type="text" class="form-control form-control-sm" v-model="model.address" />
+                <input id="tb_address" type="text" class="form-control form-control-sm" ba-bind="root.model.address" />
             </div>
             <div class="form-group">
                 <label class="control-label">Zip Code</label>
-                <input id="tb_zipcode" type="text" class="form-control form-control-sm" v-model="model.zipCode" />
+                <input id="tb_zipcode" type="text" class="form-control form-control-sm" ba-bind="root.model.zipCode" />
             </div>
             <div class="form-group">
                 <label class="control-label">City</label>
-                <input id="tb_city" type="text" class="form-control form-control-sm" v-model="model.city" />
+                <input id="tb_city" type="text" class="form-control form-control-sm" ba-bind="root.model.city" />
             </div>
             <div class="form-group">
                 <label class="control-label">Country</label>
-                <input id="tb_country" type="text" class="form-control form-control-sm" v-model="model.country" />
+                <input id="tb_country" type="text" class="form-control form-control-sm" ba-bind="root.model.country" />
             </div>
         </div>
         <div class="col-lg-4">
             <br />
             <div class="largecheckbox">
-                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" /><label>Allow Public Profile</label>
+                <input id="cb_allowpublicprofile" type="checkbox" ba-bind="root.model.allowPublicProfile" /><label>Allow Public Profile</label>
             </div>
 
             <div class="largecheckbox">
-                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" /><label>Allow Email Notifications</label>
+                <input id="cb_allowemailnotification" type="checkbox" ba-bind="root.model.allowEmailNotifications" /><label>Allow Email Notifications</label>
             </div>
 
             <div class="largecheckbox">
-                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>Allow SMS Notifications</label>
+                <input id="cb_allowsmsnotification" type="checkbox" ba-bind="root.model.allowSmsNotifications" /><label>Allow SMS Notifications</label>
             </div>
         </div>
     </div>
@@ -103,10 +103,10 @@
    
     <div class="form-group">
         <span>
-            <b>API Key: </b> {{model.apiKey}}
+            <b>API Key: </b><span>{{root.model.apiKey}}</span>
             <br />
             <br />
-            <button class="btn btn-sm btn-outline-primary" type="button" v-on:click="renewAPIKey()"> Create / Renew API Key</button>
+            <button class="btn btn-sm btn-outline-primary" type="button" ba-click="renewAPIKey()"> Create / Renew API Key</button>
         </span>
     </div>
 
@@ -124,90 +124,104 @@
                 <th style="width:25%">Product</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.userProducts">
+        <tbody ba-foreach="item in root.model.userProducts">
             <tr>
 
-                <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'/Identity/IAM/UserProduct/@Model.Id/' + item.organizationId + '/' + item.productId" title="Product Setup"><i class="fas fa-cogs"></i></a></td>
+                <td><a role="button" class="btn btn-sm btn-secondary" ba-click="goToProduct()" title="Product Setup"><i class="fas fa-cogs"></i></a></td>
                 <td>{{item.organizationName}}</td>
                 <td>{{item.productName}}</td>
 
             </tr>
         </tbody>
     </table>
-
+    <br />
+    <br />
+    {{root.model}}
 
 </div>
 
 @section Scripts
-    {
+ {
 
-    <script>
+    <script type="module">
 
-        var app = new Vue({
-            el: '#app',
+        import {BareaApp} from '/js/barea_dev.js';
+
+        const appcontent = {
             data:
             {
-                model: {  },
+                model: {userProducts:[]},
                 users: [],
                 idgen: -1
             },
-            methods:
-            {
-                updateEntity: function ()
+            methods: {
+
+                goToProduct : function(a,b,data){
+                    let userid = "@Model.Id";
+                    window.location.href=`/Identity/IAM/UserProduct/${userid}/${data.organizationId}/${data.productId}`;
+                },
+                updateEntity: async function (a)
                 {
-                    var context = this;
                     var baseurl = '@Url.Content("~/Identity/IAM/")';
                     var endpointurl = baseurl + "User/@Model.Id?handler=UpdateEntity";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers: {
-                            RequestVerificationToken: antiforgerytoken
-                        },
-                        success: function (response)
-                        {
-                            context.model = response;
-                            context.model.modelSaved = true;
-                            setTimeout(function () { context.model.modelSaved = false; }, 3000);
-                        },
-                        error: function (response)
-                        {
-                            //raiseErrorModal(response.responseJSON);
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(clientdata.model)
+                            });
+
+                            if (!response.ok) {
+                                throw await response.json();
+                            }
+
+
+                            clientdata.model =  await response.json();
+                            clientdata.model.modelSaved = true;
+                            setTimeout(function () { clientdata.model.modelSaved = false; }, 3000);
+
+                        } catch (error) {
+                            //raiseErrorModal(error);
                         }
-                    });
+
+     
                 },
-                renewAPIKey: function ()
+                renewAPIKey: async function ()
                 {
-                    var context = this;
                     var baseurl = '@Url.Content("~/Identity/IAM/")';
                     var endpointurl = baseurl + "User/@Model.Id?handler=CreateAPIKey";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers: {
-                            RequestVerificationToken: antiforgerytoken
-                        },
-                        success: function (response)
-                        {
-                            context.model = response;
-                            context.model.modelSaved = true;
-                            setTimeout(function () { context.model.modelSaved = false; }, 3000);
-                        },
-                        error: function (response)
-                        {
-                            //raiseErrorModal(response.responseJSON);
-                        }
-                    });
-                }
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(clientdata.model)
+                            });
 
+                            if (!response.ok) {
+                                throw await response.json();
+                            }
+
+
+                            clientdata.model = await response.json();
+                            clientdata.model.modelSaved = true;
+                            setTimeout(function () { clientdata.model.modelSaved = false; }, 3000);
+
+                        } catch (error) {
+                            //raiseErrorModal(error);
+                        }
+
+                },
+               
             },
             computed:
             {
@@ -219,15 +233,21 @@
             },
             mounted: function ()
             {
-                var context = this;
                 var baseurl = '@Url.Content("~/Identity/IAM/")';
                 var endpointurl = baseurl + "User/@Model.Id?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                    context.model = response;
-                });
+                 fetch(endpointurl)
+                    .then(response => response.json())
+                    .then(data => {
+                       clientdata.model = data;
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+              
             }
-        });
+        };
+
+        const app = new BareaApp();
+        let clientdata = app.mount("app", appcontent);
+
     </script>
 
 }

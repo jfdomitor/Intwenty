@@ -176,9 +176,9 @@ export class BareaApp
             return;
         }
 
+       
         //restore templates and clear
         this.#uiDependencyTracker.restoreUITracker();
-        this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
         Object.keys(this.#computedProperties).forEach(key => {
             this.#computedProperties[key].clearDependentDirectives();
         });
@@ -460,7 +460,7 @@ export class BareaApp
             
                     if (BareaHelper.DIR_GROUP_BIND_TO_PATH.includes(attr.name))
                     {
-                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name);
+                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name, trackcontext.renderedvarname);
                         if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
                         {
                             console.error(`The ${attr.name} directive with value: (${attr.value}) is invalid.`);
@@ -539,38 +539,44 @@ export class BareaApp
                                     this.#setInputRadio(tracking_obj);
                                 }
 
-                                let eventtype = (tracking_obj.directivename===BareaHelper.DIR_BIND) ? "input" : "blur";
-                                el.addEventListener(eventtype, (event) => {
+                                let eventtype = (tracking_obj.directivename === BareaHelper.DIR_BIND) ? "input" : "blur";
 
-                                    if (tracking_obj.hashandler)
-                                    {
-                                            this.#runBindHandler(BareaHelper.VERB_SET_DATA, tracking_obj);
-                                            return;
+                                const handler = function (event) {
+                                    if (tracking_obj.hashandler) {
+                                        this.#runBindHandler(BareaHelper.VERB_SET_DATA, tracking_obj);
+                                        return;
                                     }
 
                                     let log = BareaHelper.getDebugLog(3);
-                                    if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
+                                    if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX) {
                                         if (log.active)
                                             console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.checked);
-                
-                                        tracking_obj.data[tracking_obj.key] =  el.checked;
-                                    } 
-                                    else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO){
+
+                                        tracking_obj.data[tracking_obj.key] = el.checked;
+                                    }
+                                    else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO) {
                                         if (log.active)
                                             console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
-                
+
                                         if (el.checked)
-                                            tracking_obj.data[tracking_obj.key] =  el.value;
-                
-                                    } 
+                                            tracking_obj.data[tracking_obj.key] = el.value;
+                                    }
                                     else {
                                         if (log.active)
                                             console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
-                
-                                        tracking_obj.data[tracking_obj.key] =  el.value;
-                
+
+                                        tracking_obj.data[tracking_obj.key] = el.value;
                                     }
-                                });   
+                                }.bind(this);
+
+
+                               
+                                if (!el.dataset.listenerAdded) {
+                                    el.removeEventListener(eventtype, handler);
+                                    el.addEventListener(eventtype, handler);
+                                    el.dataset.listenerAdded = "true";
+                                }
+
                                    
                                 
                             }
@@ -594,7 +600,7 @@ export class BareaApp
                         const attribute_value_type = this.#getExpressionType(attr.value, attr.name, trackcontext.renderedvarname);
                         if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
                          {
-                            console.error(`Then ${attr.name} directive has an invalid value (${attr.value}).`);
+                            console.error(`The ${attr.name} directive has an invalid value (${attr.value}).`);
                             return;
                         }
     
@@ -756,30 +762,37 @@ export class BareaApp
                         //SPECIAL: NO TRACKING, ONLY REGISTER HANDLER
                         if (attribute_value_type === BareaHelper.EXPR_TYPE_HANDLER)
                         {
-                     
-                            el.addEventListener("click", (event) => {
- 
+                            
+                            const clickHandler = function (event) {
+                                event.stopPropagation();
                                 let eventdata = this.#appDataProxy;
                                 let bapath = el.getAttribute(BareaHelper.META_PATH);
-                                if (!bapath)
-                                {
+
+                                if (!bapath) {
                                     if (trackcontext.rendereddata)
-                                         eventdata = trackcontext.rendereddata;
-                                }
-                                else
-                                {
+                                        eventdata = trackcontext.rendereddata;
+                                } else {
                                     eventdata = this.getProxifiedPathData(bapath);
                                 }
-                                  
+
                                 let allparams = [event, el, eventdata];
                                 let pieces = BareaHelper.parseBareaFunctionCall(attr.value);
                                 allparams.push(...pieces.params);
+
                                 if (this.#methods[pieces.functionName]) {
-                                       this.#methods[pieces.functionName].apply(this, allparams);
+                                    this.#methods[pieces.functionName].apply(this, allparams);
                                 } else {
                                     console.warn(`Handler function '${pieces.functionName}' not found.`);
                                 }
-                            });     
+                            }.bind(this);
+
+                            // Ensure no duplicate event listener
+                            if (!el.dataset.listenerAdded) {
+                                el.removeEventListener("click", clickHandler);
+                                el.addEventListener("click", clickHandler);
+                                el.dataset.listenerAdded = "true";
+                            }
+
                         }
                         
                     }
@@ -872,7 +885,8 @@ export class BareaApp
                     //Find key
                     tracking_obj.key="";
                     let interpolation_key = BareaHelper.getLastBareaKeyName(path);
-                    if (interpolation_key!==BareaHelper.OBJECT && interpolation_key!==objpath){
+                    const value = tracking_obj.data[interpolation_key];
+                    if (interpolation_key && interpolation_key !== BareaHelper.ROOT_OBJECT && (typeof value !== "object")){
                         tracking_obj.key=interpolation_key;
                     }
 
@@ -888,7 +902,7 @@ export class BareaApp
                         {
                             for (let key in obj) {
                                 if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
-                                    let tracking_child = instance.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,path,null,"",node, expr, node.nodeValue);
+                                    let tracking_child = instance.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,"",null,"",node, expr, node.nodeValue);
                                     tracking_child.data =  obj[key];
                                     tracking_child.isrendered = false;
                                     tracking_child.iscomputed = false;
@@ -1494,6 +1508,9 @@ export class BareaApp
             if (expression.includes('(') || expression.includes(')'))
                 return BareaHelper.EXPR_TYPE_INVALID;
 
+            if (!expression.includes(BareaHelper.ROOT_OBJECT) && !varname)
+                return BareaHelper.EXPR_TYPE_INVALID;
+
             if (!(expression.includes('.')))
                 return BareaHelper.EXPR_TYPE_INVALID;
 
@@ -1963,7 +1980,7 @@ export class BareaApp
                 else
                 {
                   barea.refresh();
-                  //console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called', reasonobj);
+                  console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
                 }
               
             }
@@ -1992,7 +2009,6 @@ export class BareaApp
 
                 this.#userTemplates=[];
                 this.#dependencies.clear();
-                this.#objectReference=new WeakMap();
             }
            
 
