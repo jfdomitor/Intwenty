@@ -4,14 +4,6 @@
         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><span class="nav-label"><span class="fas fa-handshake"></span> Integrations</span> <span class="caret"></span></a>
         <div class="dropdown-menu">
 
-
-
-            @if (User.IsInRole(IntwentyRoles.RoleSuperAdmin) || User.IsInRole(IntwentyRoles.RoleSystemAdmin))
-            {
-                <a class="dropdown-item" asp-controller="Model" asp-action="EditEndpoints"><span class="fas fa-handshake"></span>Configured Endpoints</a>
-            }
-
-
             @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN") || User.IsInRole("APIUSER"))
             {
                 <a class="dropdown-item" href="~/swagger/index.html" target="_blank"><span class="fas fa-handshake"></span> API Docs and Testing</a>
