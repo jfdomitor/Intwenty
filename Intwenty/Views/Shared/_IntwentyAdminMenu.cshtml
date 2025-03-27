@@ -6,7 +6,7 @@
         @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
         {
 
-            <a class="dropdown-item" href="/Model/Documentation"><span class="fa fa-book"></span> Model documentation</a>
+            <a class="dropdown-item" asp-controller="Admin" asp-action="Documentation"><span class="fa fa-book"></span> Model documentation</a>
 
         }
 

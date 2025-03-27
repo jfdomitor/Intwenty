@@ -26,13 +26,9 @@
 
   <ItemGroup>
     <Compile Remove="Model\UIRendering\**" />
-    <Compile Remove="Pages\**" />
     <Content Remove="Model\UIRendering\**" />
-    <Content Remove="Pages\**" />
     <EmbeddedResource Remove="Model\UIRendering\**" />
-    <EmbeddedResource Remove="Pages\**" />
     <None Remove="Model\UIRendering\**" />
-    <None Remove="Pages\**" />
     <None Include="Build\intwenty_loggo_small.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -45,7 +41,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.5" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.2" />
     <PackageReference Include="QRCoder" Version="1.5.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
   </ItemGroup>
 
   

@@ -1,0 +1,168 @@
+﻿@model Intwenty.Model.IntwentyModel
+
+@{
+
+    
+}
+
+@{
+    ViewData["Title"] = "Model documentation";
+}
+
+<style>
+    th {
+        width: 25%;
+    }
+</style>
+
+
+
+<div>
+    <br />
+    <br />
+    <div class="card">
+        <div class="card-header"><h2>Model documentation</h2></div>
+        <div class="card-body"></div>
+    </div>
+    <br />
+    <br />
+    @foreach (var sys in Model.Systems)
+    {
+      
+        @foreach (var app in sys.Applications)
+        {
+            <div class="card">
+                    <div class="card-header"><h4>(System: @sys.LocalizedTitle) - @app.LocalizedTitle</h4></div>
+                <div class="card-body"></div>
+            </div>
+
+            <br />
+
+            <div style="margin-left:20px">
+                <h4>Database table</h4>
+
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Table name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@app.DbTableName</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30%">Title</th>
+                                            <th style="width:30%">Column name</th>
+                                            <th style="width:10%">DataType</th>
+                                            <th style="width:10%">Primary Key</th>
+                                            <th style="width:10%">Auto Incremental</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var col in app.DataColumns)
+                                        {
+                                            <tr>
+                                                <td>@col.LocalizedTitle</td>
+                                                <td>@col.DbColumnName</td>
+                                                <td>@col.DataType.ToString()</td>
+                                                <td>@col.IsPrimaryKey.ToString()</td>
+                                                <td>@col.IsAutoIncremental.ToString()</td>
+                                           
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>Views</h4>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Path</th>
+                            <th>List View</th>
+                            <th>New Entity View</th>
+                            <th>Persisted Entity View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ui in app.Views)
+                        {
+                            <tr>
+                                <td>@ui.LocalizedTitle</td>
+                                <td>@ui.RequestPath</td>
+                                <td>@ui.IsListView.ToString()</td>
+                                <td>@ui.IsNewEntityView.ToString()</td>
+                                <td>@ui.IsPersistedEntityView.ToString()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+
+            </div>
+        }
+
+    }
+
+
+    <div class="card">
+        <div class="card-header"><h4>Value Domains</h4></div>
+        <div class="card-body"></div>
+    </div>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Domain Name</th>
+                <th>Code</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vd in Model.ValueDomains)
+            {
+                <tr>
+                    <td>@vd.DomainName</td>
+                    <td>@vd.Code</td>
+                    <td>@vd.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+    <div class="card">
+        <div class="card-header"><h4>Localizations</h4></div>
+        <div class="card-body"></div>
+    </div>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Culture</th>
+                <th>Key</th>
+                <th>Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loc in Model.Localizations)
+            {
+                <tr>
+                    <td>@loc.Culture</td>
+                    <td>@loc.Key</td>
+                    <td>@loc.Text</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+
+</div>

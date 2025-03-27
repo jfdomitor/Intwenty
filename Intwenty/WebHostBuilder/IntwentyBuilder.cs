@@ -373,8 +373,12 @@ namespace Intwenty.WebHostBuilder
                 
             }).AddViewLocalization();
 
-           
 
+            if (settings.APIEnable)
+            {
+                services.AddEndpointsApiExplorer();
+                services.AddSwaggerGen();
+            }
 
         }
 
@@ -503,6 +507,7 @@ namespace Intwenty.WebHostBuilder
         {
             if (settings.APIEnable)
             {
+             
                 // Enable middleware to serve generated Swagger as a JSON endpoint.
                 builder.UseSwagger();
 
