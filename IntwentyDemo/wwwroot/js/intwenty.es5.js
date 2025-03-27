@@ -1,10 +1,10 @@
 ﻿"use strict";
 
-getTag = function (id) {
+var getTag = function getTag(id) {
     return document.getElementById(id);
 };
 
-handleIntwentyViewMode = function (istoogle) {
+var handleIntwentyViewMode = function handleIntwentyViewMode(istoogle) {
     var menucontainer = getTag("main_menu_container");
     var contentcontainer = getTag("main_content_container");
     if (!menucontainer) return;
@@ -56,14 +56,14 @@ handleIntwentyViewMode = function (istoogle) {
     }
 };
 
-setCookie = function (cname, cvalue, exdays) {
+var setCookie = function setCookie(cname, cvalue, exdays) {
     var d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     var expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 };
 
-getCookie = function (cname) {
+var getCookie = function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
     var ca = decodedCookie.split(';');
@@ -77,5 +77,19 @@ getCookie = function (cname) {
         }
     }
     return "";
+};
+
+var raiseYesNoModal = function raiseYesNoModal(title, message, callback) {
+    document.getElementById("confirmModalTitle").textContent = title;
+    document.getElementById("confirmModalBody").textContent = message;
+
+    var modal = new bootstrap.Modal(document.getElementById("yesNoModal"));
+
+    document.getElementById("confirmModalOkBtn").onclick = function () {
+        modal.hide();
+        if (typeof callback === "function") callback();
+    };
+
+    modal.show();
 };
 

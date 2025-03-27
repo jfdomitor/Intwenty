@@ -17,23 +17,25 @@
     </div>
 </div>
 
-<div class="modal fade" id="yesno_dlg_modal" role="dialog">
+
+<div class="modal fade" id="yesNoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="yesno_dlg_modal_hdr" class="modal-title">Information</h5>
+                <h5 class="modal-title" id="confirmModalTitle">Confirmation</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p id="yesno_dlg_modal_text"></p>
+            <div class="modal-body" id="confirmModalBody">
+                Are you sure?
             </div>
             <div class="modal-footer">
-                <button id="yesno_dlg_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Yes</button>
-                <button id="yesno_dlg_modal_nobtn" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmModalOkBtn">OK</button>
             </div>
         </div>
     </div>
 </div>
+
 
 
 
