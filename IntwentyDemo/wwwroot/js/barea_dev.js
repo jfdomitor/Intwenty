@@ -1822,6 +1822,7 @@ export class BareaApp
         {
             #dependencies = new Map();
             #objectReference = new WeakMap();
+            #objectReferenceInfo = new Map();
             #notifycallback = null;
             #objectCounter=0;
             #trackingCalls=0;
@@ -1841,12 +1842,33 @@ export class BareaApp
             {
                 let isnewobj = false;
                 let retval = 0;
+                let foundOlderKey = false;
                 if (!this.#objectReference.has(obj)) 
                 {
                     isnewobj=true;
                     this.#objectReference.set(obj, ++this.#objectCounter); // Assign a new ID
                 }
                 retval = this.#objectReference.get(obj);
+
+                let infoobj = BareaHelper.getObjectInfo(barea.getProxifiedPathData(), obj);
+                if (infoobj!==null)
+                {
+                    this.#objectReferenceInfo.set(obj, infoobj);
+                    if (isnewobj) {
+                        this.#objectReferenceInfo.forEach((value, key) => {
+                            if (foundOlderKey)
+                                return;
+                            if (value.path === infoobj.path) {
+                                if (this.#objectReference.has(key)) {
+                                    foundOlderKey = true;
+                                    isnewobj = false;
+                                    retval = this.#objectReference.get(key);
+                                }
+                            }
+                        });
+                    }
+                }
+
                 return {id:retval, isnew:isnewobj};
             }
 
@@ -3013,6 +3035,74 @@ export class BareaHelper
         {id: 5, name: "BareaApp - Print tracked computed dependencies: ", active:false},
         {id: 10, name: "BareaViewState - On state changed: ", active:false}
     ];
+
+    static deepTraverseObjectToArray = function (obj, parentPath = 'root')
+    {
+        let result = [];
+
+        if (obj !== null && typeof obj === 'object')
+        {
+            for (let key in obj) {
+
+                if (obj.hasOwnProperty(key))
+                {
+                    const currentPath = parentPath ? `${parentPath}.${key}` : key; // Build the full path
+
+                    // Check the type of the current property (object, array, or simple type)
+                    if (Array.isArray(obj[key])) {
+                        result.push({path: currentPath,type: 'array',value: obj[key]});
+                        obj[key].forEach((item, index) => {
+                            result = result.concat(BareaHelper.deepTraverseObjectToArray(item, `${currentPath}[${index}]`));
+                        });
+                    }
+                    else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        result.push({path: currentPath,type: 'object',value: obj[key]});
+                        result = result.concat(BareaHelper.deepTraverseObjectToArray(obj[key], currentPath));
+                    }
+                    else {
+                        result.push({path: currentPath,type: 'primitive',value: obj[key] });
+                    }
+                }
+            }
+
+        }
+        else{
+            result.push({ path: parentPath, type: 'primitive',value: null});
+        }
+
+        return result;
+    }
+
+    static getObjectInfo = function (rootobj, compareobj, parentPath = 'root')
+    {
+        
+        if (rootobj !== null && typeof rootobj === 'object') {
+            for (let key in rootobj) {
+
+                if (rootobj.hasOwnProperty(key)) {
+                    const currentPath = parentPath ? `${parentPath}.${key}` : key;
+                    if (Array.isArray(rootobj[key])) {
+                        if(compareobj === rootobj[key])
+                            return { path: currentPath, type: 'array', value: rootobj[key] };
+
+                        rootobj[key].forEach((item, index) => {
+                            BareaHelper.getObjectInfo(item, `${currentPath}[${index}]`);
+                        });
+
+                    }
+                    else if (typeof rootobj[key] === 'object' && rootobj[key] !== null) {
+                        if (compareobj === rootobj[key])
+                            return { path: currentPath, type: 'object', value: rootobj[key] };
+
+                        BareaHelper.getObjectInfo(rootobj[key], currentPath);
+                    }
+                }
+            }
+        }
+       
+        return null;
+    }
+
 
     static getLastBareaKeyName = function(path)
     {
