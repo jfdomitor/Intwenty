@@ -143,7 +143,11 @@ export class BareaApp
                     console.error('could not find array on path: ' + path);
             }
 
-            this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
+            queueMicrotask(() => {
+                this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
+            });
+
+            //this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
 
         }, this.#appData);
 
@@ -1838,38 +1842,23 @@ export class BareaApp
                 instance = this;
             }
 
-            #getObjectId(obj) 
-            {
+          
+
+            #getObjectId(obj) {
                 let isnewobj = false;
                 let retval = 0;
-                let foundOlderKey = false;
-                if (!this.#objectReference.has(obj)) 
-                {
-                    isnewobj=true;
-                    this.#objectReference.set(obj, ++this.#objectCounter); // Assign a new ID
+                if (!this.#objectReference.has(obj)) {
+                    isnewobj = true;
+                    this.#objectReference.set(obj, ++this.#objectCounter);
                 }
                 retval = this.#objectReference.get(obj);
+                //const fullproxy = barea.getProxifiedPathData();
+                //let infoobj = BareaHelper.getObjectInfo(fullproxy, obj);
+                //if (infoobj !== null) {
+                //    this.#objectReferenceInfo.set(obj, infoobj);
+                //}
 
-                let infoobj = BareaHelper.getObjectInfo(barea.getProxifiedPathData(), obj);
-                if (infoobj!==null)
-                {
-                    this.#objectReferenceInfo.set(obj, infoobj);
-                    if (isnewobj) {
-                        this.#objectReferenceInfo.forEach((value, key) => {
-                            if (foundOlderKey)
-                                return;
-                            if (value.path === infoobj.path) {
-                                if (this.#objectReference.has(key)) {
-                                    foundOlderKey = true;
-                                    isnewobj = false;
-                                    retval = this.#objectReference.get(key);
-                                }
-                            }
-                        });
-                    }
-                }
-
-                return {id:retval, isnew:isnewobj};
+                return { id: retval, isnew: isnewobj };
             }
 
             removeTemplateDependencies(templateid=-1)
@@ -1996,28 +1985,97 @@ export class BareaApp
                 this.#notificationCalls++;
 
                 let objid = this.#getObjectId(reasonobj);
-                if (!objid.isnew)
-                {
+                if (!objid.isnew) {
                     let depKey = objid.id + ":value:" + reasonkey;
                     let valueset = this.#dependencies.get(depKey);
                     if (!valueset)
-                        valueset= new Set();
+                        valueset = new Set();
 
                     depKey = objid.id + ":object:";
                     let objectset = this.#dependencies.get(depKey);
                     if (!objectset)
-                        objectset= new Set();
+                        objectset = new Set();
 
                     let resultset = new Set([...valueset, ...objectset]);
-                    if (resultset.size===0)
+                    if (resultset.size === 0)
                         return;
-    
+
                     this.#notifycallback(reasonobj, reasonkey, reasonvalue, path, resultset, reasonfuncname);
+
                 }
-                else
-                {
-                    barea.refresh();
-                    console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
+                else {
+
+                    //A new untracked object (root.model = {}), can exist earlier with another Id
+                    let old_tracked_id = -1;
+                    //if (reasonkey) {
+                    //    if (reasonobj[reasonkey] && typeof reasonobj[reasonkey] === "object" && !Array.isArray(reasonobj[reasonkey]))
+                    //    {
+
+                    //        const fullproxy = barea.getProxifiedPathData();
+                    //        let infoobj = BareaHelper.getObjectInfo(fullproxy, reasonobj[reasonkey]);
+
+                    //        if (infoobj !== null)
+                    //        {
+                    //            for (const [key, value] of [...this.#objectReferenceInfo.entries()])
+                    //            {
+                    //                if (value.path === infoobj.path)
+                    //                {
+                    //                    if (old_tracked_id > 0) {
+                    //                        this.#objectReferenceInfo.delete(key);
+                    //                        continue;
+                    //                    }
+
+                    //                    if (this.#objectReference.has(key))
+                    //                    {
+                    //                        old_tracked_id = this.#objectReference.get(key);
+                    //                        if (old_tracked_id < objid.id) {
+
+                    //                            this.#objectReference.delete(key);
+                    //                            this.#objectReference.set(reasonobj[reasonkey], old_tracked_id);
+
+                    //                        }
+                    //                    }
+                    //                }
+                    //            }
+                    //        }
+
+                    //    }
+
+                    //}
+
+                    if (old_tracked_id > 0) {
+                        //let valueset = new Set();
+                        //let depKey = "";
+                        //for (let prop in reasonobj[reasonkey]) {
+                        //    depKey = old_tracked_id + ":value:" + prop;
+                        //    let keyvals = this.#dependencies.get(depKey);
+                        //    if (keyvals) {
+                        //        valueset.add(...keyvals);
+                        //    }
+                        //}
+
+                        //depKey = old_tracked_id + ":object:";
+                        //let objectset = this.#dependencies.get(depKey);
+                        //if (!objectset)
+                        //    objectset = new Set();
+
+                        //let resultset = new Set([...valueset, ...objectset]);
+                        //if (resultset.size === 0)
+                        //    return;
+
+                        //resultset.forEach(item => {
+                        //    item.data = reasonobj[reasonkey];
+                        //});
+
+                        //this.#notifycallback(reasonobj, reasonkey, reasonvalue, path, resultset, reasonfuncname);
+                    } else {
+
+                        //The last exit
+                        barea.refresh();
+                        console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
+                    }
+
+
                 }
               
             }
@@ -3082,7 +3140,8 @@ export class BareaHelper
                 if (rootobj.hasOwnProperty(key)) {
                     const currentPath = parentPath ? `${parentPath}.${key}` : key;
                     if (Array.isArray(rootobj[key])) {
-                        if(compareobj === rootobj[key])
+                        let cmp = Object.is(compareobj, rootobj[key]);
+                        if(cmp)
                             return { path: currentPath, type: 'array', value: rootobj[key] };
 
                         rootobj[key].forEach((item, index) => {
@@ -3091,7 +3150,8 @@ export class BareaHelper
 
                     }
                     else if (typeof rootobj[key] === 'object' && rootobj[key] !== null) {
-                        if (compareobj === rootobj[key])
+                        let cmp = Object.is(compareobj, rootobj[key]);
+                        if (cmp)
                             return { path: currentPath, type: 'object', value: rootobj[key] };
 
                         BareaHelper.getObjectInfo(rootobj[key], currentPath);
