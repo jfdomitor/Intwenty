@@ -14,6 +14,7 @@ export class BareaApp
 {
     #appContent=null; 
     #appElement; 
+    #clonedAppElement;
     #bareaId=0;
     #internalSystemCounter = 0;
     #appDataProxy; 
@@ -65,10 +66,13 @@ export class BareaApp
             return;
         }
 
+
         if (typeof element === "object") 
-            this.#appElement = element
+            this.#appElement = element;
         else
             this.#appElement = document.getElementById(element);
+
+        this.#clonedAppElement = this.#appElement.cloneNode(true);
 
         this.#appData = content.data;
         this.#appDataProxy = content.data;
@@ -176,9 +180,8 @@ export class BareaApp
             return;
         }
 
-       
         //restore templates and clear
-        this.#uiDependencyTracker.restoreUITracker();
+        this.#uiDependencyTracker.clear();
         Object.keys(this.#computedProperties).forEach(key => {
             this.#computedProperties[key].clearDependentDirectives();
         });
@@ -201,6 +204,10 @@ export class BareaApp
                 });
             });
         }
+
+        const freshElement = this.#clonedAppElement.cloneNode(true);
+        this.#appElement.replaceWith(freshElement);
+        this.#appElement = freshElement;
         
         this.#trackDirectives();
       
@@ -1988,8 +1995,7 @@ export class BareaApp
                 else
                 {
                     barea.refresh();
-                  //TODO: Revert back to saved UI, with interpolations and templates
-                  console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
+                    console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
                 }
               
             }
@@ -2002,20 +2008,8 @@ export class BareaApp
                 }
             }
 
-            restoreUITracker()
+            clear()
             {
-                //restore templates
-                this.#userTemplates.forEach(directive => 
-                {
-                    if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename))
-                    {
-                        if (directive.element && directive.parentelement){
-                            directive.parentelement.innerHTML="";
-                            directive.parentelement.appendChild(directive.element);
-                        }
-                    }                           
-                });
-
                 this.#userTemplates=[];
                 this.#dependencies.clear();
             }
