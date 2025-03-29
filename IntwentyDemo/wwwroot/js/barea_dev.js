@@ -23,7 +23,7 @@ export class BareaApp
     #computedPropertyNames = [];
     #appData;
     #methods = {};
-    #mountStarted=false;
+    #mounted=false;
     #mountedHandler=null;
     #computedProperties = {};
     #enableBareaId = false;
@@ -40,14 +40,17 @@ export class BareaApp
         this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
     }
 
-    mount(element, content) 
+    async mount(element, content) 
     {
-        this.#appContent=content;
+        if (!('fetch' in window && 'Promise' in window && 'Symbol' in window && 'Map' in window)) {
+            console.error('Your browser and js engine is too old to use barea.js');
+            return;
+        }
 
-        if (this.#mountStarted)
+        if (this.#mounted)
             return;
 
-        this.#mountStarted=true;
+        this.#appContent=content;
 
         if (!content){
             console.error('Illegal use of mount, please pass a content object with data and methods');
@@ -74,8 +77,7 @@ export class BareaApp
 
         this.#clonedAppElement = this.#appElement.cloneNode(true);
 
-        this.#appData = content.data;
-        this.#appDataProxy = content.data;
+      
 
         //Methods
         if (content.methods)
@@ -110,8 +112,18 @@ export class BareaApp
 
         if (content.mounted)
         {
+            //Let user load / modify data before showing the app
             this.#mountedHandler = content.mounted;
+            const result = this.#mountedHandler.apply(this, [content.data]);
+            if (result instanceof Promise)
+            {
+                await result;
+            }
         }
+
+        //The user my have editited
+        this.#appData = content.data;
+        this.#appDataProxy = content.data;
 
         if (this.#enableHideUnloaded)
         {
@@ -120,11 +132,7 @@ export class BareaApp
             document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));
         }
        
-        if (!('fetch' in window && 'Promise' in window && 'Symbol' in window && 'Map' in window))
-        {
-            console.error('Your browser and js engine is too old to use this script');
-            return;
-        }
+      
           
         const proxy = this.#createReactiveProxy((path, reasonobj, reasonkey, reasonvalue, reasonfuncname="") => 
         { 
@@ -134,7 +142,7 @@ export class BareaApp
                 console.log(log.name, path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
 
             //Tweak for array functions
-            //On array asssign: reasonobj=parent, reasonkey=arrayname, we will do the same here
+            //On array assign: reasonobj=parent, reasonkey=arrayname, we will do the same here
             if (Array.isArray(reasonobj) && BareaHelper.ARRAY_FUNCTIONS.includes(reasonfuncname)){
                 let objpath = BareaHelper.getLastBareaObjectName(path);
                 reasonkey = BareaHelper.getLastBareaKeyName(path);
@@ -149,25 +157,14 @@ export class BareaApp
 
         }, this.#appData);
 
+        //The proxy is now active
         this.#appDataProxy = proxy;
 
-        queueMicrotask(() => {
-            this.#trackDirectives();
-        });
-  
-        //if (this.#enableBareaId && ! this.#appDataProxy.hasOwnProperty('baId')) 
-        //    this.#appDataProxy.baId = ++this.#bareaId;  // Assign a new unique ID
+        //Track all directives
+        this.#trackDirectives();
 
-        if (this.#mountedHandler) 
-        {  
-            const result = this.#mountedHandler.apply(this, [this.#appDataProxy]);
-            //if (result instanceof Promise) {
-            //    await result;
-            //}
-         
-        }
 
-     
+        this.#mounted = true;
 
         return this.#appDataProxy;
     }
@@ -175,11 +172,10 @@ export class BareaApp
     /**
      * Force a full reload of barea, except for the proxy
      * Used when new untracked objects in the proxy is detected upon users assigning new objects to the proxy
-     * 
      */
     refresh() 
     {
-        if (!this.#mountStarted)
+        if (!this.#mounted)
             return;
 
         if (!this.#appElement)
@@ -225,7 +221,7 @@ export class BareaApp
 
     getData()
     {
-        if (!this.#mountStarted)
+        if (!this.#mounted)
         {
             console.warn("barea.js is not mounted. Call mount on the instance before using this method.");
             return;
