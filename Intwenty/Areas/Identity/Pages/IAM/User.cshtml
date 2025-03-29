@@ -231,12 +231,15 @@
             },
             mounted: function ()
             {
-                var baseurl = '@Url.Content("~/Identity/IAM/")';
-                var endpointurl = baseurl + "User/@Model.Id?handler=Load";
-                 fetch(endpointurl)
+                let baseurl = '@Url.Content("~/Identity/IAM/")';
+                let endpointurl = baseurl + "User/@Model.Id?handler=Load";
+                // const response = await fetch(endpointurl);
+                // clientdata.model = await response.json;
+
+                fetch(endpointurl)
                     .then(response => response.json())
                     .then(data => {
-                       clientdata.model = data;
+                        clientdata.model = data;
                     })
                     .catch(error => console.error("Error fetching data:", error));
               

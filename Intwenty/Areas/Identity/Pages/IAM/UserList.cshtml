@@ -127,11 +127,11 @@
 
                 addEntity: function ()
                 {
-                    var okfunc = function ()
+                    let okfunc = function ()
                     {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=AddUser";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserList?handler=AddUser";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         fetch(endpointurl, {
                           method: "POST",
@@ -157,10 +157,10 @@
                 blockUser: function (a,b,entry)
                 {
 
-                    var yesfunc = async function () {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=BlockUser";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                    let yesfunc = async function () {
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserList?handler=BlockUser";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         try {
                             const response = await fetch(endpointurl, {
@@ -188,10 +188,10 @@
                 },
                 unblockUser: function (a,b, entry)
                 {
-                    var yesfunc = async function () {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=UnBlockUser";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                    let yesfunc = async function () {
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserList?handler=UnBlockUser";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         try {
                             const response = await fetch(endpointurl, {
@@ -218,10 +218,10 @@
                 },
                 resetMFA: function (a,b,entry)
                 {
-                    var yesfunc = async function () {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=resetMfa";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                    let yesfunc = async function () {
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserList?handler=resetMfa";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         try {
                             const response = await fetch(endpointurl, {
@@ -249,11 +249,11 @@
                 deleteEntity: function (a,b,entry)
                 {
 
-                    var yesfunc = async function () 
+                    let yesfunc = async function () 
                     {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserList?handler=DeleteEntity";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserList?handler=DeleteEntity";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         try {
                             const response = await fetch(endpointurl, {
@@ -288,8 +288,8 @@
             },
             mounted: function ()
             {
-                var baseurl = '@Url.Content("~/Identity/IAM/")';
-                var endpointurl = baseurl + "UserList?handler=Load";
+                let baseurl = '@Url.Content("~/Identity/IAM/")';
+                let endpointurl = baseurl + "UserList?handler=Load";
                      fetch(endpointurl)
                     .then(response => response.json()) 
                     .then(data => {

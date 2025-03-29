@@ -147,31 +147,35 @@ export class BareaApp
                 this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
             });
 
-            //this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
-
         }, this.#appData);
 
         this.#appDataProxy = proxy;
-  
-        //Important: Always directly after proxification
-        //Track UI
-        this.#trackDirectives();
-      
 
-        if (this.#enableBareaId && ! this.#appDataProxy.hasOwnProperty('baId')) 
-            this.#appDataProxy.baId = ++this.#bareaId;  // Assign a new unique ID
+        queueMicrotask(() => {
+            this.#trackDirectives();
+        });
+  
+        //if (this.#enableBareaId && ! this.#appDataProxy.hasOwnProperty('baId')) 
+        //    this.#appDataProxy.baId = ++this.#bareaId;  // Assign a new unique ID
 
         if (this.#mountedHandler) 
         {  
-            this.#mountedHandler.apply(this, [this.#appDataProxy]);
+            const result = this.#mountedHandler.apply(this, [this.#appDataProxy]);
+            //if (result instanceof Promise) {
+            //    await result;
+            //}
+         
         }
+
+     
 
         return this.#appDataProxy;
     }
 
     /**
      * Force a full reload of barea, except for the proxy
-     * Baraea use this when new untracked objects in the data is detected
+     * Used when new untracked objects in the proxy is detected upon users assigning new objects to the proxy
+     * 
      */
     refresh() 
     {
@@ -189,7 +193,9 @@ export class BareaApp
         Object.keys(this.#computedProperties).forEach(key => {
             this.#computedProperties[key].clearDependentDirectives();
         });
+
         this.#dynamicExpressionRegistry.clear();
+
         if (this.#appContent.computed) 
         {
             this.#computedProperties={};
@@ -1842,8 +1848,6 @@ export class BareaApp
                 instance = this;
             }
 
-          
-
             #getObjectId(obj) {
                 let isnewobj = false;
                 let retval = 0;
@@ -1852,12 +1856,6 @@ export class BareaApp
                     this.#objectReference.set(obj, ++this.#objectCounter);
                 }
                 retval = this.#objectReference.get(obj);
-                //const fullproxy = barea.getProxifiedPathData();
-                //let infoobj = BareaHelper.getObjectInfo(fullproxy, obj);
-                //if (infoobj !== null) {
-                //    this.#objectReferenceInfo.set(obj, infoobj);
-                //}
-
                 return { id: retval, isnew: isnewobj };
             }
 
@@ -2005,77 +2003,8 @@ export class BareaApp
                 }
                 else {
 
-                    //A new untracked object (root.model = {}), can exist earlier with another Id
-                    let old_tracked_id = -1;
-                    //if (reasonkey) {
-                    //    if (reasonobj[reasonkey] && typeof reasonobj[reasonkey] === "object" && !Array.isArray(reasonobj[reasonkey]))
-                    //    {
-
-                    //        const fullproxy = barea.getProxifiedPathData();
-                    //        let infoobj = BareaHelper.getObjectInfo(fullproxy, reasonobj[reasonkey]);
-
-                    //        if (infoobj !== null)
-                    //        {
-                    //            for (const [key, value] of [...this.#objectReferenceInfo.entries()])
-                    //            {
-                    //                if (value.path === infoobj.path)
-                    //                {
-                    //                    if (old_tracked_id > 0) {
-                    //                        this.#objectReferenceInfo.delete(key);
-                    //                        continue;
-                    //                    }
-
-                    //                    if (this.#objectReference.has(key))
-                    //                    {
-                    //                        old_tracked_id = this.#objectReference.get(key);
-                    //                        if (old_tracked_id < objid.id) {
-
-                    //                            this.#objectReference.delete(key);
-                    //                            this.#objectReference.set(reasonobj[reasonkey], old_tracked_id);
-
-                    //                        }
-                    //                    }
-                    //                }
-                    //            }
-                    //        }
-
-                    //    }
-
-                    //}
-
-                    if (old_tracked_id > 0) {
-                        //let valueset = new Set();
-                        //let depKey = "";
-                        //for (let prop in reasonobj[reasonkey]) {
-                        //    depKey = old_tracked_id + ":value:" + prop;
-                        //    let keyvals = this.#dependencies.get(depKey);
-                        //    if (keyvals) {
-                        //        valueset.add(...keyvals);
-                        //    }
-                        //}
-
-                        //depKey = old_tracked_id + ":object:";
-                        //let objectset = this.#dependencies.get(depKey);
-                        //if (!objectset)
-                        //    objectset = new Set();
-
-                        //let resultset = new Set([...valueset, ...objectset]);
-                        //if (resultset.size === 0)
-                        //    return;
-
-                        //resultset.forEach(item => {
-                        //    item.data = reasonobj[reasonkey];
-                        //});
-
-                        //this.#notifycallback(reasonobj, reasonkey, reasonvalue, path, resultset, reasonfuncname);
-                    } else {
-
-                        //The last exit
-                        barea.refresh();
-                        console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
-                    }
-
-
+                     barea.refresh();
+                     console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
                 }
               
             }
