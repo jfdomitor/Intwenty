@@ -22,13 +22,13 @@
                     <a asp-area="Identity" asp-page="/IAM/ProductList" role="button" class="btn btn-sm btn-outline-secondary"><span class="far fa-hand-point-left" style="font-size:large"></span> Back to list</a>
                 </li>
                 <li class="nav-item">
-                    <button class="btn btn-sm btn-outline-primary" type="button" v-on:click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button>
+                    <button class="btn btn-sm btn-outline-primary" type="button" ba-click="updateEntity()" style="margin-left:10px"><span class="fa fa-save" style="font-size:large"></span> Save</button>
                 </li>
             </ul>
         </div>
     </div>
     <br />
-    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" ba-if="root.model.modelSaved">
         <strong>Changes have been saved !</strong><br />
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -39,7 +39,7 @@
 
     <div class="form-group">
         <label class="control-label">Name<span style="color: red"> *</span></label>
-        <input id="tb_email" type="text" class="form-control form-control-sm" v-model="model.productName" />
+        <input id="tb_email" type="text" class="form-control form-control-sm" v-model="root.model.productName" />
     </div>
 
     <br />
@@ -63,9 +63,9 @@
                 <th style="width:30%">Type</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.authorizationItems">
+        <tbody ba-foreach="item in root.model.authorizationItems">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.name}}</td>
                 <td>{{item.authorizationType}}</td>
             </tr>
@@ -78,75 +78,81 @@
 @section Scripts
     {
 
-    <script>
+    <script type="module">
 
-        var app = new Vue({
-            el: '#app',
+        import { BareaApp } from '/js/barea_dev.js';
+
+        const appcontent = {
             data:
             {
-                model: {  },
+                model: {},
                 authorizationItems: [],
                 idgen: -1
             },
             methods: {
 
-                updateEntity: function ()
-                {
-                    var context = this;
-                    var baseurl = '@Url.Content("~/Identity/IAM/")';
-                    var endpointurl = baseurl + "Product/@Model.Id?handler=UpdateEntity";
-                    var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+              
+                updateEntity: async function () {
+                    let baseurl = '@Url.Content("~/Identity/IAM/")';
+                    let endpointurl = baseurl + "Product/@Model.Id?handler=UpdateEntity";
+                    let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers: {
-                            RequestVerificationToken: antiforgerytoken
-                        },
-                        success: function (response)
-                        {
-                            context.model = response;
-                            context.model.modelSaved = true;
-                            setTimeout(function () { context.model.modelSaved = false; }, 3000);
-                        },
-                        error: function (response)
-                        {
-                            //raiseErrorModal(response.responseJSON);
+                    try {
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
+                            },
+                            body: JSON.stringify(clientdata.model)
+                        });
+
+                        if (!response.ok) {
+                            throw await response.json();
                         }
-                    });
-                },
-                addAuthorizationItem: function ()
-                {
 
-                },
-                removeAuthorizationItem: function ()
-                {
+
+                        clientdata.model = await response.json();
+                        clientdata.model.modelSaved = true;
+                        setTimeout(function () { clientdata.model.modelSaved = false; }, 3000);
+
+                    } catch (error) {
+                        //raiseErrorModal(error);
+                    }
+
 
                 }
+               
 
             },
             computed:
             {
-                example: function ()
-                {
-
+                example: function () {
                 }
 
             },
-            mounted: function ()
-            {
-                var context = this;
-                var baseurl = '@Url.Content("~/Identity/IAM/")';
-                var endpointurl = baseurl + "Product/@Model.Id?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                    context.model = response;
-                });
+            mounted: function (applicationData) {
+                let baseurl = '@Url.Content("~/Identity/IAM/")';
+                let endpointurl = baseurl + "Product/@Model.Id?handler=Load";
+                const retval = fetch(endpointurl)
+                    .then(response => response.json())
+                    .then(data => {
+                        applicationData.model = data;
+                        return data;
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+
+                return retval;
+
             }
-        });
+        };
+
+        const app = new BareaApp();
+        let clientdata = app.mount("app", appcontent);
+
     </script>
 
+
+  
 }
 

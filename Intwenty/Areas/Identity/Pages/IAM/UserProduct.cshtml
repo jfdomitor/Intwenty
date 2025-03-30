@@ -13,10 +13,10 @@
     <br />
     <div class="card">
         <div class="card-header"><h2>User Product</h2></div>
-        <div class="card-body">Authorize the product <b>{{model.productName}}</b> for the user <b>{{model.userName}}</b> </div>
+        <div class="card-body">Authorize the product <b>{{root.model.productName}}</b> for the user <b>{{root.model.userName}}</b> </div>
     </div>
     <br />
-    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" ba-if="root.model.modelSaved">
         <strong>Changes have been saved !</strong><br />
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -51,9 +51,9 @@
                 <th style="width:30%">Name</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.roleAuthorizations">
+        <tbody ba-foreach="item in root.model.roleAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
             </tr>
         </tbody>
@@ -82,11 +82,11 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.systemAuthorizations">
+        <tbody ba-foreach="item in root.model.systemAuthorizations">
             <tr>
                 <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
-                <td><span v-if="item.denyAuthorization">Denied</span><span v-if="!item.denyAuthorization">Authorized</span></td>
+                <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
 
             </tr>
         </tbody>
@@ -115,11 +115,11 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.applicationAuthorizations">
+        <tbody ba-foreach="item in root.model.applicationAuthorizations">
             <tr>
                 <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
-                <td><span v-if="item.denyAuthorization">Denied</span><span v-if="!item.denyAuthorization">Authorized</span></td>
+                <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
         </tbody>
     </table>
@@ -149,11 +149,11 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody v-for="item in model.viewAuthorizations">
+        <tbody ba-foreach="item in root.model.viewAuthorizations">
             <tr>
                 <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
-                <td><span v-if="item.denyAuthorization">Denied</span><span v-if="!item.denyAuthorization">Authorized</span></td>
+                <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
         </tbody>
     </table>
@@ -170,38 +170,38 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group" v-if="authorization.authorizationType=='ROLE'">
+                    <div class="form-group" ba-if="authorization.authorizationType=='ROLE'">
                         <label class="control-label">Select Role<span style="color: red"> *</span></label>
-                        <select v-model="authorization.authorizationId" class="form-control form-control-sm">
-                            <option v-for="item in authitem.roleItems" v-bind:value="item.id">{{item.name}}</option>
+                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.roleItems"  >{{item.name}}</option>
                         </select>
                     </div>
-                    <div class="form-group" v-if="authorization.authorizationType=='SYSTEM'">
+                    <div class="form-group" ba-if="authorization.authorizationType=='SYSTEM'">
                         <label class="control-label">Select System<span style="color: red"> *</span></label>
-                        <select v-model="authorization.authorizationId" class="form-control form-control-sm">
-                            <option v-for="item in authitem.systemItems" v-bind:value="item.id">{{item.name}}</option>
+                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.systemItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" v-model="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
 
                     </div>
-                    <div class="form-group" v-if="authorization.authorizationType=='APPLICATION'">
+                    <div class="form-group" ba-if="authorization.authorizationType=='APPLICATION'">
                         <label class="control-label">Select Application<span style="color: red"> *</span></label>
-                        <select v-model="authorization.authorizationId" class="form-control form-control-sm">
-                            <option v-for="item in authitem.applicationItems" v-bind:value="item.id">{{item.name}}</option>
+                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.applicationItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" v-model="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
                     </div>
-                    <div class="form-group" v-if="authorization.authorizationType=='UIVIEW'">
+                    <div class="form-group" ba-if="authorization.authorizationType=='UIVIEW'">
                         <label class="control-label">Select View<span style="color: red"> *</span></label>
-                        <select v-model="authorization.authorizationId" class="form-control form-control-sm">
-                            <option v-for="item in authitem.viewItems" v-bind:value="item.id">{{item.name}}</option>
+                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.viewItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" v-model="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="addAuthorizationModal_okBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="authorization.authorizationId==0">Ok</button>
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="authorization.authorizationId==0">Ok</button>
                 </div>
             </div>
         </div>
@@ -213,232 +213,239 @@
 @section Scripts
     {
 
-    <script>
+         <script type="module">
 
-        var app = new Vue({
-            el: '#app',
+        import { BareaApp } from '/js/barea_dev.js';
+
+        const appcontent = {
             data:
             {
                 model: {},
-                authorization: { authorizationItemType: "", authorizationItemId: 0, authorizationItemTypeName: ""},
-                users: [],
+                authorization: {},
                 authitem: {},
+                users: [],
                 idgen: -1
             },
-            methods: {
+            methods: 
+            {
 
-                updateEntity: function ()
+
+                removeAuthorizationItem: async function (a,b,item) 
                 {
+                    let baseurl = '@Url.Content("~/Identity/IAM/")';
+                    let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=RemoveAuthorization";
+                    let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                },
-                removeAuthorizationItem: function (item)
-                {
-                    var context = this;
-                    var yesfunc = function ()
-                    {
-
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=RemoveAuthorization";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(item),
+                    try {
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
                             headers: {
-                                RequestVerificationToken: antiforgerytoken
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
                             },
-                            success: function (response) {
-                                context.model = response;
-                            },
-                            error: function (response) {
-                                //raiseErrorModal(response.responseJSON);
-                            }
+                            body: JSON.stringify(item)
                         });
-                     }
 
-                    raiseYesNoModal("Remove Authorization ?", "Selected authorization item will be removed from the user, continue ?", yesfunc);
-                },
-                addRoleAuth: function ()
-                {
+                        if (!response.ok) {
+                            throw await response.json();
+                        }
 
-                    var context = this;
-
-                    context.authorization = { authorizationType: "ROLE", authorizationId: 0, authorizationItemTypeName: "Role", userId:"", organizationId:0, productId:"" }
-
-                    var okfunc = function ()
+                        clientdata.model = await response.json();
+                      
+                    } 
+                    catch (error) 
                     {
-                        context.authorization.userId = "@Model.UserId";
-                        context.authorization.organizationId = @Model.OrganizationId;
-                        context.authorization.productId = "@Model.ProductId";
-
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddRoleAuthorization";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.authorization),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response)
-                            {
-                                context.model = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
-                        });
+                        //raiseErrorModal(error);
                     }
 
-                    $("#addAuthorizationModal_okBtn").off().on('click', okfunc);
-                    $("#addAuthorizationModal").modal('show');
                 },
-                addSystemAuth: function ()
+                addRoleAuth: function () {
+
+
+                    clientdata.authorization = { authorizationType: "ROLE", authorizationId: 0, authorizationItemTypeName: "Role", userId: "", organizationId: 0, productId: "" }
+
+                    let okfunc = async function () {
+
+                        clientdata.authorization.userId = "@Model.UserId";
+                        clientdata.authorization.organizationId = @Model.OrganizationId;
+                        clientdata.authorization.productId = "@Model.ProductId";
+
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddRoleAuthorization";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
+                            },
+                            body: JSON.stringify(clientdata.authorization)
+                        });
+
+                        if (!response.ok) {
+                            throw await response.json();
+                        }
+
+
+                        clientdata.model = await response.json();
+                    }
+
+                    raiseAddAuthorizationModal(okfunc);
+                },
+                addSystemAuth: function () 
                 {
-                    var context = this;
-                    context.authorization = { authorizationType: "SYSTEM", authorizationId: 0, authorizationItemTypeName: "System", userId: "", organizationId: 0, productId: "", denyAuthorization:false  }
+                    clientdata.authorization = { authorizationType: "SYSTEM", authorizationId: 0, authorizationItemTypeName: "System", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
 
-                    var okfunc = function ()
-                    {
-                        context.authorization.userId = "@Model.UserId";
-                        context.authorization.organizationId = @Model.OrganizationId;
-                        context.authorization.productId = "@Model.ProductId";
+                    let okfunc = async function () {
 
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddSystemAuthorization";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        clientdata.authorization.userId = "@Model.UserId";
+                        clientdata.authorization.organizationId = @Model.OrganizationId;
+                        clientdata.authorization.productId = "@Model.ProductId";
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.authorization),
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddSystemAuthorization";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
                             headers: {
-                                RequestVerificationToken: antiforgerytoken
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
                             },
-                            success: function (response)
-                            {
-                                context.model = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
+                            body: JSON.stringify(clientdata.authorization)
                         });
+
+                        if (!response.ok) {
+                            throw await response.json();
+                        }
+
+
+                        clientdata.model = await response.json();
+                        
                     }
 
-                    $("#addAuthorizationModal_okBtn").off().on('click', okfunc);
-                    $("#addAuthorizationModal").modal('show');
+                    raiseAddAuthorizationModal(okfunc);
                 },
-                addApplicationAuth: function () {
-                     var context = this;
-                    context.authorization = { authorizationType: "APPLICATION", authorizationId: 0, authorizationItemTypeName: "Application", userId: "", organizationId: 0, productId: "", denyAuthorization:false }
-
-                    var okfunc = function ()
-                    {
-                        context.authorization.userId = "@Model.UserId";
-                        context.authorization.organizationId = @Model.OrganizationId;
-                        context.authorization.productId = "@Model.ProductId";
-
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddApplicationAuthorization";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
-
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.authorization),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response)
-                            {
-                                context.model = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
-                        });
-                    }
-
-                    $("#addAuthorizationModal_okBtn").off().on('click', okfunc);
-                    $("#addAuthorizationModal").modal('show');
-
-                },
-                addViewAuth: function ()
+                addApplicationAuth: function () 
                 {
-                     var context = this;
-                    context.authorization = { authorizationType: "UIVIEW", authorizationId: 0, authorizationItemTypeName: "View", userId: "", organizationId: 0, productId: "", denyAuthorization:false }
 
-                    var okfunc = function ()
+                    clientdata.authorization = { authorizationType: "APPLICATION", authorizationId: 0, authorizationItemTypeName: "Application", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+
+                    let okfunc = async function () 
                     {
-                        context.authorization.userId = "@Model.UserId";
-                        context.authorization.organizationId = @Model.OrganizationId;
-                        context.authorization.productId = "@Model.ProductId";
+                        clientdata.authorization.userId = "@Model.UserId";
+                        clientdata.authorization.organizationId = @Model.OrganizationId;
+                        clientdata.authorization.productId = "@Model.ProductId";
 
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddViewAuthorization";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddApplicationAuthorization";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.authorization),
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
                             headers: {
-                                RequestVerificationToken: antiforgerytoken
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
                             },
-                            success: function (response)
-                            {
-                                context.model = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
+                            body: JSON.stringify(clientdata.authorization)
                         });
+
+                        if (!response.ok) {
+                            throw await response.json();
+                        }
+
+
+                        clientdata.model = await response.json();
+                        
                     }
 
-                    $("#addAuthorizationModal_okBtn").off().on('click', okfunc);
-                    $("#addAuthorizationModal").modal('show');
+                    raiseAddAuthorizationModal(okfunc);
+
+                },
+                addViewAuth: function () 
+                {
+
+                    context.authorization = { authorizationType: "UIVIEW", authorizationId: 0, authorizationItemTypeName: "View", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+
+                    let okfunc = async function () 
+                    {
+                        clientdata.authorization.userId = "@Model.UserId";
+                        clientdata.authorization.organizationId = @Model.OrganizationId;
+                        clientdata.authorization.productId = "@Model.ProductId";
+
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "OrganizationProduct/@Model.OrganizationId/@Model.ProductId?handler=AddViewAuthorization";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+
+                        const response = await fetch(endpointurl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
+                            },
+                            body: JSON.stringify(clientdata.authorization)
+                        });
+
+                        if (!response.ok) {
+                            throw await response.json();
+                        }
+
+
+                        clientdata.model = await response.json();
+                    }
+
+                    raiseAddAuthorizationModal(okfunc);
 
                 }
-
+                
             },
             computed:
             {
-                example: function ()
-                {
+                example: function () {
 
                 }
 
             },
-            mounted: function ()
-            {
-                var context = this;
-                var baseurl = '@Url.Content("~/Identity/IAM/")';
-                var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                     context.model = response;
-                     var endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=LoadAuthItems";
-                     $.get(endpointurl, function (response)
-                     {
-                         context.authitem = response;
+            mounted: function (applicationData) {
+                let baseurl = '@Url.Content("~/Identity/IAM/")';
+                baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=Load";
+                const retval = fetch(endpointurl)
+                    .then(response => response.json())
+                    .then(data => {
+                        applicationData.model = data;
+                        endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=LoadAuthItems";
+                        fetch(endpointurl)
+                            .then(response => response.json())
+                            .then(data => {
+                                applicationData.authitem = data;
+                                return data;
+                            })
+                            .catch(error => console.error("Error fetching data:", error));
+                        return data;
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
 
-                     });
-                });
+                return retval;
             }
-        });
+        };
+
+        const app = new BareaApp();
+        let clientdata = app.mount("app", appcontent);
+
+
+        let raiseAddAuthorizationModal = function (callback) {
+            let modal = new bootstrap.Modal(document.getElementById("addAuthorizationModal"));
+            document.getElementById("addAuthorizationModalOkBtn").onclick = function () {
+                modal.hide();
+                if (typeof callback === "function") callback();
+            };
+            modal.show();
+        }
+
     </script>
+
 
 }
 
