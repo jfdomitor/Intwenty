@@ -35,7 +35,7 @@
     <div style="margin-left:10px">
         <ul class="nav">
             <li class="nav-item">
-                <button class="btn btn-sm btn-secondary" v-on:click="addRoleAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+                <button class="btn btn-sm btn-secondary" ba-click="addRoleAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
             </li>
             <li class="nav-item">
                 <h5>Roles</h5>
@@ -53,7 +53,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.roleAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
             </tr>
         </tbody>
@@ -65,7 +65,7 @@
     <div style="margin-left:10px">
         <ul class="nav">
             <li class="nav-item">
-                <button class="btn btn-sm btn-secondary" v-on:click="addSystemAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+                <button class="btn btn-sm btn-secondary" ba-click="addSystemAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
             </li>
             <li class="nav-item">
                 <h5>System Permission</h5>
@@ -84,7 +84,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.systemAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
 
@@ -98,7 +98,7 @@
     <div style="margin-left:10px">
         <ul class="nav">
             <li class="nav-item">
-                <button class="btn btn-sm btn-secondary" v-on:click="addApplicationAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+                <button class="btn btn-sm btn-secondary" ba-click="addApplicationAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
             </li>
             <li class="nav-item">
                 <h5>Application Permission</h5>
@@ -117,7 +117,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.applicationAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
@@ -130,7 +130,7 @@
     <div style="margin-left:10px">
         <ul class="nav">
             <li class="nav-item">
-                <button class="btn btn-sm btn-secondary" v-on:click="addViewAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+                <button class="btn btn-sm btn-secondary" ba-click="addViewAuth()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
             </li>
             <li class="nav-item">
                 <h5>View Permission</h5>
@@ -151,7 +151,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.viewAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
@@ -159,44 +159,44 @@
     </table>
 
     <hr />
-
-    <div class="modal" data-bs-backdrop="static" id="addAuthorizationModal" role="dialog">
+   
+    <div class="modal fade" id="addAuthorizationModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Authorize {{authorization.authorizationItemTypeName}}</h5>
+                    <h5 class="modal-title">Authorize {{root.authorization.authorizationItemTypeName}}</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group" ba-if="authorization.authorizationType=='ROLE'">
+                    <div class="form-group" ba-if="root.authorization.authorizationType=='ROLE'">
                         <label class="control-label">Select Role<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.roleItems"  >{{item.name}}</option>
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.roleItems">{{item.name}}</option>
                         </select>
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='SYSTEM'">
+                    <div class="form-group" ba-if="root.authorization.authorizationType=='SYSTEM'">
                         <label class="control-label">Select System<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
                             <option ba-foreach="item in root.authitem.systemItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
 
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='APPLICATION'">
+                    <div class="form-group" ba-if="root.authorization.authorizationType=='APPLICATION'">
                         <label class="control-label">Select Application<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
                             <option ba-foreach="item in root.authitem.applicationItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='UIVIEW'">
+                    <div class="form-group" ba-if="root.authorization.authorizationType=='UIVIEW'">
                         <label class="control-label">Select View<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
                             <option ba-foreach="item in root.authitem.viewItems"  >{{item.name}}</option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -222,7 +222,7 @@
             {
                 model: {},
                 authorization: {},
-                authitem: {},
+                authitem: {roleItems:[],systemItems:[],applicationItems:[],viewItems:[]},
                 users: [],
                 idgen: -1
             },
@@ -410,7 +410,7 @@
             },
             mounted: function (applicationData) {
                 let baseurl = '@Url.Content("~/Identity/IAM/")';
-                baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=Load";
+                let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=Load";
                 const retval = fetch(endpointurl)
                     .then(response => response.json())
                     .then(data => {
@@ -432,7 +432,7 @@
         };
 
         const app = new BareaApp();
-        let clientdata = app.mount("app", appcontent);
+        let clientdata = await app.mount("app", appcontent);
 
 
         let raiseAddAuthorizationModal = function (callback) {
