@@ -11,7 +11,7 @@
 					"Title": "Customers",
 					"TitleLocalizationKey": "CUSTAPP",
 					"DbTableName": "Customers",
-					"UseBrowserState": true,
+					"UseBrowserState": false,
 					"DataColumns": [
 						{
 							"Id": "CustomerName",

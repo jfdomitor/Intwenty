@@ -1197,16 +1197,16 @@ export class BareaApp
 
                     if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(directive.directivename))
                     {
-                        if (directive.inputType === BareaHelper.UI_INPUT_TEXT){
+                        if (directive.inputtype === BareaHelper.UI_INPUT_TEXT){
                             this.#setInputText(directive);
                         }
-                        else if (directive.inputType === BareaHelper.UI_INPUT_CHECKBOX){
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
                             this.#setInputCheckbox(directive);
                         }
-                        else if (directive.inputType === BareaHelper.UI_INPUT_RADIO){
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_RADIO){
                             this.#setInputRadio(directive);
                         }
-                        else if (directive.inputType === BareaHelper.UI_INPUT_SELECT) {
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_SELECT) {
                             this.#setSelect(directive);
                         }
                     }
@@ -1218,6 +1218,12 @@ export class BareaApp
                     }
                     else if (directive.directivename===BareaHelper.DIR_IMAGE_SRC){
                         this.#setSrc(directive);
+                    }
+                    else if (directive.directivename === BareaHelper.DIR_OPTION_ID) {
+                        this.#setOptionId(directive);
+                    }
+                    else if (directive.directivename === BareaHelper.DIR_OPTION_TEXT) {
+                        this.#setOptionText(directive);
                     }
                     
                     
@@ -2095,8 +2101,17 @@ export class BareaApp
             {
                 this.#notificationCalls++;
 
+                let subobjectcheck = { isnew: false };
+                if (reasonvalue)
+                {
+                    if (reasonvalue != null && typeof reasonvalue === "object")
+                    {
+                        subobjectcheck = this.#getObjectId(reasonvalue); 
+                    }
+                }
+
                 let objid = this.#getObjectId(reasonobj);
-                if (!objid.isnew) {
+                if (!objid.isnew && !subobjectcheck.isnew) {
                     let depKey = objid.id + ":value:" + reasonkey;
                     let valueset = this.#dependencies.get(depKey);
                     if (!valueset)

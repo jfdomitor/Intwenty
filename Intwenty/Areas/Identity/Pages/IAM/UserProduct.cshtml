@@ -201,11 +201,16 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" ba-hide="root.authorization.authorizationId==0">Ok</button>
+                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" ba-show="root.authorization.authorizationId">Ok</button>
                 </div>
             </div>
         </div>
     </div>
+
+    {{root.authorization.authorizationId}}
+
+    <br />
+    <br />
 
     {{root.authorization}}
 
@@ -221,11 +226,9 @@
         const appcontent = {
             data:
             {
-                model: {},
-                authorization: {},
-                authitem: {roleItems:[],systemItems:[],applicationItems:[],viewItems:[]},
-                users: [],
-                idgen: -1
+                model: {modelSaved:true, userName:"", productName:"", roleAuthorizations:[],systemAuthorizations:[],applicationAuthorizations:[],viewAuthorizations:[]},
+                authorization: {authorizationType: "", authorizationId: "", authorizationItemTypeName: "", userId: "", organizationId: 0, productId: "" },
+                authitem: {roleItems:[],systemItems:[],applicationItems:[],viewItems:[]}
             },
             methods: 
             {
@@ -263,8 +266,11 @@
                 addRoleAuth: function () {
 
 
-                    clientdata.authorization = { authorizationType: "ROLE", authorizationId: 0, authorizationItemTypeName: "Role", userId: "", organizationId: 0, productId: "" }
+                    clientdata.authorization.authorizationType = "ROLE";
+                    clientdata.authorization.authorizationItemTypeName = "Role";
+                    clientdata.authorization.authorizationId = "";
 
+                  
                     let okfunc = async function () {
 
                         clientdata.authorization.userId = "@Model.UserId";
@@ -288,15 +294,17 @@
                             throw await response.json();
                         }
 
-
-                        clientdata.model = await response.json();
+                        let newmodel =  await response.json();
+                        clientdata.model = newmodel;
                     }
 
                     raiseAddAuthorizationModal(okfunc);
                 },
                 addSystemAuth: function () 
                 {
-                    clientdata.authorization = { authorizationType: "SYSTEM", authorizationId: 0, authorizationItemTypeName: "System", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+                    clientdata.authorization.authorizationType = "SYSTEM";
+                    clientdata.authorization.authorizationItemTypeName = "System";
+                    clientdata.authorization.authorizationId = "";
 
                     let okfunc = async function () {
 
@@ -323,7 +331,8 @@
                         }
 
 
-                        clientdata.model = await response.json();
+                         let newmodel =  await response.json();
+                        clientdata.model = newmodel;
                         
                     }
 
@@ -332,7 +341,9 @@
                 addApplicationAuth: function () 
                 {
 
-                    clientdata.authorization = { authorizationType: "APPLICATION", authorizationId: 0, authorizationItemTypeName: "Application", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+                    clientdata.authorization.authorizationType = "APPLICATION";
+                    clientdata.authorization.authorizationItemTypeName = "Application";
+                    clientdata.authorization.authorizationId = "";
 
                     let okfunc = async function () 
                     {
@@ -358,7 +369,8 @@
                         }
 
 
-                        clientdata.model = await response.json();
+                       let newmodel =  await response.json();
+                        clientdata.model = newmodel;
                         
                     }
 
@@ -368,7 +380,9 @@
                 addViewAuth: function () 
                 {
 
-                    clientdata.authorization = { authorizationType: "UIVIEW", authorizationId: 0, authorizationItemTypeName: "View", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+                    clientdata.authorization.authorizationType = "UIVIEW";
+                    clientdata.authorization.authorizationItemTypeName = "View";
+                    clientdata.authorization.authorizationId = "";
 
                     let okfunc = async function () 
                     {
@@ -394,7 +408,8 @@
                         }
 
 
-                        clientdata.model = await response.json();
+                        let newmodel =  await response.json();
+                        clientdata.model = newmodel;
                     }
 
                     raiseAddAuthorizationModal(okfunc);
@@ -402,13 +417,7 @@
                 }
                 
             },
-            computed:
-            {
-                example: function () {
-
-                }
-
-            },
+            computed:{},
             mounted: async function (applicationData) {
                 let baseurl = '@Url.Content("~/Identity/IAM/")';
                 let userId = '@Model.UserId';
