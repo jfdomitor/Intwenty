@@ -478,12 +478,12 @@ export class BareaApp
                     if (log.active)
                         console.log(log.name, "select ", "key: " + valuekey, "value: " + el.value);
 
-                    dir.data[dir.key] = el.value;
+                    dir.data[dir.key] = dir.element.value;
 
                 }.bind(this);
 
-                el.removeEventListener(eventtype, handler);
-                el.addEventListener(eventtype, handler);
+                dir.element.removeEventListener(eventtype, handler);
+                dir.element.addEventListener(eventtype, handler);
 
             }
         });
@@ -494,18 +494,21 @@ export class BareaApp
     #trackDirectives(tag=this.#appElement, trackcontext={template:null, rendereddata:null, renderedindex:-1, renderedvarname:"", renderedobjid:-1})
     {
       
-
         //Validate templates before proceeding
         let templateChildren = this.#validateTemplateChildren();
        
-        //Find the world of barea.js (elements with attributes starting with ba-
-        const bareaElements = Array.from(tag.querySelectorAll("*")).filter(el =>
-            el.attributes.length && Array.prototype.some.call(el.attributes, attr => attr.name.startsWith("ba-"))
-        );
+        let bareaElements = Array.from(tag.querySelectorAll("*"));
+        bareaElements.unshift(tag); 
     
         bareaElements.forEach(el => {
 
+
             const bareaAttributes = Array.from(el.attributes).filter(attr => attr.name.startsWith("ba-")).map(attr => ({ name: attr.name, value: attr.value }));
+
+            if (!bareaAttributes)
+                return;
+            if (!bareaAttributes.length>0)
+                return;
 
                  //Skip all children of templates since they will be dealt with later on template rendering
                 if (templateChildren.includes(el))
@@ -520,7 +523,7 @@ export class BareaApp
                     if (!attr.value)
                         return;
 
-                    //if an attribute also have a render template attribute, skip
+                    //if an attribute also have a render template attribute, skip since it will be rendered in renderTemplates
                     if (!BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name) && hasMarkUpGenerationAttr)
                         return;
 

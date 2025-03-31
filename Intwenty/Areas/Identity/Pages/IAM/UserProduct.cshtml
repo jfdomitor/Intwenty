@@ -84,7 +84,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.systemAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
 
@@ -117,7 +117,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.applicationAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
@@ -151,7 +151,7 @@
         </thead>
         <tbody ba-foreach="item in root.model.viewAuthorizations">
             <tr>
-                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem(item)" title="Remove"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
             </tr>
@@ -170,43 +170,44 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group" ba-if="root.authorization.authorizationType=='ROLE'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='ROLE'">
                         <label class="control-label">Select Role<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.roleItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
+                            <option ba-foreach="item in root.authitem.roleItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
                     </div>
-                    <div class="form-group" ba-if="root.authorization.authorizationType=='SYSTEM'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='SYSTEM'">
                         <label class="control-label">Select System<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.systemItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
+                            <option ba-foreach="item in root.authitem.systemItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
 
                     </div>
-                    <div class="form-group" ba-if="root.authorization.authorizationType=='APPLICATION'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='APPLICATION'">
                         <label class="control-label">Select Application<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.applicationItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
+                            <option ba-foreach="item in root.authitem.applicationItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
-                    <div class="form-group" ba-if="root.authorization.authorizationType=='UIVIEW'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='UIVIEW'">
                         <label class="control-label">Select View<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.viewItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
+                            <option ba-foreach="item in root.authitem.viewItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" :disabled="authorization.authorizationId==0">Ok</button>
+                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" ba-hide="root.authorization.authorizationId==0">Ok</button>
                 </div>
             </div>
         </div>
     </div>
 
+    {{root.authorization}}
 
 </div>
 
@@ -367,7 +368,7 @@
                 addViewAuth: function () 
                 {
 
-                    context.authorization = { authorizationType: "UIVIEW", authorizationId: 0, authorizationItemTypeName: "View", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
+                    clientdata.authorization = { authorizationType: "UIVIEW", authorizationId: 0, authorizationItemTypeName: "View", userId: "", organizationId: 0, productId: "", denyAuthorization: false }
 
                     let okfunc = async function () 
                     {
@@ -408,27 +409,28 @@
                 }
 
             },
-            mounted: function (applicationData) {
+            mounted: async function (applicationData) {
                 let baseurl = '@Url.Content("~/Identity/IAM/")';
-                let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=Load";
-                const retval = fetch(endpointurl)
-                    .then(response => response.json())
-                    .then(data => {
-                        applicationData.model = data;
-                        endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=LoadAuthItems";
-                        fetch(endpointurl)
-                            .then(response => response.json())
-                            .then(data => {
-                                applicationData.authitem = data;
-                                return data;
-                            })
-                            .catch(error => console.error("Error fetching data:", error));
-                        return data;
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
+                let userId = '@Model.UserId';
+                let orgId = '@Model.OrganizationId';
+                let productId = '@Model.ProductId';
 
-                return retval;
+                let endpointUserProduct = `${baseurl}UserProduct/${userId}/${orgId}/${productId}?handler=Load`;
+                let endpointAuthItems = `${baseurl}UserProduct/${userId}/${orgId}/${productId}?handler=LoadAuthItems`;
+
+                try {
+                    let response1 = await fetch(endpointUserProduct);
+                    let data1 = await response1.json();
+                    applicationData.model = data1;
+
+                    let response2 = await fetch(endpointAuthItems);
+                    let data2 = await response2.json();
+                    applicationData.authitem = data2;
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
             }
+
         };
 
         const app = new BareaApp();
