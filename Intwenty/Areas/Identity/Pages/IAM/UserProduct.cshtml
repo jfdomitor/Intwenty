@@ -173,13 +173,13 @@
                     <div class="form-group" ba-if="root.authorization.authorizationType=='ROLE'">
                         <label class="control-label">Select Role<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.roleItems">{{item.name}}</option>
+                            <option ba-foreach="item in root.authitem.roleItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
                         </select>
                     </div>
                     <div class="form-group" ba-if="root.authorization.authorizationType=='SYSTEM'">
                         <label class="control-label">Select System<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.systemItems"  >{{item.name}}</option>
+                            <option ba-foreach="item in root.authitem.systemItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
 
@@ -187,14 +187,14 @@
                     <div class="form-group" ba-if="root.authorization.authorizationType=='APPLICATION'">
                         <label class="control-label">Select Application<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.applicationItems"  >{{item.name}}</option>
+                            <option ba-foreach="item in root.authitem.applicationItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
                     <div class="form-group" ba-if="root.authorization.authorizationType=='UIVIEW'">
                         <label class="control-label">Select View<span style="color: red"> *</span></label>
                         <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.authitem.viewItems"  >{{item.name}}</option>
+                            <option ba-foreach="item in root.authitem.viewItems" ba-option-id="item.authorizationId" ba-option-text="item.name"></option>
                         </select>
                         <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>

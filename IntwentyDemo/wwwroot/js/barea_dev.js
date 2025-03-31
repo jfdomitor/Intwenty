@@ -21,6 +21,7 @@ export class BareaApp
     #appDataProxyCache = new WeakMap();
     #dynamicExpressionRegistry = new Map();
     #computedPropertyNames = [];
+    #delayedDirectives = []; //List of directives that can't be tracked until all it's children are tracked
     #appData;
     #methods = {};
     #mounted=false;
@@ -151,9 +152,9 @@ export class BareaApp
                     console.error('could not find array on path: ' + path);
             }
 
-            queueMicrotask(() => {
-                this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
-            });
+     
+            this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
+       
 
         }, this.#appData);
 
@@ -162,6 +163,8 @@ export class BareaApp
 
         //Track all directives
         this.#trackDirectives();
+        this.#trackDelayedDirectives();
+        this.#removeMarkUpGenerationNodes();
 
 
         this.#mounted = true;
@@ -216,6 +219,8 @@ export class BareaApp
         this.#appElement = freshElement;
         
         this.#trackDirectives();
+        this.#trackDelayedDirectives();
+        this.#removeMarkUpGenerationNodes();
       
     }
 
@@ -441,6 +446,51 @@ export class BareaApp
 
     }
 
+    #removeMarkUpGenerationNodes()
+    {
+        this.#uiDependencyTracker.getTemplateDependencies().forEach(dir => {
+            if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(dir.directivename))
+            {
+                dir.element.remove();
+            }
+        });
+    }
+
+    #trackDelayedDirectives()
+    {
+        this.#delayedDirectives.forEach(dir =>
+        {
+            if (dir.inputtype === BareaHelper.UI_INPUT_SELECT)
+            {
+                this.#uiDependencyTracker.track('value', dir);
+
+                this.#setSelect(dir);
+
+                let eventtype = (dir.directivename === BareaHelper.DIR_BIND) ? "change" : "blur";
+                const handler = function (event) {
+
+                    if (dir.hashandler) {
+                        this.#runBindHandler(BareaHelper.VERB_SET_DATA, dir);
+                        return;
+                    }
+
+                    let log = BareaHelper.getDebugLog(3);
+                    if (log.active)
+                        console.log(log.name, "select ", "key: " + valuekey, "value: " + el.value);
+
+                    dir.data[dir.key] = el.value;
+
+                }.bind(this);
+
+                el.removeEventListener(eventtype, handler);
+                el.addEventListener(eventtype, handler);
+
+            }
+        });
+
+        this.#delayedDirectives = [];
+    }
+
     #trackDirectives(tag=this.#appElement, trackcontext={template:null, rendereddata:null, renderedindex:-1, renderedvarname:"", renderedobjid:-1})
     {
       
@@ -454,18 +504,24 @@ export class BareaApp
         );
     
         bareaElements.forEach(el => {
-            const bareaAttributes = Array.from(el.attributes)
-                .filter(attr => attr.name.startsWith("ba-"))
-                .map(attr => ({ name: attr.name, value: attr.value }));
+
+            const bareaAttributes = Array.from(el.attributes).filter(attr => attr.name.startsWith("ba-")).map(attr => ({ name: attr.name, value: attr.value }));
 
                  //Skip all children of templates since they will be dealt with later on template rendering
                 if (templateChildren.includes(el))
                     return;
 
+                let hasMarkUpGenerationAttr = false;
+                bareaAttributes.forEach(attr => { if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name)) { hasMarkUpGenerationAttr = true; } });
+
                 bareaAttributes.forEach(attr =>
                 {
 
                     if (!attr.value)
+                        return;
+
+                    //if an attribute also have a render template attribute, skip
+                    if (!BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name) && hasMarkUpGenerationAttr)
                         return;
 
                     this.#internalSystemCounter++;
@@ -484,17 +540,22 @@ export class BareaApp
                         let systeminput = -1;
                         if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(attr.name))
                         {
-                            inputtype = el.getAttribute("type");
-                            if (!inputtype){
-                                systeminput=4;
-                            }else{
-                                systeminput = 1;
-                                if (inputtype.toLowerCase()==="text")
-                                    systeminput=1;
-                                if (inputtype.toLowerCase()==="checkbox")
-                                    systeminput=2;
-                                if (inputtype.toLowerCase()==="radio")
-                                    systeminput=3;
+                            if (el.tagName.toLowerCase() === "select") {
+                                systeminput = BareaHelper.UI_INPUT_SELECT;
+                            } else {
+                                inputtype = el.getAttribute("type");
+                                if (!inputtype) {
+                                    systeminput = BareaHelper.UI_INPUT_CUSTOM;
+
+                                } else {
+                                    systeminput = 1;
+                                    if (inputtype.toLowerCase() === "text")
+                                        systeminput = BareaHelper.UI_INPUT_TEXT;
+                                    if (inputtype.toLowerCase() === "checkbox")
+                                        systeminput = BareaHelper.UI_INPUT_CHECKBOX;
+                                    if (inputtype.toLowerCase() === "radio")
+                                        systeminput = BareaHelper.UI_INPUT_RADIO;
+                                }
                             }
                         }
 
@@ -533,28 +594,33 @@ export class BareaApp
                             tracking_obj.handlername=handlername;
                         
                         }
-                        
-                        
-                        this.#uiDependencyTracker.track('value', tracking_obj);
 
-                            if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(tracking_obj.directivename))
-                            {
-                                if (tracking_obj.hashandler)
-                                    this.#runBindHandler(BareaHelper.VERB_SET_UI, tracking_obj);
+                        if (tracking_obj.inputtype === BareaHelper.UI_INPUT_SELECT) {
+                            this.#delayedDirectives.push(tracking_obj);
+                        } else {
+                            this.#uiDependencyTracker.track('value', tracking_obj);
+                        }
+                    
+
+                        if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(tracking_obj.directivename))
+                        {
+                            if (tracking_obj.hashandler)
+                                this.#runBindHandler(BareaHelper.VERB_SET_UI, tracking_obj);
                             
-                                if (tracking_obj.inputtype === BareaHelper.UI_INPUT_TEXT){
-                                    this.#setInputText(tracking_obj);
-                                }
-                                else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
-                                    this.#setInputCheckbox(tracking_obj);
-                                }
-                                else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO){
-                                    this.#setInputRadio(tracking_obj);
-                                }
+                            if (tracking_obj.inputtype === BareaHelper.UI_INPUT_TEXT){
+                                this.#setInputText(tracking_obj);
+                            }
+                            else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
+                                this.#setInputCheckbox(tracking_obj);
+                            }
+                            else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO){
+                                this.#setInputRadio(tracking_obj);
+                            }
+                            
 
-                                let eventtype = (tracking_obj.directivename === BareaHelper.DIR_BIND) ? "input" : "blur";
-
-                                const handler = function (event) {
+                            let eventtype = (tracking_obj.directivename === BareaHelper.DIR_BIND) ? "input" : "blur";
+                            const handler = function (event)
+                            {
                                     if (tracking_obj.hashandler) {
                                         this.#runBindHandler(BareaHelper.VERB_SET_DATA, tracking_obj);
                                         return;
@@ -568,11 +634,11 @@ export class BareaApp
                                         tracking_obj.data[tracking_obj.key] = el.checked;
                                     }
                                     else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO) {
-                                        if (log.active)
-                                            console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
+                                            if (log.active)
+                                                console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
 
-                                        if (el.checked)
-                                            tracking_obj.data[tracking_obj.key] = el.value;
+                                            if (el.checked)
+                                                tracking_obj.data[tracking_obj.key] = el.value;
                                     }
                                     else {
                                         if (log.active)
@@ -582,21 +648,29 @@ export class BareaApp
                                     }
                                 }.bind(this);
 
-                                el.removeEventListener(eventtype, handler);
-                                el.addEventListener(eventtype, handler);
+                             el.removeEventListener(eventtype, handler);
+                             el.addEventListener(eventtype, handler);
+                             
                  
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_CLASS){
-                                let classnames = el.getAttribute('classNames');
-                                tracking_obj.orgvalue=classnames;
-                                this.#setClass(tracking_obj);
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_HREF){
-                                this.#setHref(tracking_obj);
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_IMAGE_SRC){
-                                this.#setSrc(tracking_obj);
-                            }
+                        }
+                        else if (tracking_obj.directivename===BareaHelper.DIR_CLASS){
+                             let classnames = el.getAttribute('classNames');
+                             tracking_obj.orgvalue=classnames;
+                             this.#setClass(tracking_obj);
+                        }
+                        else if (tracking_obj.directivename===BareaHelper.DIR_HREF){
+                             this.#setHref(tracking_obj);
+                        }
+                        else if (tracking_obj.directivename===BareaHelper.DIR_IMAGE_SRC){
+                             this.#setSrc(tracking_obj);
+                        }
+                        else if (tracking_obj.directivename === BareaHelper.DIR_OPTION_ID) {
+                            this.#setOptionId(tracking_obj);
+                        }
+                        else if (tracking_obj.directivename === BareaHelper.DIR_OPTION_TEXT) {
+                            this.#setOptionText(tracking_obj);
+                        }
+
                           
                             
                     }
@@ -824,14 +898,14 @@ export class BareaApp
                          }
  
                         const tracking_obj = this.#createTemplateDirective(trackcontext,el,attr.name,attr.value,null,"", el.parentElement, el.innerHTML, el.localName);
-                        tracking_obj.elementnextsibling=el.nextSibling;
+                        tracking_obj.elementnextsibling = el.nextSibling;
+                        tracking_obj.elementclone = el.cloneNode(true);
                         tracking_obj.expressiontype = attribute_value_type;
                         if (attribute_value_type!==BareaHelper.EXPR_TYPE_COMPUTED)
                         {
                             let objpath = BareaHelper.getLastBareaObjectName(datapath);
                             tracking_obj.data = this.getProxifiedPathData(objpath);
                             tracking_obj.key = BareaHelper.getLastBareaKeyName(datapath);
-                            el.remove();
                             if (!Array.isArray(tracking_obj.data[tracking_obj.key]))
                             {
                                 console.error(`could not find array for ${datapath} in  ${attr.name} directive`);
@@ -1129,6 +1203,9 @@ export class BareaApp
                         else if (directive.inputType === BareaHelper.UI_INPUT_RADIO){
                             this.#setInputRadio(directive);
                         }
+                        else if (directive.inputType === BareaHelper.UI_INPUT_SELECT) {
+                            this.#setSelect(directive);
+                        }
                     }
                     else if (directive.directivename===BareaHelper.DIR_CLASS){
                         this.#setClass(directive);
@@ -1266,6 +1343,15 @@ export class BareaApp
         }
     }
 
+    #setSelect(directive) {
+        if (directive.element && directive.element.value !== directive.data[directive.key]) {
+            if (!directive.data[directive.key])
+                directive.element.value = "";
+            else
+                directive.element.value = directive.data[directive.key];
+        }
+    }
+
     #setInputCheckbox(directive) 
     {
         if (directive.element && directive.element.checked !== directive.data[directive.key]) 
@@ -1315,6 +1401,22 @@ export class BareaApp
 
         directive.element.href = directive.data[directive.key];
     }
+
+    #setOptionId(directive)
+    {
+        if (!directive.data[directive.key])
+            return;
+
+        directive.element.value = directive.data[directive.key];
+    }
+
+    #setOptionText(directive) {
+        if (!directive.data[directive.key])
+            return;
+
+        directive.element.textContent = directive.data[directive.key];
+    }
+
     #setInterpolation(directive)
     {
  
@@ -1439,7 +1541,6 @@ export class BareaApp
    
                 let newItem = this.#getNewTemplateElement(template_directive, varname, row, counter);
                 fragment.appendChild(newItem);
-                //this.#trackDirectives(newItem, {template:template_directive, rendereddata:row, renderedindex:counter, renderedvarname:varname, renderedobjid: this.#internalSystemCounter});
                 counter++;
             });
 
@@ -1496,6 +1597,15 @@ export class BareaApp
         this.#internalSystemCounter++;
         const newtag = document.createElement(template.templatetagname);
         newtag.innerHTML = template.templatemarkup;
+
+        if (template.elementclone)
+        {
+            for (let attr of template.elementclone.attributes)
+            {
+                if (!BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name))
+                    newtag.setAttribute(attr.name, attr.value);
+            }
+        }
        
         if (newtag.id)
             newtag.id = newtag.id + `-${this.#internalSystemCounter}` 
@@ -1926,6 +2036,10 @@ export class BareaApp
             getAllDependencies()
             {
                 return this.#dependencies;
+            } 
+
+            getTemplateDependencies() {
+                return this.#userTemplates;
             } 
 
             track(scope, directive) 
@@ -2965,8 +3079,10 @@ export class BareaHelper
     static DIR_IF = 'ba-if';
     static DIR_HREF = 'ba-href';
     static DIR_INTERPOLATION = 'interpolation';
+    static DIR_OPTION_ID = 'ba-option-id';
+    static DIR_OPTION_TEXT = 'ba-option-text';
 
-    static DIR_GROUP_BIND_TO_PATH = [BareaHelper.DIR_BIND,BareaHelper.DIR_BIND_BLUR,BareaHelper.DIR_CLASS,BareaHelper.DIR_HREF,BareaHelper.DIR_IMAGE_SRC];
+    static DIR_GROUP_BIND_TO_PATH = [BareaHelper.DIR_BIND, BareaHelper.DIR_BIND_BLUR, BareaHelper.DIR_CLASS, BareaHelper.DIR_HREF, BareaHelper.DIR_IMAGE_SRC, BareaHelper.DIR_OPTION_ID, BareaHelper.DIR_OPTION_TEXT];
     static DIR_GROUP_UI_DUPLEX = [BareaHelper.DIR_BIND,BareaHelper.DIR_BIND_BLUR];
     static DIR_GROUP_TRACK_AND_FORGET = [BareaHelper.DIR_CLICK];
     static DIR_GROUP_COMPUTED = [BareaHelper.DIR_CLASS_IF,BareaHelper.DIR_HIDE,BareaHelper.DIR_SHOW, BareaHelper.DIR_IF];
@@ -2975,7 +3091,8 @@ export class BareaHelper
     static UI_INPUT_TEXT = 1;
     static UI_INPUT_CHECKBOX = 2;
     static UI_INPUT_RADIO = 3;
-    static UI_INPUT_CUSTOM = 4;
+    static UI_INPUT_SELECT = 4;
+    static UI_INPUT_CUSTOM = 10;
 
 
     //Verbs
