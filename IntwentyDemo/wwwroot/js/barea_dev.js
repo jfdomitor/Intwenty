@@ -284,25 +284,6 @@ export class BareaApp
         return target;
     }
 
-    //getProxifiedPathData(path) {
-    //    if (!path)
-    //        return this.#appDataProxy;
-
-    //    const keys = path.match(/[^.[\]]+/g);
-    //    if (!keys)
-    //        return this.#appDataProxy;
-
-    //    let target = this.#appDataProxy;
-
-    //    for (let i = 0; i < keys.length; i++) {
-    //        if (i === 0 && keys[i].toLowerCase() === 'root') continue;
-    //        if (!target) return undefined;
-    //        target = target[keys[i]];
-    //    }
-
-    //    return target;
-    //}
-
     getPathData(path) 
     {
         if (!path) 
