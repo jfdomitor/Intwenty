@@ -37,15 +37,15 @@
         <strong>Changes have been saved !</strong><br />
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger fade show" role="alert" ba-if="root.resultCode=='UNEXPECTED_ERROR'">
+    <div class="alert alert-danger fade show" role="alert" ba-if="root.model.resultCode=='UNEXPECTED_ERROR'">
         An error occured !
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger fade show" role="alert" ba-if="root.resultCode=='MEMBER_HAS_PRODUCT_IN_OTHER_ORG'">
+    <div class="alert alert-danger fade show" role="alert" ba-if="root.model.resultCode=='MEMBER_HAS_PRODUCT_IN_OTHER_ORG'">
         User cant be added to this organization since it has a product that is used in another organization where the user is a member
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger fade show" role="alert" ba-if="root.resultCode=='PRODUCT_HAS_SAME_USER_IN_OTHER_ORG'">
+    <div class="alert alert-danger fade show" role="alert" ba-if="root.model.resultCode=='PRODUCT_HAS_SAME_USER_IN_OTHER_ORG'">
         Product cant be added since it has members that is members in other organizations that use the same product
         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -140,7 +140,7 @@
                         <label class="control-label">Select User<span style="color: red"> *</span></label>
                        
                         <select ba-bind="root.member.userId" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.users">{{item.userName}}</option>
+                            <option ba-foreach="item in root.users" ba-option-id="item.id" ba-option-text="item.userName"></option>
                         </select>
 
                          
@@ -169,7 +169,7 @@
                     <div class="form-group">
                         <label class="control-label">Select Product<span style="color: red"> *</span></label>
                         <select ba-bind="root.product.name" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.products">{{item.productName}}</option>
+                            <option ba-foreach="item in root.users" ba-option-id="item.id" ba-option-text="item.productName"></option>
                         </select>
                     </div>
 
@@ -257,7 +257,7 @@
                                     "Content-Type": "application/json",
                                     "RequestVerificationToken": antiforgerytoken
                                 },
-                                body: JSON.stringify(clientdata.model)
+                                body: JSON.stringify(clientdata.member)
                             });
 
                             if (!response.ok) {
@@ -323,7 +323,7 @@
                                     "Content-Type": "application/json",
                                     "RequestVerificationToken": antiforgerytoken
                                 },
-                                body: JSON.stringify(clientdata.model)
+                                body: JSON.stringify(clientdata.product)
                             });
 
                             if (!response.ok) {
@@ -381,42 +381,32 @@
                 }
 
             },
-            mounted: function (applicationData)
-            {
+            mounted: async function (applicationData) {
 
-                let baseurl = '@Url.Content("~/Identity/IAM/")';
-                let endpointurl = baseurl + "Organization/@Model.Id?handler=Load";
-              
-                const retval = fetch(endpointurl)
-                    .then(response => response.json())
-                    .then(data => {
-                        applicationData.model = data;
-                        let endpointurl = baseurl + "Organization/@Model.Id?handler=LoadUsers";
-                        fetch(endpointurl)
-                            .then(response => response.json())
-                            .then(data => {
-                                applicationData.users = data;
-                                let endpointurl = baseurl + "Organization/@Model.Id?handler=LoadProducts";
-                                fetch(endpointurl)
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        applicationData.products = data;
-                                        return data;
-                                    })
-                                    .catch(error => console.error("Error fetching data:", error));
-                                return data;
-                            })
-                            .catch(error => console.error("Error fetching data:", error));
-                        return data;
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
+                try {
+                    let baseurl = '@Url.Content("~/Identity/IAM/")';
+                    let orgId = '@Model.Id';
 
-                return retval;
+                    const fetchData = async (handler) => {
+                        let endpointurl = `${baseurl}Organization/${orgId}?handler=${handler}`;
+                        let response = await fetch(endpointurl);
+                        if (!response.ok) throw new Error(`Failed to fetch ${handler}`);
+                        return await response.json();
+                    };
+
+                    applicationData.model = await fetchData("Load");
+                    applicationData.users = await fetchData("LoadUsers");
+                    applicationData.products = await fetchData("LoadProducts");
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+
+                return true;
             }
         };
 
         const app = new BareaApp();
-        let clientdata = app.mount("app", appcontent);
+        let clientdata = await app.mount("app", appcontent);
 
 
         let raiseAddMemberModal = function (callback) {

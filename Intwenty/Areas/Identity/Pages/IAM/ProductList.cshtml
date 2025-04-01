@@ -21,7 +21,7 @@
 
     <div>
 
-        <div class="btn btn-sm btn-secondary" v-on:click="addEntity()">
+        <div class="btn btn-sm btn-secondary" ba-click="addEntity()">
             <span class="fa fa-plus"></span>
         </div>
     </div>
@@ -39,7 +39,7 @@
         </thead>
         <tbody ba-foreach="item in root.list">
             <tr>
-                <td><div class="btn btn-sm btn-danger" ba-lick="deleteEntity()" title=" Delete"><i class="fa fa-trash"></i></div></td>
+                <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete"><i class="fa fa-trash"></i></div></td>
                 <td><a role="button" class="btn btn-sm btn-secondary" ba-click="goToProduct()" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{item.id}}</td>
                 <td>{{item.productName}}</td>
@@ -60,7 +60,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="control-label">Name<span style="color: red"> *</span></label>
-                        <input id="tb_firstname" type="text" class="form-control form-control-sm" v-model="root.model.productName" />
+                        <input id="tb_firstname" type="text" class="form-control form-control-sm" ba-bind="root.model.productName" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -83,7 +83,7 @@
         const appcontent = {
             data:
             {
-                model: {},
+                model: {productName:""},
                 list: [],
                 idgen: -1
             },
@@ -95,7 +95,7 @@
                     let okfunc = function ()
                     {
                         let baseurl = '@Url.Content("~/Identity/IAM/")';
-                        let endpointurl = baseurl + "UserList?handler=AddUser";
+                        let endpointurl = baseurl + "ProductList?handler=AddEntity";
                         let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         fetch(endpointurl, {
@@ -118,7 +118,7 @@
                     raiseAddProductModal(okfunc);
 
                 },
-                goTpProduct: function (a,b,entry)
+                goToProduct: function (a,b,entry)
                 {
                     //'Product/' + item.id
                     window.location.href = `/Identity/IAM/Product/${entry.id}`;
@@ -152,7 +152,7 @@
                         }
                     };
 
-                    raiseYesNoModal("Delete user ?", "The user will be deleted, continue ?", yesfunc);
+                    raiseYesNoModal("Delete product ?", "The product will be deleted, continue ?", yesfunc);
                 }
             },
             computed:
@@ -170,7 +170,7 @@
                 const retval = fetch(endpointurl)
                     .then(response => response.json()) 
                     .then(data => {
-                        applicationData.users = data;
+                        applicationData.list = data;
                         return data;
                     })
                     .catch(error => console.error("Error fetching data:", error));
@@ -180,7 +180,7 @@
         };
 
         const app = new BareaApp();
-        let clientdata = app.mount("app", appcontent);
+        let clientdata = await app.mount("app", appcontent);
 
 
          let raiseAddProductModal = function(callback) {

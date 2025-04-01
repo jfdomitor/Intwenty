@@ -14,7 +14,7 @@
     <div class="card">
         <div class="card-header"><h2>Product</h2></div>
         <div class="card-body">
-            Manage the product <b>{{model.productName}}</b>
+            Manage the product <b>{{root.model.productName}}</b>
             <br />
             <br />
             <ul class="nav">
@@ -39,14 +39,14 @@
 
     <div class="form-group">
         <label class="control-label">Name<span style="color: red"> *</span></label>
-        <input id="tb_email" type="text" class="form-control form-control-sm" v-model="root.model.productName" />
+        <input id="tb_email" type="text" class="form-control form-control-sm" ba-bind="root.model.productName" />
     </div>
 
     <br />
 
     <ul class="nav">
         <li class="nav-item">
-            <button class="btn btn-sm btn-secondary" v-on:click="addAuthorizationItem" style="margin-right:10px"><span class="fa fa-plus"></span></button>
+            <button class="btn btn-sm btn-secondary" ba-click="addAuthorizationItem()" style="margin-right:10px"><span class="fa fa-plus"></span></button>
         </li>
         <li class="nav-item">
             <h5>Available Authorization Items</h5>
@@ -85,9 +85,8 @@
         const appcontent = {
             data:
             {
-                model: {},
-                authorizationItems: [],
-                idgen: -1
+                model: {authorizationItems:[],productName:""},
+                authorizationItems: []
             },
             methods: {
 
@@ -125,12 +124,7 @@
                
 
             },
-            computed:
-            {
-                example: function () {
-                }
-
-            },
+            computed:{},
             mounted: function (applicationData) {
                 let baseurl = '@Url.Content("~/Identity/IAM/")';
                 let endpointurl = baseurl + "Product/@Model.Id?handler=Load";
@@ -148,7 +142,7 @@
         };
 
         const app = new BareaApp();
-        let clientdata = app.mount("app", appcontent);
+        let clientdata = await app.mount("app", appcontent);
 
     </script>
 

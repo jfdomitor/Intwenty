@@ -157,7 +157,7 @@
                                 throw await response.json();
                             }
 
-                            clientdata.users = await response.json();
+                            clientdata.list = await response.json();
                         } catch (error) {
                             raiseErrorModal(error);
                         }
