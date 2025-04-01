@@ -393,7 +393,7 @@
                         clientdata.authorization.productId = "@Model.ProductId";
 
                         let baseurl = '@Url.Content("~/Identity/IAM/")';
-                        let endpointurl = baseurl + "UserProduct/@Model.OrganizationId/@Model.ProductId?handler=AddViewAuthorization";
+                        let endpointurl = baseurl + "UserProduct/@Model.UserId/@Model.OrganizationId/@Model.ProductId?handler=AddViewAuthorization";
                         let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
                         const response = await fetch(endpointurl, {
