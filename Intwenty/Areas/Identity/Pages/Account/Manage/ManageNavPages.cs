@@ -22,11 +22,6 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
 
         public static string APIKey => "APIKey";
 
-        public static string GroupMembers => "GroupMembers";
-
-        public static string Groups => "Groups";
-
-
         public static string IndexNavClass(ViewContext viewContext) => PageNavClass(viewContext, Index);
 
         public static string LanguageNavClass(ViewContext viewContext) => PageNavClass(viewContext, Language);
@@ -40,10 +35,6 @@ namespace Intwenty.Areas.Identity.Pages.Account.Manage
         public static string ExternalLoginsNavClass(ViewContext viewContext) => PageNavClass(viewContext, ExternalLogins);
 
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, MfaAuth);
-
-        public static string GroupMembersClass(ViewContext viewContext) => PageNavClass(viewContext, GroupMembers);
-
-        public static string GroupsClass(ViewContext viewContext) => PageNavClass(viewContext, Groups);
 
         private static string PageNavClass(ViewContext viewContext, string page)
         {

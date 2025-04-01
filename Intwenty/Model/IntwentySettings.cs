@@ -185,7 +185,6 @@ namespace Intwenty.Model
         /// A group admin can accept or reject user requests to join
         /// A group admin can invite users to the group
         /// </summary>
-        public bool AccountsEnableUserGroups { get; set; }
         public bool AccountsEnableProfilePicture { get; set; }
         public string AccountsFacebookAppId { get; set; }
         public string AccountsFacebookAppSecret { get; set; }

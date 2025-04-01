@@ -35,10 +35,6 @@
     {
         <li class="nav-item"><a class="nav-link @ManageNavPages.APIKeyNavClass(ViewContext)" id="apikey-data" asp-page="./APIKey">@Localizer["API Key"]</a></li>
     }
-    @if (Settings.Value.AccountsEnableUserGroups)
-    {
-        <li class="nav-item"><a class="nav-link @ManageNavPages.GroupsClass(ViewContext)" id="apikey-data" asp-page="./Groups">@Localizer["Groups"]</a></li>
-    }
 
    
 </ul>

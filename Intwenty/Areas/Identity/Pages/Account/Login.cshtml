@@ -55,9 +55,9 @@
 @section Scripts
  {
 
-    <script>
+    <script type="module">
 
-        let app = getBareaApp(false);
+        import { BareaApp } from '/js/barea_dev.js';
 
         const content = 
         {
@@ -69,7 +69,6 @@
 
                 localLogin: function (event, element) 
                 {
-                    var context = this.getData();
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Login?handler=LocalLogin";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
@@ -80,7 +79,7 @@
                             "Content-Type": "application/json",
                             "RequestVerificationToken": antiforgerytoken
                         },
-                        body: JSON.stringify(context.model)
+                        body: JSON.stringify(clientdata.model)
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -88,21 +87,20 @@
                             if (data.resultCode==='SUCCESS') {
                                 window.location = data.returnUrl;
                             } else {
-                                context.model = data;
-                                if (context.model.resultCode === "LOCKEDOUT" || context.model.resultCode === "REQUIREMFA") {
-                                    window.location = context.model.redirectUrl;
+                                clientdata.model = data;
+                                if (clientdata.model.resultCode === "LOCKEDOUT" || clientdata.model.resultCode === "REQUIREMFA") {
+                                    window.location = clientdata.model.redirectUrl;
                                 }
                             }
                         })
                         .catch(error => console.error("Error:", error));
                 },
                 startBankId: function (method) {
-                    var context = this.getData();
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Login?handler=StartBankId";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    context.model.actionCode = method;
+                    clientdata.model.actionCode = method;
 
                     // Prepare the request options
                     var requestOptions = {
@@ -111,32 +109,32 @@
                             "Content-Type": "application/json",  // Set content type as JSON
                             "RequestVerificationToken": antiforgerytoken  // Add antiforgery token in the headers
                         },
-                        body: JSON.stringify(context.model)  // Convert model to JSON string
+                        body: JSON.stringify(clientdata.model)  // Convert model to JSON string
                     };
 
                     // Use fetch to send the request
                     fetch(endpointurl, requestOptions)
                         .then(response => response.json())  // Parse the response as JSON
                         .then(response => {
-                            context.model = response;
-                            if (context.model.resultCode === "BANKID_AUTH_QR") {
+                            clientdata.model = response;
+                            if (clientdata.model.resultCode === "BANKID_AUTH_QR") {
                                 setTimeout(function () {
-                                    context.authenticateBankId();
+                                    clientdata.authenticateBankId();
                                 }, 500);
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);  // Log any error that occurs
-                            context.model = { error: error.message };  // Store the error in the model
+                            clientdata.model = { error: error.message };  // Store the error in the model
                         });
                 },
                 authenticateBankId: function() {
-                    var context = this.getData();
+
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Login?handler=AuthenticateBankId";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    context.model.actionCode = "WAIT_FOR_BANKID_AUTH";
+                    clientdata.model.actionCode = "WAIT_FOR_BANKID_AUTH";
 
                     // Prepare request options
                     var requestOptions = {
@@ -145,7 +143,7 @@
                             "Content-Type": "application/json", // JSON request
                             "RequestVerificationToken": antiforgerytoken // Security token
                         },
-                        body: JSON.stringify(context.model) // Convert model to JSON
+                        body: JSON.stringify(clientdata.model) // Convert model to JSON
                     };
 
                     // Send the request
@@ -162,15 +160,15 @@
                         })
                         .then(errorResponse => {
                             if (errorResponse) {
-                                context.model = errorResponse;
-                                if (context.model.resultCode === "LOCKEDOUT" || context.model.resultCode === "REQUIREMFA") {
-                                    window.location = context.model.redirectUrl;
+                                clientdata.model = errorResponse;
+                                if (clientdata.model.resultCode === "LOCKEDOUT" || clientdata.model.resultCode === "REQUIREMFA") {
+                                    window.location = clientdata.model.redirectUrl;
                                 }
                             }
                         });
                 },
                 startFreja: function () {
-                    var context = this.getData();
+
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Login?handler=StartFreja";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
@@ -182,14 +180,14 @@
                             "Content-Type": "application/json", // JSON request
                             "RequestVerificationToken": antiforgerytoken // Security token
                         },
-                        body: JSON.stringify(context.model) // Convert model to JSON
+                        body: JSON.stringify(clientdata.model) // Convert model to JSON
                     };
 
                     // Send the request
                     fetch(endpointurl, requestOptions)
                         .then(response => response.json()) // Parse response as JSON
                         .then(response => {
-                            context.model = response; // Update model with response
+                            clientdata.model = response; // Update model with response
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -197,12 +195,12 @@
                         })
                         .then(errorResponse => {
                             if (errorResponse) {
-                                context.model = errorResponse; // Handle error response
+                                clientdata.model = errorResponse; // Handle error response
                             }
                         });
                 },
                 authenticateFreja: function() {
-                    var context = this.getData();
+
                     var baseurl = '@Url.Content("~/Identity/Account/")';
                     var endpointurl = baseurl + "Login?handler=AuthenticateFreja";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
@@ -214,7 +212,7 @@
                             "Content-Type": "application/json", // JSON request
                             "RequestVerificationToken": antiforgerytoken // Security token
                         },
-                        body: JSON.stringify(context.model) // Convert model to JSON
+                        body: JSON.stringify(clientdata.model) // Convert model to JSON
                     };
 
                     // Send the request
@@ -229,15 +227,15 @@
                         })
                         .then(errorResponse => {
                             if (errorResponse) {
-                                context.model = errorResponse; // Store error response
-                                if (context.model.resultCode === "LOCKEDOUT" || context.model.resultCode === "REQUIREMFA") {
-                                    window.location = context.model.redirectUrl; // Redirect if locked out or MFA required
+                                clientdata.model = errorResponse; // Store error response
+                                if (clientdata.model.resultCode === "LOCKEDOUT" || clientdata.model.resultCode === "REQUIREMFA") {
+                                    window.location = clientdata.model.redirectUrl; // Redirect if locked out or MFA required
                                 }
                             }
                         });
                 }
-            }
-            ,mounted: function (data) 
+            },
+            mounted: function () 
             {
                 @if (Settings.Value.UseFrejaEIdLogin)
                 {
@@ -251,11 +249,14 @@
                          this.startBankId('BANKID_START_OTHER');
                     </text>
                 }
+
+                return true;
             }
 
          };
 
-         app.mount("app", content);
+         let app = new BareaApp();
+         let clientdata = await app.mount("app", content);
 
     </script>
 }
