@@ -6,13 +6,17 @@
 <br />
 <br />
 
-    <div id="app">
+<div id="app">
 
-      
-        @foreach(var view in Model.ApplicationModel.Views)
+
+    @foreach(var view in Model.ApplicationModel.Views)
+    {
+        if (view.IsListView)
         {
-            
-            if (view.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
+            listPath = view.RequestPath;
+        }
+
+        if (view.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
                 continue;
             }
             if (view.IsListView)

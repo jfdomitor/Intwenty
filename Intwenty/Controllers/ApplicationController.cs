@@ -210,10 +210,11 @@ namespace Intwenty.Controllers
                 if (basicmodel == null)
                     return BadRequest(new { error = "could not find basic table model for: " + tablename });
 
-                dbclient.Open();
+
+                 dbclient.Open();
                 if (dbclient.CreateTable(basicmodel))
                 {
-                    var res = dbclient.GetEntity(basicmodel, entityId.GetInt32());
+                    var res = dbclient.GetEntity(basicmodel, Convert.ToInt32(entityId.GetString()));
                     return Ok(new { entity = res });
                 }
 
