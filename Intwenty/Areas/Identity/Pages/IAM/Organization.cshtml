@@ -168,8 +168,8 @@
 
                     <div class="form-group">
                         <label class="control-label">Select Product<span style="color: red"> *</span></label>
-                        <select ba-bind="root.product.name" class="form-control form-control-sm">
-                            <option ba-foreach="item in root.users" ba-option-id="item.id" ba-option-text="item.productName"></option>
+                        <select ba-bind="root.product.productId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.products" ba-option-id="item.id" ba-option-text="item.productName"></option>
                         </select>
                     </div>
 
@@ -243,9 +243,12 @@
 
 
                     clientdata.resultCode = "";
-                    clientdata.member = { organizationId: @Model.Id};
+                    let organizationId=@Model.Id;
 
                     let okfunc = async function () {
+                        clientdata.member.organizationId= organizationId;
+                        clientdata.member.id=0;
+
                         let baseurl = '@Url.Content("~/Identity/IAM/")';
                         let endpointurl = baseurl + "Organization/@Model.Id?handler=AddMember";
                         let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
@@ -309,9 +312,15 @@
 
 
                     clientdata.resultCode = "";
-                    clientdata.product = {};
-
+                    let organizationId = @Model.Id;
+                    
                     let okfunc = async function () {
+                        let productId = clientdata.product.productId;
+                        clientdata.product = clientdata.products.find(p=>p.id===productId);
+                        clientdata.product.organizationId= organizationId;
+                        clientdata.product.id=0;
+                        clientdata.product.productId=productId;
+
                         let baseurl = '@Url.Content("~/Identity/IAM/")';
                         let endpointurl = baseurl + "Organization/@Model.Id?handler=AddProduct";
                         let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';

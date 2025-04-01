@@ -180,43 +180,44 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Authorize {{authorization.authorizationItemTypeName}}</h5>
+                    <h5 class="modal-title">Authorize {{root.authorization.authorizationItemTypeName}}</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group" ba-if="authorization.authorizationType=='ROLE'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='ROLE'">
                         <label class="control-label">Select Role<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in authitem.roleItems">{{item.name}}</option>
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.roleItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='SYSTEM'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='SYSTEM'">
                         <label class="control-label">Select System<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in authitem.systemItems">{{item.name}}</option>
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.systemItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
+
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='APPLICATION'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='APPLICATION'">
                         <label class="control-label">Select Application<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in authitem.applicationItems">{{item.name}}</option>
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.applicationItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
-                    <div class="form-group" ba-if="authorization.authorizationType=='UIVIEW'">
+                    <div class="form-group" ba-show="root.authorization.authorizationType=='UIVIEW'">
                         <label class="control-label">Select View<span style="color: red"> *</span></label>
-                        <select ba-bind="authorization.authorizationId" class="form-control form-control-sm">
-                            <option ba-foreach="item in authitem.viewItems">{{item.name}}</option>
+                        <select ba-bind="root.authorization.authorizationId" class="form-control form-control-sm">
+                            <option ba-foreach="item in root.authitem.viewItems" ba-option-id="item.id" ba-option-text="item.name"></option>
                         </select>
-                        <input type="checkbox" ba-bind="authorization.denyAuthorization" /> Deny
+                        <input type="checkbox" ba-bind="root.authorization.denyAuthorization" /> Deny
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" ba-hide="authorization.authorizationId==0">Ok</button>
+                    <button id="addAuthorizationModalOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" ba-show="root.authorization.authorizationId">Ok</button>
                 </div>
             </div>
         </div>
@@ -235,11 +236,9 @@
         const appcontent = {
             data:
             {
-                model: {},
-                authorization: {},
-                authitem: {},
-                users: [],
-                idgen: -1
+                model: {modelSaved:true, userName:"", productName:"", roleAuthorizations:[],systemAuthorizations:[],applicationAuthorizations:[],viewAuthorizations:[]},
+                authorization: {authorizationType: "", authorizationId: "", authorizationItemTypeName: "", userId: "", organizationId: 0, productId: "" },
+                authitem: {roleItems:[],systemItems:[],applicationItems:[],viewItems:[]}
             },
             methods: {
 
@@ -447,31 +446,31 @@
                 }
 
             },
-            mounted: function (applicationData) {
-                let baseurl = '@Url.Content("~/Identity/IAM/")';
-                let endpointurl = baseurl + "OrganizationProduct/@Model.OrganizationId/@Model.ProductId?handler=Load";
-                const retval = fetch(endpointurl)
-                    .then(response => response.json())
-                    .then(data => {
-                        applicationData.model = data;
-                        endpointurl = baseurl + "OrganizationProduct/@Model.OrganizationId/@Model.ProductId?handler=LoadAuthItems";
-                        fetch(endpointurl)
-                            .then(response => response.json())
-                            .then(data => {
-                                applicationData.authitem = data;
-                                return data;
-                            })
-                            .catch(error => console.error("Error fetching data:", error));
-                        return data;
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
+            mounted: async function (applicationData) {
+                try {
+                    let baseurl = '@Url.Content("~/Identity/IAM/")';
+                    let orgId = '@Model.OrganizationId';
+                    let productId = '@Model.ProductId';
 
-                return retval;
+                    const fetchData = async (handler) => {
+                        let endpointurl = `${baseurl}OrganizationProduct/${orgId}/${productId}?handler=${handler}`;
+                        let response = await fetch(endpointurl);
+                        if (!response.ok) throw new Error(`Failed to fetch ${handler}`);
+                        return await response.json();
+                    };
+
+                    applicationData.model = await fetchData("Load");
+                    applicationData.authitem = await fetchData("LoadAuthItems");
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+
+                return true;
             }
         };
 
         const app = new BareaApp();
-        let clientdata = app.mount("app", appcontent);
+        let clientdata = await app.mount("app", appcontent);
 
 
         let raiseAddAuthorizationModal = function (callback) {
