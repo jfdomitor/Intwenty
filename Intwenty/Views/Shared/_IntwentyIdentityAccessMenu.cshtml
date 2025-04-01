@@ -6,7 +6,7 @@
         @if (User.IsInRole("SUPERADMIN"))
         {
             <a class="dropdown-item" asp-area="Identity" asp-page="/IAM/ProductList"><span class="fab fa-product-hunt"></span> Products</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="EventLog" asp-route-logname="IAM"><span class="fa fa-cogs"></span> Logviewer</a>
+            <a class="dropdown-item" asp-controller="Admin" asp-action="EventLog" asp-route-logname="IAM"><span class="fa fa-cogs"></span> Logviewer</a>
         }
     </div>
 </li>

@@ -12,6 +12,7 @@ using Intwenty.Helpers;
 using System.Text.Json;
 using Intwenty.DataClient;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Intwenty.Areas.Identity.Models;
 
 namespace Intwenty.Controllers
 {
@@ -23,11 +24,14 @@ namespace Intwenty.Controllers
 
         private IIntwentyModelService ModelService { get; }
 
-        public AdminController(IIntwentyModelService modelService, IntwentyUserManager usermanager)
+        private IIntwentyDbLoggerService Dblogger { get; }
+
+        public AdminController(IIntwentyModelService modelService, IntwentyUserManager usermanager, IIntwentyDbLoggerService dblogger)
         {
 
             UserManager = usermanager;
             ModelService = modelService;
+            Dblogger = dblogger;
         }
 
 
@@ -39,6 +43,33 @@ namespace Intwenty.Controllers
          
             return View(ModelService.Model);
 
+        }
+
+        public IActionResult EventLog(string logname)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Forbid();
+            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+                return Forbid();
+
+            if (string.IsNullOrEmpty(logname))
+                logname = "Intwenty";
+
+            ViewBag.LogName = logname;
+
+            return View();
+        }
+
+        [HttpGet("Admin/API/GetEventlog/{logname?}")]
+        public async Task<IActionResult> GetEventlog(string logname)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Forbid();
+            if (!User.IsInRole(IntwentyRoles.RoleSystemAdmin) && !User.IsInRole(IntwentyRoles.RoleSuperAdmin))
+                return Forbid();
+
+            var log = await Dblogger.GetEventLogAsync(string.Empty, logname);
+            return new JsonResult(log);
         }
 
 
