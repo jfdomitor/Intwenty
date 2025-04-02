@@ -1,6 +1,8 @@
 ﻿using Intwenty.Entity;
 using Intwenty.Interface;
 using Intwenty.Model;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System;
@@ -16,11 +18,13 @@ namespace Intwenty.Localization
 
         private List<IntwentyLocalizationItem> LocalizationList { get; }
         private IntwentySettings Settings { get; }
+        private string UserCulture { get; }
 
-        public IntwentyStringLocalizer(IntwentyModel model, IntwentySettings settings)
+        public IntwentyStringLocalizer(IntwentyModel model, IntwentySettings settings, string userculture)
         {
             LocalizationList = model.Localizations;
             Settings = settings;
+            UserCulture = userculture;
         }
 
         public LocalizedString this[string name]
@@ -30,20 +34,11 @@ namespace Intwenty.Localization
                 if (name == null) 
                     throw new ArgumentNullException(nameof(name));
 
-                /*
-                 * HOW TO GET CURRENT CULTURE
-                System.Threading.Thread.CurrentThread.CurrentUICulture 
-                System.Threading.Thread.CurrentThread.CurrentCulture      
-                System.Globalization.CultureInfo.CurrentUICulture 
-                System.Globalization.CultureInfo.CurrentCulture 
-                Settings.Value.DefaultCulture 
-                */
-
-
+          
                 string culture = Settings.LocalizationDefaultCulture;
-
                 if (Settings.LocalizationMethod != LocalizationMethods.SiteLocalization)
-                   culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+                    culture = this.UserCulture;
+
 
                 if (string.IsNullOrEmpty(culture))
                     throw new InvalidOperationException("Can't get current culture");
@@ -59,35 +54,7 @@ namespace Intwenty.Localization
             }
         }
 
-        public LocalizedString this[string name, params object[] arguments]
-        {
-            get
-            {
-                if (name == null) 
-                    throw new ArgumentNullException(nameof(name));
-
-
-                string culture = Settings.LocalizationDefaultCulture;
-
-                if (Settings.LocalizationMethod != LocalizationMethods.SiteLocalization)
-                    culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
-
-                if (string.IsNullOrEmpty(culture))
-                    throw new InvalidOperationException("Can't get current culture");
-
-                var trans = LocalizationList.Find(p => p.Key == name && p.Culture == culture);
-                if (trans == null)
-                    return new LocalizedString(name, name);
-
-                if (string.IsNullOrEmpty(trans.Text))
-                    return new LocalizedString(name, name);
-
-                if (arguments != null)
-                    return new LocalizedString(name, String.Format(trans.Text, arguments));
-                else
-                    return new LocalizedString(name, trans.Text);
-            }
-        }
+        public LocalizedString this[string name, params object[] arguments] => this[name];
 
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {

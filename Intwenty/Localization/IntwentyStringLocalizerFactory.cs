@@ -2,6 +2,8 @@
 using Intwenty.Entity;
 using Intwenty.Interface;
 using Intwenty.Model;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -22,12 +24,20 @@ namespace Intwenty.Localization
         private IMemoryCache ModelCache { get; }
         private IntwentySettings Settings { get; }
         private IntwentyModel Model { get; }
+        private IHttpContextAccessor Context { get; }
 
-        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IntwentyModel model)
+        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IntwentyModel model, IHttpContextAccessor context)
         {
             ModelCache = cache;
             Settings = settings.Value;
             Model = model;
+            Context = context;
+        }
+
+        private string GetUserCulture()
+        {
+            var httpContext = Context.HttpContext;
+            return httpContext?.Features.Get<IRequestCultureFeature>()?.RequestCulture.Culture.Name;
         }
 
         public IStringLocalizer Create(string basename, string location)
@@ -43,7 +53,7 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(Model, Settings);
+            value = new IntwentyStringLocalizer(Model, Settings, GetUserCulture());
 
             Cache.TryAdd(basename, value);
 
@@ -61,7 +71,7 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(Model, Settings);
+            value = new IntwentyStringLocalizer(Model, Settings, GetUserCulture());
 
             Cache.TryAdd(basename, value);
 
