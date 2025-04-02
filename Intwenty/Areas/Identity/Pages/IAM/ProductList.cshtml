@@ -37,8 +37,8 @@
                 <th style="width:15%">Name</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.list">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.list">
                 <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete"><i class="fa fa-trash"></i></div></td>
                 <td><a role="button" class="btn btn-sm btn-secondary" ba-click="goToProduct()" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{item.id}}</td>

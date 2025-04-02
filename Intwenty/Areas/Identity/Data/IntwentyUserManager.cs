@@ -473,32 +473,32 @@ namespace Intwenty.Areas.Identity.Data
             var authorizations = await GetUserAuthorizationsAsync(user, Settings.ProductId);
             var list = authorizations.Select(p => new IntwentyAuthorizationVm(p)).ToList();
 
-            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id && p.DenyAuthorization))
+            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id.ToUpper() && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId && p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId.ToUpper() && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId && p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId.ToUpper() && p.DenyAuthorization))
             {
                 return false;
             }
 
-            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsViewAuthorization && p.AuthorizationNormalizedName == requestedview.Id.ToUpper() && !p.DenyAuthorization))
             {
                 return true;
             }
 
-            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsApplicationAuthorization && p.AuthorizationNormalizedName == requestedview.ApplicationId.ToUpper() && !p.DenyAuthorization))
             {
                 return true;
             }
 
-            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId && !p.DenyAuthorization))
+            if (list.Exists(p => p.IsSystemAuthorization && p.AuthorizationNormalizedName == requestedview.SystemId.ToUpper() && !p.DenyAuthorization))
             {
                 return true;
             }

@@ -83,6 +83,1016 @@
 			"Key": "LOCKED_OUT_ACCOUNT",
 			"Culture": "sv-SE",
 			"Text": "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig"
+		},
+		{
+			"Key": "MFAOPTIONAL",
+			"Culture": "sv-SE",
+			"Text": "Aktivera två-faktor autentisering."
+		},
+		{
+			"Key": "MFAFORCED",
+			"Culture": "sv-SE",
+			"Text": "Systemet kräver två-faktor autentisering, vg ange."
+		},
+		{
+			"Key": "MFAOPTIONAL",
+			"Culture": "en-US",
+			"Text": "Activate two-factor authentication."
+		},
+		{
+			"Key": "MFAFORCED",
+			"Culture": "en-US",
+			"Text": "The system requires two-factor authentication, please activate."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "Try Again",
+			"Text": "Try Again."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Try Again",
+			"Text": "Försök igen."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "REG_SERVICE_FAILURE",
+			"Text": "An unexpected error occured, the account could not be created."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "REG_SERVICE_FAILURE",
+			"Text": "Ett fel uppstod, kontot kunde inte skapas."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "NO_EMAIL",
+			"Text": "You must type a valid email address."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "NO_EMAIL",
+			"Text": "Du måste ange en giltig epostadress."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "EMAIL_NOT_UNIQUE",
+			"Text": "An account is already associated with this email address."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "EMAIL_NOT_UNIQUE",
+			"Text": "Det finns redan ett konto med den angivna epostadressen."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "LOCKED_OUT_ACCOUNT",
+			"Text": "This account has been locked out, please try again later."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "LOCKED_OUT_ACCOUNT",
+			"Text": "Det här kontot har spärrats, försök igen senare eller kontakta systemansvarig"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "API Key Updated",
+			"Text": "API nyckeln uppdaterades"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You must type a user name and a password",
+			"Text": "Vänligen ange användarnamn och lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Invalid login attempt",
+			"Text": "Inloggningen misslyckades"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "LOGIN_REQUIRE_CONF",
+			"Text": "Your account must be confirmed before you can login, pleas check your email and follow the instructions."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "LOGIN_REQUIRE_CONF",
+			"Text": "Du måste bekräfta ditt konto innan du kan logga in, vänligen kontrollera din epost"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "FREJA_SERVICE_FAILURE",
+			"Text": "Sorry, the service is temporary unavailable"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "FREJA_SERVICE_FAILURE",
+			"Text": "Vi ber om ursäkt, men det går inte att logga in för tillfället"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "FREJA_INSTRUCTION",
+			"Text": "To login, open your Freja e ID app and scan the QR code below"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "FREJA_INSTRUCTION",
+			"Text": "För att logga in öppnar du appen Freja eID på din telefon och skannar sedan QR koden nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_INSTRUCTION",
+			"Text": "To login, open your Bank ID app and scan the QR code below"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_INSTRUCTION",
+			"Text": "För att logga in öppnar du Bank ID appen på din telefon och skannar sedan QR koden nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_SERVICE_FAILURE",
+			"Text": "Authentication failed"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_SERVICE_FAILURE",
+			"Text": "Autentiseringen misslyckades, försök igen"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_CREATE_ACCOUNT",
+			"Text": "Welcome. Please input the requested information below and then click 'Register'. You will need your Bank ID to finnish the registration."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_CREATE_ACCOUNT",
+			"Text": "Välkommen ! Börja med att ange efterfrågad information och klicka sedan på registreara. Du kommer behöva Bank ID för att slutföra registreringen."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_USE_OTHER_DEVICE",
+			"Text": "Bank ID on another device"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_USE_OTHER_DEVICE",
+			"Text": "Bank ID på annan enhet"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_USE_THIS_DEVICE",
+			"Text": "Bank ID on this device"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_USE_THIS_DEVICE",
+			"Text": "Bank ID på denna enhet"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_OPEN_THIS_DEVICE",
+			"Text": "Open Bank ID"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_OPEN_THIS_DEVICE",
+			"Text": "Öppna Bank ID"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_AUTH_FAILURE",
+			"Text": "The BankID you are trying to use is revoked or too old. Please use another BankID or order a new one from your internet bank."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_AUTH_FAILURE",
+			"Text": "Det BankID du försöker använda är för gammalt eller spärrat. Använd ett annat BankID eller hämta ett nytt hos din internetbank."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_INTWENTY_TIMEOUT_FAILURE",
+			"Text": "You reached the authentication time limit, please try again."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_INTWENTY_TIMEOUT_FAILURE",
+			"Text": "Tidsgränsen uppnåddes, vg försök igen"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_TIMEOUT_FAILURE",
+			"Text": "The BankID app is not responding. Please check that the program is started and that you have internet access.If you don’t have a valid BankID you can get one from your bank. Try again."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_TIMEOUT_FAILURE",
+			"Text": "BankID-appen svarar inte. Kontrollera att den är startad och att du har internetanslutning.Om du inte har något giltigt BankID kan du hämta ett hos din Bank. Försök sedan igen."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_CANCEL_FAILURE",
+			"Text": "Action cancelled. Try Again."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_CANCEL_FAILURE",
+			"Text": "Åtgärden avbruten. Försök igen."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BANKID_USERCANCEL_FAILURE",
+			"Text": "Action cancelled."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BANKID_USERCANCEL_FAILURE",
+			"Text": "Åtgärden avbruten."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "RESETPWDMAIL",
+			"Text": "Vi har skickat en länk till din epostadress, klicka på den för att återställa ditt lösenord."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "RESETPWDMAIL",
+			"Text": "Please check your email to reset your password."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Reset password confirmation",
+			"Text": "Bekräftelse på återställt lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Your password has been reset",
+			"Text": "Ditt lösenord har återställts"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Reset Password",
+			"Text": "Återställ Lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Access Denied",
+			"Text": "Du saknar behörighet för den begärda informationen"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFALOGINSMS",
+			"Text": "Vi har skickat en kod till din telefon, ange koden och klicka på logga in"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFALOGINSMS",
+			"Text": "We've sent a code to your phone, please enter the code and click login"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFALOGINEMAIL",
+			"Text": "Vi har skickat en kod till den registrerade epostadress, ange koden och klicka på logga in"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFALOGINEMAIL",
+			"Text": "We've sent a code to your registered email address, please enter the code and click login"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFALOGINTOTP",
+			"Text": "Ditt konto använder en autensierings app, ange koden från appen och klicka på logga in"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFALOGINTOTP",
+			"Text": "Your login is protected with an authenticator app. Enter your authenticator code and click login"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Register",
+			"Text": "Registrera "
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create Account",
+			"Text": "Skapa Konto"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create a new account",
+			"Text": "Skapa nytt konto"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Passwords must match",
+			"Text": "Lösenorden skiljer sig åt"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Sorry, registration is closed",
+			"Text": "Tjänsten är stängd för registrering"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enter your email",
+			"Text": "Ange din epostadress"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPUNVERIFIED",
+			"Text": "Koden kunde inte verifiera testa nästa kod i din app."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPUNVERIFIED",
+			"Text": "The code could not be verified, try the next code from your authenticator app."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPSTEPS_1",
+			"Text": "För att använda en autentiserings app, går du igenom följande steg:"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPSTEPS_1",
+			"Text": "To use an authenticator app go through the following steps:"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPSTEPS_2",
+			"Text": "Ladda ned en autentiserings app (Microsoft Authenticator or Google Authenticator) till din mobiltelefon."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPSTEPS_2",
+			"Text": "Download an authentication app (Microsoft Authenticator or Google Authenticator) to your phone."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPSTEPS_3",
+			"Text": "Skanna QR koden nedan eller ange denna kod"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPSTEPS_3",
+			"Text": "Scan the QR Code or enter this key"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPSTEPS_4",
+			"Text": "i din autentiserings app i telefonen"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPSTEPS_4",
+			"Text": "into your two factor authenticator app"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFATOTPSTEPS_5",
+			"Text": "När du skannat qr-koden eller matat in koden kommer din autentiserings app att ge dig en unik kod, ange den koden i rutan nedan och klicka på verifiera."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFATOTPSTEPS_5",
+			"Text": "Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code.Enter the code in the confirmation box below."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFASMSCODESENT",
+			"Text": "Vi har skickat en kod till ditt telefonnummer, vänligen ange det nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFASMSCODESENT",
+			"Text": "We've sent a code to your phone, input the code below."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFASMSPHONEREQ",
+			"Text": "Vänligen ange det telefonnummer du vill använda ör att ta emot koder."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFASMSPHONEREQ",
+			"Text": "Please input the phonenumber to use with sms 2FA."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Verify",
+			"Text": "Verifiera"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Invalid format",
+			"Text": "Ogiltigt format"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You must update your email first, do it by",
+			"Text": "Du måste ange en epostadress först, det gär du genom att"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Thank you. Two-factor authentication is now set up",
+			"Text": "Tack 2-faktor autentisering är nu aktiverad."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFANOTVERIFIED",
+			"Text": "Koden kunde inte verifieras, du kan försöka igen genom att"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFANOTVERIFIED",
+			"Text": "The code could not be verified, try again by"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "clicking here",
+			"Text": "Klicka här"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFAEMALCODESENT",
+			"Text": "Vi har skickat en kod till din epostadress, vänligen mata in koden nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFAEMALCODESENT",
+			"Text": "We've sent a code to your email, please input that code and push verify."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Reset 2FA",
+			"Text": "Återställ 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Disable 2FA",
+			"Text": "Avaktivera 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFARESETINFO",
+			"Text": "Denna åtgärd tar bort dina 2FA inställningar. För att bibehålla en hög säkerhet bör du aktivera 2FA igen senare"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFARESETINFO",
+			"Text": "This action disables your 2FA Settings. To achive the highest security you should set it up again later."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFAFORCEDRESETINFO",
+			"Text": "Denna åtgärd tar bort dina 2FA inställningar. Eftersom vår tjänst använder tvingande 2FA måste du göra om konfigurationen för att kunna logga in. Om du använder en app måste du även ta bort kontot i appen och skapa ett nytt."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFAFORCEDRESETINFO",
+			"Text": "This action resets your 2FA Settings. Since our service is using enforced 2FA you must configure it again in order to login."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You're using Bank ID 2FA",
+			"Text": "Du använder 2FA via Bank ID"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You're using Email 2FA",
+			"Text": "Du använder 'Kod via Epost' 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You're using FIDO2 2FA",
+			"Text": "Du använder FIDO2 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You're using SMS Code 2FA",
+			"Text": "Du använder 'Kod via SMS' 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You're using an authentication app for 2FA",
+			"Text": "Du använder 2FA via en autentiserings app"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFASTATUS",
+			"Text": "Du är klar. När du loggar in kommer du efterfrågas en extra säkerhetskod som levereras till dig på det sätt du valt."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFASTATUS",
+			"Text": "You're done. Next time you login you will be promted for a security code."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable Email Code 2FA",
+			"Text": "'Kod via Epost' 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable FIDO2 2FA",
+			"Text": "'FIDO2' 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable SMS Code 2FA",
+			"Text": "'Kod via SMS' 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable Bank ID 2FA",
+			"Text": "2FA via Bank ID"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable Microsoft Authenticator",
+			"Text": "Microsoft Authenticator 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Enable Google Authenticator",
+			"Text": "Google Authenticator 2FA"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFAOPTIONAL",
+			"Text": "Genom att aktivera två-faktor autentisering så höjer du säkerheten på ditt konto, vänligen välj ett av alternativen nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFAOPTIONAL",
+			"Text": "By adding two-factor authentication you can add extra security to your account. Please choose one option below."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "MFAFORCED",
+			"Text": "För att nå en hög säkerhet använder vi tvingande 2-faktor autentisering. För att använda tjänsten måste du välja ett alternativ nedan."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "MFAFORCED",
+			"Text": "To add extra security, our service is using enforced 2FA. To use the service you must enable one of the options below."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Do you want to rename",
+			"Text": "Vill du byta namn på"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You must type a new groupname",
+			"Text": "Du måste ange ett nytt gruppnamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Invite member",
+			"Text": "Bjud in medlem"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "You must type a valid email",
+			"Text": "Du måste ange en korrekt epostadress"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "New Groupname",
+			"Text": "Nytt gruppnamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Type a new groupname for",
+			"Text": "Skriv ett nytt gruppnamn för"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "GROUPINVITESENT",
+			"Text": "An inbjudan att delta i gruppen har skickats till"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "GROUPINVITESENT",
+			"Text": "An invite to join the group has been sent to"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "GROUPINVITEINSTRUCT",
+			"Text": "Skriv epostadressen till en person att bjuda in till"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "GROUPINVITEINSTRUCT",
+			"Text": "Type the email of a person to invite to"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "GROUPREQTOOWNERSENT",
+			"Text": "En förfrågan om att bli medlem har skickats till gruppens ägare."
+		},
+		{
+			"Culture": "en-US",
+			"Key": "GROUPREQTOOWNERSENT",
+			"Text": "A request to join the group has been sent to the owner."
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Become a member of the group",
+			"Text": "Bli medlem i gruppen"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Do you want to create the group",
+			"Text": "Vill du skapa gruppen"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Group",
+			"Text": "Grupp"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create or Join",
+			"Text": "Skapa eller gå med"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Groupname",
+			"Text": "Gruppnamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create Group",
+			"Text": "Skapa grupp"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Join Group",
+			"Text": "Gå med i grupp"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "My Groups",
+			"Text": "Mina grupper"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "My role",
+			"Text": "Min roll"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Accept",
+			"Text": "Acceptera"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Members",
+			"Text": "Medlemmar"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Members of my groups",
+			"Text": "Medlemmar i mina grupper"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Role",
+			"Text": "Roll"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Members in",
+			"Text": "Medlemmar i"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Change Password",
+			"Text": "Ändra lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Current Password",
+			"Text": "Nuvarande lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "New Password",
+			"Text": "Nytt lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Confirm Password",
+			"Text": "Bekräfta lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Account settings",
+			"Text": "Kontoinställningar"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Manage Account",
+			"Text": "Hantera ditt konto"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create Key",
+			"Text": "Skapa nyckel"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Renew Key",
+			"Text": "Förnya nyckel"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "First Name",
+			"Text": "Förnamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Last Name",
+			"Text": "Efternamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Profile",
+			"Text": "Mina uppgifter"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Language",
+			"Text": "Språk"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Two-factor authentication",
+			"Text": "2-faktor autentisering"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "API Key",
+			"Text": "API nyckel"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Groups",
+			"Text": "Grupper"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Personal data",
+			"Text": "Personlig data"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Use external accounts",
+			"Text": "Använd ett externt konto"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Register as a new user",
+			"Text": "Skapa konto"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Forgot your password",
+			"Text": "Glömt lösenordet"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Remember Me",
+			"Text": "Kom i håg mig"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Password",
+			"Text": "Lösenord"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "User Name",
+			"Text": "Användarnamn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Logout",
+			"Text": "Logga Ut"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Login",
+			"Text": "Logga In"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Code",
+			"Text": "Kod"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Address",
+			"Text": "Adress"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Message",
+			"Text": "Meddelande"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Email",
+			"Text": "Epost"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Phone",
+			"Text": "Telefon"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Previous",
+			"Text": "Föregående"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Next",
+			"Text": "Nästa"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Changed By",
+			"Text": "Ändrad Av"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Changed",
+			"Text": "Ändrad"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "List",
+			"Text": "Lista"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Add",
+			"Text": "Lägg till"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Open",
+			"Text": "Öppna"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Close",
+			"Text": "Stäng"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Title",
+			"Text": "Titel"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "Delete",
+			"Text": "Delete ?"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Remove",
+			"Text": "Ta bort"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Delete",
+			"Text": "Ta bort ?"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Cancel",
+			"Text": "Avbryt"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Date",
+			"Text": "Datum"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Event",
+			"Text": "Händelse"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Leave",
+			"Text": "Lämna"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Name",
+			"Text": "Namn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Menu",
+			"Text": "Meny"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Rename",
+			"Text": "Ändra namn"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Create new",
+			"Text": "Skapa ny"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "New",
+			"Text": "Ny"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Save",
+			"Text": "Spara"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Changes Saved",
+			"Text": "Ändringar sparade"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Edit",
+			"Text": "Ändra"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "Send",
+			"Text": "Skicka"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "to",
+			"Text": "till"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "BACKTOLIST",
+			"Text": "Back to list"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "BACKTOLIST",
+			"Text": "Tillbaka"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "ADDEDIT",
+			"Text": "Add / Edit"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "ADDEDIT",
+			"Text": "Lägg till / Ändra"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "COPYRIGHT",
+			"Text": "2021 Intwenty - All rights reserved"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "COPYRIGHT",
+			"Text": "2021 Intwenty - Alla rättighter reserverade"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "PRODUCT_LOGIN",
+			"Text": "Welcome ! Follow the instructions below to login"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "PRODUCT_LOGIN",
+			"Text": "Välkommen ! Följ instruktionerna nedan för att logga in"
+		},
+		{
+			"Culture": "en-US",
+			"Key": "PROFILE_SAVE_ERROR",
+			"Text": "An error occured when saving the profile"
+		},
+		{
+			"Culture": "sv-SE",
+			"Key": "PROFILE_SAVE_ERROR",
+			"Text": "Ett fel uppstod när profilen skulle sparas"
 		}
 	],
 	"ValueDomains": [
@@ -100,8 +1110,7 @@
 			"DomainName": "CUSTOMERTAGS",
 			"Code": "1",
 			"Value": "Tag 1"
-		}
-		,
+		},
 		{
 			"DomainName": "CUSTOMERTAGS",
 			"Code": "2",

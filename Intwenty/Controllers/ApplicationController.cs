@@ -12,6 +12,7 @@ using Intwenty.Helpers;
 using System.Text.Json;
 using Intwenty.DataClient;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using System.Runtime.Intrinsics.X86;
 
 namespace Intwenty.Controllers
 {
@@ -39,10 +40,12 @@ namespace Intwenty.Controllers
 
             var path = this.HttpContext.Request.Path;
             var view = this.ModelService.GetLocalizedViewModelByPath(path);
-            if (view == null) 
-            {
+            if (view == null)
                 return NotFound();
-            }
+
+            if (!await UserManager.HasAuthorization(User, view))
+                return Forbid();
+          
             var system = this.ModelService.Model.Systems.Find(p=> p.Id== view.SystemId);
             var app = system.Applications.Find(p=> p.Id == view.ApplicationId);
             var model = new RenderModel(){ApplicationModel = app, RequestedView=view};

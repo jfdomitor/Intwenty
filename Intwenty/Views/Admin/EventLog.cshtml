@@ -17,17 +17,17 @@
         <div class="card-body">
             @if (logname == "Intwenty")
             {
-                <div class="alert alert-primary">
-                    This is the intwenty event log it contains events regarding models and applications.
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    This is the intwenty event log; it contains events regarding models and applications.
                     @if (Settings.Value.UseSeparateIAMDatabase)
                     {
-                        <span>This instace is configured with a separate IAM database, see IAM related events <a asp-controller="model" asp-action="EventLog" asp-route-logname="IAM"> here....</a></span>
+                        <span>This instance is configured with a separate IAM database. See IAM-related events <a asp-controller="model" asp-action="EventLog" asp-route-logname="IAM">here...</a></span>
                     }
                     else
                     {
-                        <span>This instace is configured to share database with IAM (Identity Access Management), which implies that events related to users, organizations and products also is visible.</span>
+                        <span>This instance is configured to share the database with IAM (Identity Access Management), which implies that events related to users, organizations, and products are also visible.</span>
                     }
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
             @if (logname == "IAM")
@@ -99,7 +99,7 @@
               mounted: async function (applicationData)
               {
 
-                    let baseurl = '@Url.Content("~/Model/API/")';
+                    let baseurl = '@Url.Content("~/Admin/API/")';
                     let endpointurl = `${baseurl}GetEventlog/@logname`;
                     try {
                         let response = await fetch(endpointurl);

@@ -24,8 +24,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Intwenty - @ViewData["Title"]</title>
     <meta name="google" content="notranslate" />
-    <meta name="description" content="Intwenty Demo. Login and try out Intwenty it's free." />
-    <meta name="keywords" content="cms,blogg engine,open source" />
+    <meta name="description" content="Intwenty - A .net core mvc template" />
+    <meta name="keywords" content=".net core, template" />
     <link rel="stylesheet" href="~/css/site.min.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-free-5.12.1-web/css/all.min.css" />
     <link rel="stylesheet" href="~/css/bootstrap5.min.css">
@@ -106,7 +106,7 @@
 
 
 
-    <div class="container body-content" id="main_content_container">
+    <div class="container body-content ba-cloak" id="main_content_container">
 
 
         @RenderBody()
@@ -129,22 +129,23 @@
     {
         <script src="~/_framework/blazor.server.js"></script>
     }
-    <script src="~/lib/alasql/alasql.min.js"></script>
-    <script src="~/lib/xlsx/xlsx.core.min.js"></script>
+
     <script src="~/lib/bootstrap5/bootstrap.bundle.min.js"></script>
     <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/lib/Croppie/croppie.js"></script>
-    <script src="~/js/intwenty.js" asp-append-version="true"></script>
+    <script src="~/js/intwenty.js"></script>
 
     <script>
-        
+
+         document.addEventListener('DOMContentLoaded', function(){ document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));});
+
           getTag("expand_ui_btn").onclick = function expandUI()
           {
                 handleIntwentyViewMode(true);
           };
 
           handleIntwentyViewMode(false);
-      
+
     </script>
 
     @RenderSection("Scripts", required: false)

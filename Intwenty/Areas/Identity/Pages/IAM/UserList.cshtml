@@ -49,8 +49,8 @@
 
             </tr>
         </thead>
-        <tbody ba-foreach="entry in root.users">
-            <tr>
+        <tbody>
+            <tr ba-foreach="entry in root.users">
                 <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete user"><i class="fa fa-trash"></i></div></td>
                 <td><a role="button" class="btn btn-sm btn-secondary" ba-href="entry.editPath" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{entry.userName}}</td>

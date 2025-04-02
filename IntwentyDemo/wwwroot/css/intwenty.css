@@ -27,12 +27,6 @@
   background: #FDD;
 }
 
-/*Used in Intwenty Create / Edit Views */
-.intwentypanel {
-  border: solid 0px #DDD !important;
-  padding: 10px;
-}
-
 .largecheckbox {
   display: flex;
   align-items: initial;
@@ -49,14 +43,6 @@
 .largecheckbox label {
   font-weight: normal;
   margin-left: 7px;
-}
-
-.selectize-control {
-  padding: 0;
-}
-
-.selectize-input {
-  border: none;
 }
 
 .form-group {
@@ -83,4 +69,8 @@
 
 label {
   margin-bottom: 0.5rem;
+}
+
+.ba-cloak {
+  visibility: hidden;
 }

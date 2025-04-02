@@ -21,14 +21,13 @@ export class BareaApp
     #appDataProxyCache = new WeakMap();
     #dynamicExpressionRegistry = new Map();
     #computedPropertyNames = [];
-    #delayedDirectives = []; //List of directives that can't be tracked until all it's children are tracked
+    #delayedDirectives = []; 
     #appData;
     #methods = {};
     #mounted=false;
     #mountedHandler=null;
     #computedProperties = {};
     #enableBareaId = false;
-    #enableHideUnloaded=false;
     #uiDependencyTracker=null;
     #computedPropertiesDependencyTracker =  null;
 
@@ -122,19 +121,10 @@ export class BareaApp
             }
         }
 
-        //The user my have editited
+        //The user my have edited the data in the mounted function
         this.#appData = content.data;
         this.#appDataProxy = content.data;
 
-        if (this.#enableHideUnloaded)
-        {
-            document.addEventListener('DOMContentLoaded',this.#loadedHandler);
-        }else{
-            document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));
-        }
-       
-      
-          
         const proxy = this.#createReactiveProxy((path, reasonobj, reasonkey, reasonvalue, reasonfuncname="") => 
         { 
             //Handles changes in the data and updates the dom
@@ -234,26 +224,6 @@ export class BareaApp
         return this.#appDataProxy;
     }
 
-    enableHideBeforeLoaded(value)
-    {
-        if (this.#isPrimitive(value))
-            this.#enableHideUnloaded = value;
-    }
-
-   
-    addHandler(functionName, handlerFunction) 
-    {
-        if (typeof handlerFunction === "function")
-        {
-            this.#methods[functionName] = handlerFunction;
-        } 
-        else 
-        {
-            console.warn(`Handler for "${functionName}" is not a function.`);
-        }
-    }
-
-
     getProxifiedPathData(path, rootobject, varname)
     {
         if (!path && rootobject)
@@ -304,32 +274,7 @@ export class BareaApp
         return target;
     }
 
-    //Generates a flat object from any object
-    getObjectDictionary(obj, parentKey = '') {
-        let result = {};
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                const newKey = parentKey ? `${parentKey}.${key}` : key;
-                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    if (Array.isArray(obj[key])) {
-                        result[newKey] = obj[key]; 
-                        obj[key].forEach((item, index) => {
-                            result[`${newKey}[${index}]`] = item; 
-                            Object.assign(result, this.getObjectDictionary(item, `${newKey}[${index}]`));
-                        });
-                    } else {
-                        result[newKey] = obj[key]; 
-                        Object.assign(result, this.getObjectDictionary(obj[key], newKey));
-                    }
-                } else {
-                    result[newKey] = obj[key];  
-                }
-            }
-        }
-    
-        return result;
-    }
-
+   
     /**
      * The heart, the proxy
      * A recursive proxy for reactivity
@@ -1665,9 +1610,15 @@ export class BareaApp
             }
             
             if (!(expression.includes('.')))
-                return BareaHelper.EXPR_TYPE_COMPUTED;
+            {
+                if (this.#computedProperties[expression])
+                    return BareaHelper.EXPR_TYPE_COMPUTED;
+            }
 
-            return BareaHelper.EXPR_TYPE_OBJREF_EXPR;
+            if (expression.includes(varname))
+                return BareaHelper.EXPR_TYPE_OBJREF_EXPR;
+            else
+                return BareaHelper.EXPR_TYPE_INVALID;
         }
 
         if (directive === BareaHelper.DIR_FOREACH)
@@ -1716,15 +1667,6 @@ export class BareaApp
         let result = value !== null && typeof value !== "object" && typeof value !== "function";
         return result;
     }
-
-
-    #loadedHandler =  (event) => {
-       if (this.#enableHideUnloaded)
-       {
-            document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));
-       }
-    }
-
 
     #getNewComputedProperty(func, funcname)
     {
@@ -3174,36 +3116,31 @@ export class BareaHelper
         return result;
     }
 
-    static getObjectInfo = function (rootobj, compareobj, parentPath = 'root')
+    //Generates a flat object from any object
+    static getObjectDictionary = function (obj, parentKey = '')
     {
-        
-        if (rootobj !== null && typeof rootobj === 'object') {
-            for (let key in rootobj) {
-
-                if (rootobj.hasOwnProperty(key)) {
-                    const currentPath = parentPath ? `${parentPath}.${key}` : key;
-                    if (Array.isArray(rootobj[key])) {
-                        let cmp = Object.is(compareobj, rootobj[key]);
-                        if(cmp)
-                            return { path: currentPath, type: 'array', value: rootobj[key] };
-
-                        rootobj[key].forEach((item, index) => {
-                            BareaHelper.getObjectInfo(item, `${currentPath}[${index}]`);
+        let result = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const newKey = parentKey ? `${parentKey}.${key}` : key;
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    if (Array.isArray(obj[key])) {
+                        result[newKey] = obj[key];
+                        obj[key].forEach((item, index) => {
+                            result[`${newKey}[${index}]`] = item;
+                            Object.assign(result, this.getObjectDictionary(item, `${newKey}[${index}]`));
                         });
-
+                    } else {
+                        result[newKey] = obj[key];
+                        Object.assign(result, this.getObjectDictionary(obj[key], newKey));
                     }
-                    else if (typeof rootobj[key] === 'object' && rootobj[key] !== null) {
-                        let cmp = Object.is(compareobj, rootobj[key]);
-                        if (cmp)
-                            return { path: currentPath, type: 'object', value: rootobj[key] };
-
-                        BareaHelper.getObjectInfo(rootobj[key], currentPath);
-                    }
+                } else {
+                    result[newKey] = obj[key];
                 }
             }
         }
-       
-        return null;
+
+        return result;
     }
 
 

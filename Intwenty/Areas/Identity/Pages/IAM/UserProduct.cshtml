@@ -51,8 +51,8 @@
                 <th style="width:30%">Name</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.model.roleAuthorizations">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.model.roleAuthorizations">
                 <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
             </tr>
@@ -82,8 +82,8 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.model.systemAuthorizations">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.model.systemAuthorizations">
                 <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
@@ -115,8 +115,8 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.model.applicationAuthorizations">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.model.applicationAuthorizations">
                 <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
@@ -149,8 +149,8 @@
                 <th style="width:30%">Status</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.model.viewAuthorizations">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.model.viewAuthorizations">
                 <td><div class="btn btn-sm btn-danger" ba-click="removeAuthorizationItem()" title="Remove"><i class="fa fa-trash"></i></div></td>
                 <td>{{item.authorizationName}}</td>
                 <td><span ba-if="item.denyAuthorization">Denied</span><span ba-if="!item.denyAuthorization">Authorized</span></td>
@@ -206,13 +206,6 @@
             </div>
         </div>
     </div>
-
-    {{root.authorization.authorizationId}}
-
-    <br />
-    <br />
-
-    {{root.authorization}}
 
 </div>
 

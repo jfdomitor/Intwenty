@@ -46,8 +46,8 @@
                 <th style="width:15%">Name</th>
             </tr>
         </thead>
-        <tbody ba-foreach="item in root.list">
-            <tr>
+        <tbody>
+            <tr ba-foreach="item in root.list">
                 <td>
                     @if (User.IsInRole(IntwentyRoles.RoleSuperAdmin))
                     {
