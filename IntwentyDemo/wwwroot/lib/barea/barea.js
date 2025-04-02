@@ -14,19 +14,20 @@ export class BareaApp
 {
     #appContent=null; 
     #appElement; 
+    #clonedAppElement;
     #bareaId=0;
     #internalSystemCounter = 0;
     #appDataProxy; 
     #appDataProxyCache = new WeakMap();
     #dynamicExpressionRegistry = new Map();
     #computedPropertyNames = [];
+    #delayedDirectives = []; 
     #appData;
     #methods = {};
-    #mountStarted=false;
+    #mounted=false;
     #mountedHandler=null;
     #computedProperties = {};
     #enableBareaId = false;
-    #enableHideUnloaded=false;
     #uiDependencyTracker=null;
     #computedPropertiesDependencyTracker =  null;
 
@@ -39,14 +40,17 @@ export class BareaApp
         this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
     }
 
-    mount(element, content) 
+    async mount(element, content) 
     {
-        this.#appContent=content;
+        if (!('fetch' in window && 'Promise' in window && 'Symbol' in window && 'Map' in window)) {
+            console.error('Your browser and js engine is too old to use barea.js');
+            return;
+        }
 
-        if (this.#mountStarted)
+        if (this.#mounted)
             return;
 
-        this.#mountStarted=true;
+        this.#appContent=content;
 
         if (!content){
             console.error('Illegal use of mount, please pass a content object with data and methods');
@@ -65,13 +69,15 @@ export class BareaApp
             return;
         }
 
+
         if (typeof element === "object") 
-            this.#appElement = element
+            this.#appElement = element;
         else
             this.#appElement = document.getElementById(element);
 
-        this.#appData = content.data;
-        this.#appDataProxy = content.data;
+        this.#clonedAppElement = this.#appElement.cloneNode(true);
+
+      
 
         //Methods
         if (content.methods)
@@ -106,22 +112,19 @@ export class BareaApp
 
         if (content.mounted)
         {
+            //Let user load / modify data before showing the app
             this.#mountedHandler = content.mounted;
+            const result = this.#mountedHandler.apply(this, [content.data]);
+            if (result instanceof Promise)
+            {
+                await result;
+            }
         }
 
-        if (this.#enableHideUnloaded)
-        {
-            document.addEventListener('DOMContentLoaded',this.#loadedHandler);
-        }else{
-            document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));
-        }
-       
-        if (!('fetch' in window && 'Promise' in window && 'Symbol' in window && 'Map' in window))
-        {
-            console.error('Your browser and js engine is too old to use this script');
-            return;
-        }
-          
+        //The user my have edited the data in the mounted function
+        this.#appData = content.data;
+        this.#appDataProxy = content.data;
+
         const proxy = this.#createReactiveProxy((path, reasonobj, reasonkey, reasonvalue, reasonfuncname="") => 
         { 
             //Handles changes in the data and updates the dom
@@ -130,44 +133,41 @@ export class BareaApp
                 console.log(log.name, path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
 
             //Tweak for array functions
-            //On array asssign: reasonobj=parent, reasonkey=arrayname, we will do the same here
+            //On array assign: reasonobj=parent, reasonkey=arrayname, we will do the same here
             if (Array.isArray(reasonobj) && BareaHelper.ARRAY_FUNCTIONS.includes(reasonfuncname)){
-                let objpath = BareaHelper.getLastBareaObjectName(path);
+                let objpath = BareaHelper.getLastBareaObjectPath(path);
                 reasonkey = BareaHelper.getLastBareaKeyName(path);
                 reasonobj=this.getProxifiedPathData(objpath);
                 if (!reasonobj)
                     console.error('could not find array on path: ' + path);
             }
 
+     
             this.#uiDependencyTracker.notify(path, reasonobj, reasonkey, reasonvalue, reasonfuncname);
+       
 
         }, this.#appData);
 
+        //The proxy is now active
         this.#appDataProxy = proxy;
-  
-        //Important: Always directly after proxification
-        //Track UI
+        this.#mounted = true;
+
+
+        //Track all directives
         this.#trackDirectives();
-      
-
-        if (this.#enableBareaId && ! this.#appDataProxy.hasOwnProperty('baId')) 
-            this.#appDataProxy.baId = ++this.#bareaId;  // Assign a new unique ID
-
-        if (this.#mountedHandler) 
-        {  
-            this.#mountedHandler.apply(this, [this.#appDataProxy]);
-        }
+        this.#trackDelayedDirectives();
+        this.#removeMarkUpGenerationNodes();
 
         return this.#appDataProxy;
     }
 
     /**
      * Force a full reload of barea, except for the proxy
-     * Baraea use this when new untracked objects in the data is detected
+     * Used when new untracked objects in the proxy is detected upon users assigning new objects to the proxy
      */
     refresh() 
     {
-        if (!this.#mountStarted)
+        if (!this.#mounted)
             return;
 
         if (!this.#appElement)
@@ -177,12 +177,13 @@ export class BareaApp
         }
 
         //restore templates and clear
-        this.#uiDependencyTracker.restoreUITracker();
-        this.#uiDependencyTracker = this.#getUserInterfaceTracker(this.#handleUITrackerNofify);
+        this.#uiDependencyTracker.clear();
         Object.keys(this.#computedProperties).forEach(key => {
             this.#computedProperties[key].clearDependentDirectives();
         });
+
         this.#dynamicExpressionRegistry.clear();
+
         if (this.#appContent.computed) 
         {
             this.#computedProperties={};
@@ -201,58 +202,54 @@ export class BareaApp
                 });
             });
         }
+
+        const freshElement = this.#clonedAppElement.cloneNode(true);
+        this.#appElement.replaceWith(freshElement);
+        this.#appElement = freshElement;
         
         this.#trackDirectives();
+        this.#trackDelayedDirectives();
+        this.#removeMarkUpGenerationNodes();
       
     }
 
     getData()
     {
-        if (!this.#mountStarted)
+        if (!this.#mounted)
         {
             console.warn("barea.js is not mounted. Call mount on the instance before using this method.");
-            return;
+            return null;
         }
         return this.#appDataProxy;
     }
 
-    enableHideBeforeLoaded(value)
+    getProxifiedPathData(path, rootobject, varname)
     {
-        if (this.#isPrimitive(value))
-            this.#enableHideUnloaded = value;
-    }
+        if (!path && rootobject)
+            return rootobject;
 
-   
-    addHandler(functionName, handlerFunction) 
-    {
-        if (typeof handlerFunction === "function")
-        {
-            this.#methods[functionName] = handlerFunction;
-        } 
-        else 
-        {
-            console.warn(`Handler for "${functionName}" is not a function.`);
-        }
-    }
-
-
-    getProxifiedPathData(path) 
-    {
-        if (!path) 
+        if (!path)
             return this.#appDataProxy;
 
         const keys = path.match(/[^.[\]]+/g);
-        if (!keys) 
-            return this.#appDataProxy; 
+        if (!keys && rootobject)
+            return rootobject;
 
-        let target = this.#appDataProxy;
-    
+        if (!keys)
+            return this.#appDataProxy;
+
+        let target = rootobject ? rootobject : this.#appDataProxy;
+
         for (let i = 0; i < keys.length; i++) {
-            if (i === 0 && keys[i].toLowerCase() === 'root') continue; 
-            if (!target) return undefined; 
+            if (i === 0 && ((keys[i].toLowerCase() === 'root') || (varname && keys[i].toLowerCase() === varname.toLowerCase())))
+                continue;
+
+            if (!target)
+                return undefined;
+
             target = target[keys[i]];
         }
-    
+
         return target;
     }
 
@@ -276,32 +273,7 @@ export class BareaApp
         return target;
     }
 
-    //Generates a flat object from any object
-    getObjectDictionary(obj, parentKey = '') {
-        let result = {};
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                const newKey = parentKey ? `${parentKey}.${key}` : key;
-                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    if (Array.isArray(obj[key])) {
-                        result[newKey] = obj[key]; 
-                        obj[key].forEach((item, index) => {
-                            result[`${newKey}[${index}]`] = item; 
-                            Object.assign(result, this.getObjectDictionary(item, `${newKey}[${index}]`));
-                        });
-                    } else {
-                        result[newKey] = obj[key]; 
-                        Object.assign(result, this.getObjectDictionary(obj[key], newKey));
-                    }
-                } else {
-                    result[newKey] = obj[key];  
-                }
-            }
-        }
-    
-        return result;
-    }
-
+   
     /**
      * The heart, the proxy
      * A recursive proxy for reactivity
@@ -428,520 +400,121 @@ export class BareaApp
 
     }
 
+    /**
+    * Remove template nodes from the dom
+    */
+    #removeMarkUpGenerationNodes()
+    {
+        this.#uiDependencyTracker.getTemplateDependencies().forEach(dir => {
+            if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(dir.directivename))
+            {
+                dir.element.remove();
+            }
+        });
+    }
+
+    /**
+    * Some directives may be dependent upon children is tracked first
+    * Example: we want to set ba-option-id and ba-option-text before tracking the parent select element
+    * 
+    */
+    #trackDelayedDirectives()
+    {
+        this.#delayedDirectives.forEach(dir =>
+        {
+            if (dir.inputtype === BareaHelper.UI_INPUT_SELECT)
+            {
+                this.#uiDependencyTracker.track('value', dir);
+
+                this.#setSelect(dir);
+
+                let eventtype = (dir.directivename === BareaHelper.DIR_BIND) ? "change" : "blur";
+                const handler = function (event) {
+
+                    if (dir.hashandler) {
+                        this.#runBindHandler(BareaHelper.VERB_SET_DATA, dir);
+                        return;
+                    }
+
+                    let log = BareaHelper.getDebugLog(3);
+                    if (log.active)
+                        console.log(log.name, "select ", "key: " + valuekey, "value: " + el.value);
+
+                    dir.data[dir.key] = dir.element.value;
+
+                }.bind(this);
+
+                dir.element.removeEventListener(eventtype, handler);
+                dir.element.addEventListener(eventtype, handler);
+
+            }
+        });
+
+        this.#delayedDirectives = [];
+    }
+
     #trackDirectives(tag=this.#appElement, trackcontext={template:null, rendereddata:null, renderedindex:-1, renderedvarname:"", renderedobjid:-1})
     {
       
-
         //Validate templates before proceeding
         let templateChildren = this.#validateTemplateChildren();
        
-        //Find the world of barea.js (elements with attributes starting with ba-
-        const bareaElements = Array.from(tag.querySelectorAll("*")).filter(el =>
-            el.attributes.length && Array.prototype.some.call(el.attributes, attr => attr.name.startsWith("ba-"))
-        );
+        let bareaElements = Array.from(tag.querySelectorAll("*"));
+        bareaElements.unshift(tag); 
     
         bareaElements.forEach(el => {
-            const bareaAttributes = Array.from(el.attributes)
-                .filter(attr => attr.name.startsWith("ba-"))
-                .map(attr => ({ name: attr.name, value: attr.value }));
 
-                 //Skip all children of templates since they will be dealt with later on template rendering
-                if (templateChildren.includes(el))
+
+            const bareaAttributes = Array.from(el.attributes).filter(attr => attr.name.startsWith("ba-")).map(attr => ({ name: attr.name, value: attr.value }));
+
+            if (!bareaAttributes)
+                return;
+            if (!bareaAttributes.length>0)
+                return;
+
+            //Skip all children of templates since they will be dealt with later on template rendering
+            if (templateChildren.includes(el))
+                return;
+
+            let hasMarkUpGenerationAttr = false;
+            bareaAttributes.forEach(attr => { if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name)) { hasMarkUpGenerationAttr = true; } });
+
+            bareaAttributes.forEach(attr =>
+            {
+
+               if (!attr.value)
+                   return;
+
+               //if an attribute also have a render template attribute, skip since it will be rendered in renderTemplates
+               if (!BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name) && hasMarkUpGenerationAttr)
                     return;
 
-                bareaAttributes.forEach(attr =>
+                this.#internalSystemCounter++;
+
+            
+                if (BareaHelper.DIR_GROUP_BIND_TO_PATH.includes(attr.name))
                 {
-
-                    if (!attr.value)
-                        return;
-
-                    this.#internalSystemCounter++;
-
-            
-                    if (BareaHelper.DIR_GROUP_BIND_TO_PATH.includes(attr.name))
-                    {
-                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name);
-                        if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
-                        {
-                            console.error(`The ${attr.name} directive with value: (${attr.value}) is invalid.`);
-                            return;
-                        }
-
-                        let inputtype = "";
-                        let systeminput = -1;
-                        if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(attr.name))
-                        {
-                            inputtype = el.getAttribute("type");
-                            if (!inputtype){
-                                systeminput=4;
-                            }else{
-                                systeminput = 1;
-                                if (inputtype.toLowerCase()==="text")
-                                    systeminput=1;
-                                if (inputtype.toLowerCase()==="checkbox")
-                                    systeminput=2;
-                                if (inputtype.toLowerCase()==="radio")
-                                    systeminput=3;
-                            }
-                        }
-
-                        let tracking_obj = this.#createInputDirective(trackcontext,el,attr.name,attr.value,null,"",systeminput);
-                        tracking_obj.expressiontype = attribute_value_type;
-
-                
-                        //If root is included in the attr.value, example root.model.users.name
-                        //Then we will bind to the root even if this is a template node
-                        if (!trackcontext.rendereddata || attr.value.startsWith(BareaHelper.ROOT_OBJECT)){
-                            let objpath = BareaHelper.getLastBareaObjectName(attr.value);
-                            tracking_obj.data=this.getProxifiedPathData(objpath);
-                            tracking_obj.key=BareaHelper.getLastBareaKeyName(attr.value);
-                        }else{
-                            tracking_obj.data=trackcontext.rendereddata;
-                            tracking_obj.key=BareaHelper.getLastBareaKeyName(attr.value);
-                        }
-
-                        if (!tracking_obj.data || !tracking_obj.key){
-                            console.error(`Could not track directive ${attr.name} (${attr.value}) could not match data at the given path`);
-                            return;
-                        }
-
-                
-                        let handlername = el.getAttribute(BareaHelper.DIR_BIND_HANDLER);
-                        if (handlername)
-                        {
-                            const check_handler = this.#getExpressionType(handlername, BareaHelper.DIR_BIND_HANDLER);
-                            if (check_handler===BareaHelper.EXPR_TYPE_INVALID)
-                            {
-                                console.error(`The ${BareaHelper.DIR_BIND_HANDLER} directive has an invalid value (${handlername}), should be funcname(), or funcname(args..).`);
-                                return;
-                            }
-
-                            tracking_obj.hashandler=true;
-                            tracking_obj.handlername=handlername;
-                        
-                        }
-                        
-                        
-                        this.#uiDependencyTracker.track('value', tracking_obj);
-
-                            if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(tracking_obj.directivename))
-                            {
-                                if (tracking_obj.hashandler)
-                                    this.#runBindHandler(BareaHelper.VERB_SET_UI, tracking_obj);
-                            
-                                if (tracking_obj.inputtype === BareaHelper.UI_INPUT_TEXT){
-                                    this.#setInputText(tracking_obj);
-                                }
-                                else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
-                                    this.#setInputCheckbox(tracking_obj);
-                                }
-                                else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO){
-                                    this.#setInputRadio(tracking_obj);
-                                }
-
-                                let eventtype = (tracking_obj.directivename===BareaHelper.DIR_BIND) ? "input" : "blur";
-                                el.addEventListener(eventtype, (event) => {
-
-                                    if (tracking_obj.hashandler)
-                                    {
-                                            this.#runBindHandler(BareaHelper.VERB_SET_DATA, tracking_obj);
-                                            return;
-                                    }
-
-                                    let log = BareaHelper.getDebugLog(3);
-                                    if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
-                                        if (log.active)
-                                            console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.checked);
-                
-                                        tracking_obj.data[tracking_obj.key] =  el.checked;
-                                    } 
-                                    else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO){
-                                        if (log.active)
-                                            console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
-                
-                                        if (el.checked)
-                                            tracking_obj.data[tracking_obj.key] =  el.value;
-                
-                                    } 
-                                    else {
-                                        if (log.active)
-                                            console.log(log.name, "type: " + el.type, "key: " + valuekey, "input value: " + el.value);
-                
-                                        tracking_obj.data[tracking_obj.key] =  el.value;
-                
-                                    }
-                                });   
-                                   
-                                
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_CLASS){
-                                let classnames = el.getAttribute('classNames');
-                                tracking_obj.orgvalue=classnames;
-                                this.#setClass(tracking_obj);
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_HREF){
-                                this.#setHref(tracking_obj);
-                            }
-                            else if (tracking_obj.directivename===BareaHelper.DIR_IMAGE_SRC){
-                                this.#setSrc(tracking_obj);
-                            }
-                          
-                            
-                    }
-                    else if (BareaHelper.DIR_GROUP_COMPUTED.includes(attr.name))
-                    {
-
-                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name, trackcontext.renderedvarname);
-                        if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
-                         {
-                            console.error(`Then ${attr.name} directive has an invalid value (${attr.value}).`);
-                            return;
-                        }
-    
-                        const tracking_obj = this.#createComputedDirective(trackcontext,el,attr.name,attr.value);
-                        tracking_obj.expressiontype = attribute_value_type;
-
-                        //If root expression force root data to be executed
-                        if (!trackcontext.rendereddata){
-                            tracking_obj.data=this.#appDataProxy;
-                        }else{
-                            tracking_obj.data=trackcontext.rendereddata;
-                        }
-                        tracking_obj.key="";
-
-                        let condition = attr.value.trim();
-                        if (condition.includes('?'))
-                            condition = condition.split('?')[0];
-
-                        
-                        let isnewhandler = false;
-                        let handlername = this.#dynamicExpressionRegistry.get(attr.value);
-                        if (!handlername || trackcontext.rendereddata) //Must use different handlers, since notification doesn't work otherwise.
-                        {
-                            isnewhandler=true;
-                            if ((trackcontext.template)){ //Is template directive
-                                handlername = `${BareaHelper.META_DYN_TEMPLATE_FUNC_PREFIX}${this.#internalSystemCounter}`;
-                            }else{
-                                handlername = `${BareaHelper.META_DYN_FUNC_PREFIX}${this.#internalSystemCounter}`;
-                            }
-                            this.#dynamicExpressionRegistry.set(attr.value, handlername);
-                        }
-
-                       
-                        if (attr.name === BareaHelper.DIR_IF){
-                            tracking_obj.elementnextsibling=el.nextSibling;
-                            tracking_obj.parentelement=el.parentElement;
-                        }
-            
-                        if (attribute_value_type === BareaHelper.EXPR_TYPE_COMPUTED)
-                        {
-                            tracking_obj.handlername=condition;
-                            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
-                            this.#runComputedFunction(tracking_obj);
-                        }
-                        else if (attribute_value_type === BareaHelper.EXPR_TYPE_ROOT_EXPR){
-                    
-                            const evalobj = this.#appDataProxy;
-                            const boolRootFunc = function()
-                            {
-                                function  evalRootExpr(condition, context) {
-                                    try {
-                                        return new Function("contextdata", `return ${condition};`)(context);
-                                    } catch (error) {
-                                        console.error(`Error evaluating expression ${condition} on ${el.localName} with attribute ${attr.name}`);
-                                        return false;
-                                    }
-                                }
-                                
-                                condition=condition.replaceAll('root.','contextdata.');
-                                return evalRootExpr(condition, evalobj);
-                            }
-
-                            if (isnewhandler)
-                            {
-                                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolRootFunc,handlername);
-                                this.#computedPropertyNames.push(handlername);
-                            }
-                            tracking_obj.handlername=handlername;
-                            tracking_obj.iscomputed=true;
-                            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
-                            this.#runComputedFunction(tracking_obj);
-
-                        }
-                        else if (attribute_value_type === BareaHelper.EXPR_TYPE_OBJREF_EXPR)
-                        {
-                        
-                            const boolObjFunc = function()
-                            {
-                                function  evalObjExpr(condition, context) {
-                                    try {
-                                        return new Function("contextdata", `return ${condition};`)(context);
-                                    } catch (error) {
-                                        console.error(`Error evaluating expression ${condition} on ${el.localName} with attribute ${attr.name}`);
-                                        return false;
-                                    }
-                                }
-                                
-                                condition=condition.replaceAll(trackcontext.renderedvarname+'.','contextdata.');
-                                return evalObjExpr(condition, tracking_obj.data);
-                            }
-
-                            if (!trackcontext.renderedvarname)
-                            {
-                                console.error(`Invalid expression: ${condition} to use as a dynamicly created function in a template.`);
-                                return;
-                            }
-
-                            if (isnewhandler)
-                            {
-                                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolObjFunc,handlername);
-                                this.#computedPropertyNames.push(handlername);
-                            }
-                            tracking_obj.handlername=handlername;
-                            tracking_obj.iscomputed=true;
-                            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
-                            this.#runComputedFunction(tracking_obj);
-                           
-                        }  
-                        else if (attribute_value_type === BareaHelper.EXPR_TYPE_MIX_EXPR)
-                        {
-                        
-                            const subobj = tracking_obj.data;
-                            const rootobj = this.#appDataProxy;
-                          
-                            const boolMixedFunc = function()
-                            {
-                                function  evalMixedExpr(condition, subdata, rootdata) {
-                                    try {
-                                        return new Function("subdata","rootdata", `return ${condition};`)(subdata,rootdata);
-                                    } catch (error) {
-                                        console.error(`Error evaluating mixed expression ${condition} on ${el.localName} with attribute ${attr.name}`);
-                                        return false;
-                                    }
-                                }
-                                
-                                condition=condition.replaceAll('root.','rootdata.');
-                                condition=condition.replaceAll(trackcontext.renderedvarname+'.','subdata.');
-                                return evalMixedExpr(condition, subobj,rootobj);
-                            }
-
-                            if (!trackcontext.renderedvarname)
-                            {
-                                console.error(`Invalid expression: ${condition} to use as a dynamicly created function in a template.`);
-                                return;
-                            }
-
-                            if (isnewhandler)
-                            {
-                                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolMixedFunc,handlername);
-                                this.#computedPropertyNames.push(handlername);
-                            }
-                            tracking_obj.handlername=handlername;
-                            tracking_obj.iscomputed=true;
-                            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
-                            this.#runComputedFunction(tracking_obj);
-                        
-                        }
-                        
-                    }
-                    else if (BareaHelper.DIR_GROUP_TRACK_AND_FORGET.includes(attr.name))
-                    {
-                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name);
-                        if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
-                        {
-                            console.error(`Then ${attr.name} directive has an invalid value (${attr.value}).`);
-                            return;
-                         }
-
-                        //SPECIAL: NO TRACKING, ONLY REGISTER HANDLER
-                        if (attribute_value_type === BareaHelper.EXPR_TYPE_HANDLER)
-                        {
-                     
-                            el.addEventListener("click", (event) => {
- 
-                                let eventdata = this.#appDataProxy;
-                                let bapath = el.getAttribute(BareaHelper.META_PATH);
-                                if (!bapath)
-                                {
-                                    if (trackcontext.rendereddata)
-                                         eventdata = trackcontext.rendereddata;
-                                }
-                                else
-                                {
-                                    eventdata = this.getProxifiedPathData(bapath);
-                                }
-                                  
-                                let allparams = [event, el, eventdata];
-                                let pieces = BareaHelper.parseBareaFunctionCall(attr.value);
-                                allparams.push(...pieces.params);
-                                if (this.#methods[pieces.functionName]) {
-                                       this.#methods[pieces.functionName].apply(this, allparams);
-                                } else {
-                                    console.warn(`Handler function '${pieces.functionName}' not found.`);
-                                }
-                            });     
-                        }
-                        
-                    }
-                    else if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name))
-                    {
-                        const attribute_value_type = this.#getExpressionType(attr.value, attr.name);
-                        if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
-                        {
-                            console.error(`Then ${attr.name} directive has an invalid value (${attr.value}).`);
-                            return;
-                         }
-
-                         let [varname, datapath] = attr.value.split(" in ").map(s => s.trim());
-                         if (!varname)
-                         {
-                             console.error(`No variable name was found in the ${attr.name} expression`);
-                             return;
-                         }
-                         if (!datapath)
-                         {
-                             console.error(`No path or computed function was found in the ${attr.name} expression`);
-                             return;
-                         }
- 
-                        const tracking_obj = this.#createTemplateDirective(trackcontext,el,attr.name,attr.value,null,"", el.parentElement, el.innerHTML, el.localName);
-                        tracking_obj.elementnextsibling=el.nextSibling;
-                        tracking_obj.expressiontype = attribute_value_type;
-                        if (attribute_value_type!==BareaHelper.EXPR_TYPE_COMPUTED)
-                        {
-                            let objpath = BareaHelper.getLastBareaObjectName(datapath);
-                            tracking_obj.data = this.getProxifiedPathData(objpath);
-                            tracking_obj.key = BareaHelper.getLastBareaKeyName(datapath);
-                            el.remove();
-                            if (!Array.isArray(tracking_obj.data[tracking_obj.key]))
-                            {
-                                console.error(`could not find array for ${datapath} in  ${attr.name} directive`);
-                                return;
-                            }
-                            this.#uiDependencyTracker.track('value', tracking_obj);
-                           
-                        }else{
-                            this.#computedProperties[datapath].addDependentDirective(tracking_obj);
-                            this.#uiDependencyTracker.track('computed', tracking_obj);
-                        }
-
-                        this.#renderTemplates(tracking_obj,BareaHelper.ROOT_OBJECT,tracking_obj.data[tracking_obj.key]);
-                          
-                    }
+                    this.#trackBindToPath(tag, trackcontext, el, attr.name, attr.value);      
+                }
+                else if (BareaHelper.DIR_GROUP_COMPUTED.includes(attr.name))
+                {
+                    this.#trackComputed(tag, trackcontext, el, attr.name, attr.value);  
+                }
+                else if (BareaHelper.DIR_GROUP_TRACK_AND_FORGET.includes(attr.name))
+                {
+                    this.#trackFireAndForget(tag, trackcontext, el, attr.name, attr.value);
+                }
+                else if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name))
+                {
+                    this.#trackMarkUpGeneration(tag, trackcontext, el, attr.name, attr.value);   
+                }
                   
-
-                });                 
-
+             });                 
         });
 
-        let nodes_with_expressions = this.#getInterplationNodesAndExpressions(tag);
-        nodes_with_expressions.forEach(inode=>
-        {
 
-            let node = inode.textNode;
-            let nodeexpressions = [];
-            inode.expressions.forEach(expr=>
-            {
-
-                let path = expr.replaceAll('{','').replaceAll('}','').trim();
-                const attribute_value_type = this.#getExpressionType(path,BareaHelper.DIR_INTERPOLATION, trackcontext.renderedvarname);
-                if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
-                {
-                    console.error(`The ${DIR_INTERPOLATION} directive has an invalid expression (${path}).`);
-                    return;
-                }
-
-                let tracking_obj = this.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,path,null,"",node, expr, node.nodeValue);
-                tracking_obj.expressiontype = attribute_value_type;
-                if (attribute_value_type===BareaHelper.EXPR_TYPE_COMPUTED){
-                    tracking_obj.isrendered = false;
-                    tracking_obj.iscomputed = true;
-                    nodeexpressions.push(tracking_obj);
-                }
-                else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type))
-                {
-                    //Find data
-                    let objpath=BareaHelper.ROOT_OBJECT;
-                    if (!trackcontext.rendereddata || path.startsWith(BareaHelper.ROOT_OBJECT)){
-                        objpath = BareaHelper.getLastBareaObjectName(path);
-                        tracking_obj.data=this.getProxifiedPathData(objpath);
-                    }else{
-                        tracking_obj.data = trackcontext.rendereddata;
-                    }
-
-                    //Find key
-                    tracking_obj.key="";
-                    let interpolation_key = BareaHelper.getLastBareaKeyName(path);
-                    if (interpolation_key!==BareaHelper.OBJECT && interpolation_key!==objpath){
-                        tracking_obj.key=interpolation_key;
-                    }
-
-                    tracking_obj.isrendered = false;
-                    tracking_obj.iscomputed = false;
-                    nodeexpressions.push(tracking_obj);
-
-                    if (!tracking_obj.key && tracking_obj.data){
-                        //If we're tracking an object make it aware of child objects
-                        let instance = this;
-
-                        function trackNestedObjects(obj) 
-                        {
-                            for (let key in obj) {
-                                if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
-                                    let tracking_child = instance.#createInterpolationDirective(trackcontext,BareaHelper.DIR_INTERPOLATION,path,null,"",node, expr, node.nodeValue);
-                                    tracking_child.data =  obj[key];
-                                    tracking_child.isrendered = false;
-                                    tracking_child.iscomputed = false;
-                                    nodeexpressions.push(tracking_child);
-                                    trackNestedObjects(obj[key]); 
-                                }
-                            }
-                        }
-
-                        trackNestedObjects(tracking_obj.data);
-                    }
-                      
-                }
-                else if (BareaHelper.INTERPOL_INDEX===attribute_value_type)
-                {
-                    //Wont be tracked
-                    tracking_obj.isrendered = true;
-                    tracking_obj.iscomputed = false;
-                    tracking_obj.data = trackcontext.rendereddata;
-                    nodeexpressions.push(tracking_obj); 
-                    if (trackcontext.template)  
-                        trackcontext.template.usesReRenderedInterpolation = true;
-                }
-                        
-            });  
-                    
-            if (nodeexpressions.length>0)
-            {
-                //Important must render per node so multiple expressions in one node leads to double tracking
-                nodeexpressions.forEach(ne=>
-                {
-                    ne.nodeexpressions = nodeexpressions;
-                    if (ne.isrendered){
-                        this.#uiDependencyTracker.track('nontrackable', ne);
-                    }
-                    else if (ne.iscomputed && this.#computedProperties[ne.directivevalue]){
-                        this.#computedProperties[ne.directivevalue].addDependentDirective(ne);
-                    }else if (ne.key){
-                        this.#uiDependencyTracker.track('value', ne);
-                    }else if  (ne.data) {
-                        this.#uiDependencyTracker.track('object', ne);
-                    }
-
-                    this.#setInterpolation(ne);
-
-                }); 
-                     
-            }
-                   
-        });  
+        this.#trackInterpolation(tag, trackcontext);
             
-       
-           
         let log = BareaHelper.getDebugLog(4);
         if (log.active)
         {
@@ -961,6 +534,471 @@ export class BareaApp
         }
 
         
+    }
+
+    #trackBindToPath(tag = this.#appElement, trackcontext = { template: null, rendereddata: null, renderedindex: -1, renderedvarname: "", renderedobjid: -1 }, element, attributeName, attributeValue)
+    {
+        const attribute_value_type = this.#getExpressionType(attributeValue, attributeName, trackcontext.renderedvarname);
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_INVALID) {
+            console.error(`The ${attributeName} directive with value: (${attributeValue}) is invalid.`);
+            return;
+        }
+
+        let inputtype = "";
+        let systeminput = -1;
+        if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(attributeName)) {
+            if (element.tagName.toLowerCase() === "select") {
+                systeminput = BareaHelper.UI_INPUT_SELECT;
+            } else {
+                inputtype = element.getAttribute("type");
+                if (!inputtype) {
+                    systeminput = BareaHelper.UI_INPUT_CUSTOM;
+
+                } else {
+                    systeminput = 1;
+                    if (inputtype.toLowerCase() === "text")
+                        systeminput = BareaHelper.UI_INPUT_TEXT;
+                    if (inputtype.toLowerCase() === "checkbox")
+                        systeminput = BareaHelper.UI_INPUT_CHECKBOX;
+                    if (inputtype.toLowerCase() === "radio")
+                        systeminput = BareaHelper.UI_INPUT_RADIO;
+                }
+            }
+        }
+
+        let tracking_obj = this.#createInputDirective(trackcontext, element, attributeName, attributeValue, null, "", systeminput);
+        tracking_obj.expressiontype = attribute_value_type;
+
+
+        //If root is included in the attributeValue, example root.model.users.name
+        //Then we will bind to the root even if this is a template node
+        if (!trackcontext.rendereddata || attributeValue.startsWith(BareaHelper.ROOT_OBJECT)) {
+            let objpath = BareaHelper.getLastBareaObjectPath(attributeValue);
+            tracking_obj.data = this.getProxifiedPathData(objpath);
+            tracking_obj.key = BareaHelper.getLastBareaKeyName(attributeValue);
+        } else {
+            tracking_obj.data = trackcontext.rendereddata;
+            tracking_obj.key = BareaHelper.getLastBareaKeyName(attributeValue);
+        }
+
+        if (!tracking_obj.data || !tracking_obj.key) {
+            console.error(`Could not track directive ${attributeName} (${attributeValue}) could not match data at the given path`);
+            return;
+        }
+
+
+        let handlername = element.getAttribute(BareaHelper.DIR_BIND_HANDLER);
+        if (handlername) {
+            const check_handler = this.#getExpressionType(handlername, BareaHelper.DIR_BIND_HANDLER);
+            if (check_handler === BareaHelper.EXPR_TYPE_INVALID) {
+                console.error(`The ${BareaHelper.DIR_BIND_HANDLER} directive has an invalid value (${handlername}), should be funcname(), or funcname(args..).`);
+                return;
+            }
+
+            tracking_obj.hashandler = true;
+            tracking_obj.handlername = handlername;
+
+        }
+
+        if (tracking_obj.inputtype === BareaHelper.UI_INPUT_SELECT) {
+            this.#delayedDirectives.push(tracking_obj);
+        } else {
+            this.#uiDependencyTracker.track('value', tracking_obj);
+        }
+
+
+        if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(tracking_obj.directivename)) {
+            if (tracking_obj.hashandler)
+                this.#runBindHandler(BareaHelper.VERB_SET_UI, tracking_obj);
+
+            if (tracking_obj.inputtype === BareaHelper.UI_INPUT_TEXT) {
+                this.#setInputText(tracking_obj);
+            }
+            else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX) {
+                this.#setInputCheckbox(tracking_obj);
+            }
+            else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO) {
+                this.#setInputRadio(tracking_obj);
+            }
+
+
+            let eventtype = (tracking_obj.directivename === BareaHelper.DIR_BIND) ? "input" : "blur";
+            const handler = function (event) {
+                if (tracking_obj.hashandler) {
+                    this.#runBindHandler(BareaHelper.VERB_SET_DATA, tracking_obj);
+                    return;
+                }
+
+                let log = BareaHelper.getDebugLog(3);
+                if (tracking_obj.inputtype === BareaHelper.UI_INPUT_CHECKBOX) {
+                    if (log.active)
+                        console.log(log.name, "type: " + element.type, "key: " + valuekey, "input value: " + element.checked);
+
+                    tracking_obj.data[tracking_obj.key] = element.checked;
+                }
+                else if (tracking_obj.inputtype === BareaHelper.UI_INPUT_RADIO) {
+                    if (log.active)
+                        console.log(log.name, "type: " + element.type, "key: " + valuekey, "input value: " + element.value);
+
+                    if (element.checked)
+                        tracking_obj.data[tracking_obj.key] = element.value;
+                }
+                else {
+                    if (log.active)
+                        console.log(log.name, "type: " + element.type, "key: " + valuekey, "input value: " + element.value);
+
+                    tracking_obj.data[tracking_obj.key] = element.value;
+                }
+            }.bind(this);
+
+            element.removeEventListener(eventtype, handler);
+            element.addEventListener(eventtype, handler);
+
+
+        }
+        else if (tracking_obj.directivename === BareaHelper.DIR_CLASS) {
+            let classnames = element.getAttribute('classNames');
+            tracking_obj.orgvalue = classnames;
+            this.#setClass(tracking_obj);
+        }
+        else if (tracking_obj.directivename === BareaHelper.DIR_HREF) {
+            this.#setHref(tracking_obj);
+        }
+        else if (tracking_obj.directivename === BareaHelper.DIR_IMAGE_SRC) {
+            this.#setSrc(tracking_obj);
+        }
+        else if (tracking_obj.directivename === BareaHelper.DIR_OPTION_ID) {
+            this.#setOptionId(tracking_obj);
+        }
+        else if (tracking_obj.directivename === BareaHelper.DIR_OPTION_TEXT) {
+            this.#setOptionText(tracking_obj);
+        }
+
+    }
+
+    #trackComputed(tag = this.#appElement, trackcontext = { template: null, rendereddata: null, renderedindex: -1, renderedvarname: "", renderedobjid: -1 }, element, attributeName, attributeValue) {
+
+        const attribute_value_type = this.#getExpressionType(attributeValue, attributeName, trackcontext.renderedvarname);
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_INVALID) {
+            console.error(`The ${attributeName} directive has an invalid value (${attributeValue}).`);
+            return;
+        }
+
+        const tracking_obj = this.#createComputedDirective(trackcontext, element, attributeName, attributeValue);
+        tracking_obj.expressiontype = attribute_value_type;
+
+        //If root expression force root data to be executed
+        if (!trackcontext.rendereddata) {
+            tracking_obj.data = this.#appDataProxy;
+        } else {
+            tracking_obj.data = trackcontext.rendereddata;
+        }
+        tracking_obj.key = "";
+
+        let condition = attributeValue.trim();
+        if (condition.includes('?'))
+            condition = condition.split('?')[0];
+
+
+        let isnewhandler = false;
+        let handlername = this.#dynamicExpressionRegistry.get(attributeValue);
+        if (!handlername || trackcontext.rendereddata) //Must use different handlers, since notification doesn't work otherwise.
+        {
+            isnewhandler = true;
+            if ((trackcontext.template)) { //Is template directive
+                handlername = `${BareaHelper.META_DYN_TEMPLATE_FUNC_PREFIX}${this.#internalSystemCounter}`;
+            } else {
+                handlername = `${BareaHelper.META_DYN_FUNC_PREFIX}${this.#internalSystemCounter}`;
+            }
+            this.#dynamicExpressionRegistry.set(attributeValue, handlername);
+        }
+
+
+        if (attributeName === BareaHelper.DIR_IF) {
+            tracking_obj.elementnextsibling = element.nextSibling;
+            tracking_obj.parentelement = element.parentElement;
+        }
+
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_COMPUTED) {
+            tracking_obj.handlername = condition;
+            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
+            this.#runComputedFunction(tracking_obj);
+        }
+        else if (attribute_value_type === BareaHelper.EXPR_TYPE_ROOT_EXPR) {
+
+            const evalobj = this.#appDataProxy;
+            const boolRootFunc = function () {
+                function evalRootExpr(condition, context) {
+                    try {
+                        return new Function("contextdata", `return ${condition};`)(context);
+                    } catch (error) {
+                        console.error(`Error evaluating expression ${condition} on ${element.localName} with attribute ${attributeName}`);
+                        return false;
+                    }
+                }
+
+                condition = condition.replaceAll('root.', 'contextdata.');
+                return evalRootExpr(condition, evalobj);
+            }
+
+            if (isnewhandler) {
+                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolRootFunc, handlername);
+                this.#computedPropertyNames.push(handlername);
+            }
+            tracking_obj.handlername = handlername;
+            tracking_obj.iscomputed = true;
+            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
+            this.#runComputedFunction(tracking_obj);
+
+        }
+        else if (attribute_value_type === BareaHelper.EXPR_TYPE_OBJREF_EXPR) {
+
+            const boolObjFunc = function () {
+                function evalObjExpr(condition, context) {
+                    try {
+                        return new Function("contextdata", `return ${condition};`)(context);
+                    } catch (error) {
+                        console.error(`Error evaluating expression ${condition} on ${element.localName} with attribute ${attributeName}`);
+                        return false;
+                    }
+                }
+
+                condition = condition.replaceAll(trackcontext.renderedvarname + '.', 'contextdata.');
+                return evalObjExpr(condition, tracking_obj.data);
+            }
+
+            if (!trackcontext.renderedvarname) {
+                console.error(`Invalid expression: ${condition} to use as a dynamicly created function in a template.`);
+                return;
+            }
+
+            if (isnewhandler) {
+                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolObjFunc, handlername);
+                this.#computedPropertyNames.push(handlername);
+            }
+            tracking_obj.handlername = handlername;
+            tracking_obj.iscomputed = true;
+            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
+            this.#runComputedFunction(tracking_obj);
+
+        }
+        else if (attribute_value_type === BareaHelper.EXPR_TYPE_MIX_EXPR) {
+
+            const subobj = tracking_obj.data;
+            const rootobj = this.#appDataProxy;
+
+            const boolMixedFunc = function () {
+                function evalMixedExpr(condition, subdata, rootdata) {
+                    try {
+                        return new Function("subdata", "rootdata", `return ${condition};`)(subdata, rootdata);
+                    } catch (error) {
+                        console.error(`Error evaluating mixed expression ${condition} on ${element.localName} with attribute ${attributeName}`);
+                        return false;
+                    }
+                }
+
+                condition = condition.replaceAll('root.', 'rootdata.');
+                condition = condition.replaceAll(trackcontext.renderedvarname + '.', 'subdata.');
+                return evalMixedExpr(condition, subobj, rootobj);
+            }
+
+            if (!trackcontext.renderedvarname) {
+                console.error(`Invalid expression: ${condition} to use as a dynamicly created function in a template.`);
+                return;
+            }
+
+            if (isnewhandler) {
+                this.#computedProperties[handlername] = this.#getNewComputedProperty(boolMixedFunc, handlername);
+                this.#computedPropertyNames.push(handlername);
+            }
+            tracking_obj.handlername = handlername;
+            tracking_obj.iscomputed = true;
+            this.#computedProperties[tracking_obj.handlername].addDependentDirective(tracking_obj);
+            this.#runComputedFunction(tracking_obj);
+
+        }
+    }
+
+    #trackFireAndForget(tag = this.#appElement, trackcontext = { template: null, rendereddata: null, renderedindex: -1, renderedvarname: "", renderedobjid: -1 }, element, attributeName, attributeValue)
+    {
+        const attribute_value_type = this.#getExpressionType(attributeValue, attributeName);
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_INVALID) {
+            console.error(`Then ${attributeName} directive has an invalid value (${attributeValue}).`);
+            return;
+        }
+
+        //SPECIAL: NO TRACKING, ONLY REGISTER HANDLER
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_HANDLER) {
+
+            const clickHandler = function (event) {
+                event.stopPropagation();
+                let eventdata = this.#appDataProxy;
+                let bapath = element.getAttribute(BareaHelper.META_PATH);
+
+                if (!bapath) {
+                    if (trackcontext.rendereddata)
+                        eventdata = trackcontext.rendereddata;
+                } else {
+                    eventdata = this.getProxifiedPathData(bapath);
+                }
+
+                let allparams = [event, element, eventdata];
+                let pieces = BareaHelper.parseBareaFunctionCall(attributeValue);
+                allparams.push(...pieces.params);
+
+                if (this.#methods[pieces.functionName]) {
+                    this.#methods[pieces.functionName].apply(this, allparams);
+                } else {
+                    console.warn(`Handler function '${pieces.functionName}' not found.`);
+                }
+            }.bind(this);
+
+            // Ensure no duplicate event listener
+            if (!element.dataset.listenerAdded) {
+                element.removeEventListener("click", clickHandler);
+                element.addEventListener("click", clickHandler);
+                element.dataset.listenerAdded = "true";
+            }
+
+        }
+    }
+
+    #trackMarkUpGeneration(tag = this.#appElement, trackcontext = { template: null, rendereddata: null, renderedindex: -1, renderedvarname: "", renderedobjid: -1 }, element, attributeName, attributeValue)
+    {
+        const attribute_value_type = this.#getExpressionType(attributeValue, attributeName);
+        if (attribute_value_type === BareaHelper.EXPR_TYPE_INVALID) {
+            console.error(`Then ${attributeName} directive has an invalid value (${attributeValue}).`);
+            return;
+        }
+
+        let [varname, datapath] = attributeValue.split(" in ").map(s => s.trim());
+        if (!varname) {
+            console.error(`No variable name was found in the ${attributeName} expression`);
+            return;
+        }
+        if (!datapath) {
+            console.error(`No path or computed function was found in the ${attributeName} expression`);
+            return;
+        }
+        if (trackcontext.rendereddata!=null) {
+            console.error(`trackMarkUpGeneration was called withn a trackcontext which is not allowed.`);
+            return;
+        }
+
+        const tracking_obj = this.#createTemplateDirective(trackcontext, element, attributeName, attributeValue, null, "", element.parentElement, element.innerHTML, element.localName);
+        tracking_obj.elementnextsibling = element.nextSibling;
+        tracking_obj.elementclone = element.cloneNode(true);
+        tracking_obj.expressiontype = attribute_value_type;
+        if (attribute_value_type !== BareaHelper.EXPR_TYPE_COMPUTED) {
+            let objpath = BareaHelper.getLastBareaObjectPath(datapath);
+            tracking_obj.data = this.getProxifiedPathData(objpath);
+            tracking_obj.key = BareaHelper.getLastBareaKeyName(datapath);
+            if (!Array.isArray(tracking_obj.data[tracking_obj.key])) {
+                console.error(`could not find array for ${datapath} in  ${attributeName} directive`);
+                return;
+            }
+            this.#uiDependencyTracker.track('value', tracking_obj);
+
+        } else {
+            this.#computedProperties[datapath].addDependentDirective(tracking_obj);
+            this.#uiDependencyTracker.track('computed', tracking_obj);
+        }
+
+        this.#renderTemplates(tracking_obj, BareaHelper.ROOT_OBJECT, tracking_obj.data[tracking_obj.key]);
+    }
+
+    #trackInterpolation(tag = this.#appElement, trackcontext = { template: null, rendereddata: null, renderedindex: -1, renderedvarname: "", renderedobjid: -1 })
+    {
+        let allexpressions = [];
+        let nodes_with_expressions = this.#getInterplationNodesAndExpressions(tag);
+        nodes_with_expressions.forEach(inode => {
+
+            let nodeexpressions = [];
+            let node = inode.textNode;
+            inode.expressions.forEach(expr => {
+
+                let path = expr.replaceAll('{', '').replaceAll('}', '').trim();
+                const attribute_value_type = this.#getExpressionType(path, BareaHelper.DIR_INTERPOLATION, trackcontext.renderedvarname);
+                if (attribute_value_type === BareaHelper.EXPR_TYPE_INVALID) {
+                    console.error(`The ${DIR_INTERPOLATION} directive has an invalid expression (${path}).`);
+                    return;
+                }
+
+                let tracking_obj = this.#createInterpolationDirective(trackcontext, BareaHelper.DIR_INTERPOLATION, path, null, "", node, expr, node.nodeValue);
+                tracking_obj.expressiontype = attribute_value_type;
+                if (attribute_value_type === BareaHelper.EXPR_TYPE_COMPUTED) {
+                    tracking_obj.isrendered = false;
+                    tracking_obj.iscomputed = true;
+                    nodeexpressions.push(tracking_obj);
+                }
+                else if ([BareaHelper.EXPR_TYPE_ROOT_PATH, BareaHelper.EXPR_TYPE_OBJREF, BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type)) {
+
+                    tracking_obj.isobjectexpression = false;
+                    let ipolvalue = this.getProxifiedPathData(path, trackcontext.rendereddata, trackcontext.renderedvarname);
+                    if (typeof ipolvalue !== "object") {
+                        tracking_obj.key = BareaHelper.getLastBareaKeyName(path);
+                        let objpath = BareaHelper.getLastBareaObjectPath(path);
+                        tracking_obj.data = this.getProxifiedPathData(objpath, trackcontext.rendereddata, trackcontext.renderedvarname);
+                    } else {
+                        tracking_obj.isobjectexpression = true;
+                        tracking_obj.data = ipolvalue;
+                    }
+                   
+                    tracking_obj.isrendered = false;
+                    tracking_obj.iscomputed = false;
+                    nodeexpressions.push(tracking_obj);
+
+                }
+                else if (BareaHelper.INTERPOL_INDEX === attribute_value_type && trackcontext.rendereddata) {
+                    //Wont be tracked
+                    tracking_obj.isrendered = true;
+                    tracking_obj.iscomputed = false;
+                    tracking_obj.data = trackcontext.rendereddata;
+                    nodeexpressions.push(tracking_obj);
+                    if (trackcontext.template)
+                        trackcontext.template.usesReRenderedInterpolation = true;
+                }
+
+            });
+
+            //OBS Array of arrays, one array per node
+            allexpressions.push(nodeexpressions);
+
+        });
+
+        if (allexpressions.length > 0)
+        {
+            let exist_object_interpolation = false;
+            allexpressions.forEach(dir => {
+                if (exist_object_interpolation)
+                    return;
+                dir.forEach(ne => {
+                    if (ne.isobjectexpression)
+                        exist_object_interpolation = true;
+                });
+            });
+
+            allexpressions.forEach(dir => {
+
+                let firstexpr = dir[0];
+                firstexpr.nodeexpressions = dir;
+                firstexpr.nodeexpressions.forEach(ne => {
+                    ne.nodeexpressions = dir;
+                    if (ne.iscomputed && this.#computedProperties[ne.directivevalue]) {
+                        this.#computedProperties[ne.directivevalue].addDependentDirective(ne);
+                    } else {
+                        //Track as global
+                        if (exist_object_interpolation) {
+                            this.#uiDependencyTracker.track('global', ne);
+                        } else {
+                            this.#uiDependencyTracker.track('value', ne);
+                        }
+                    }
+                });
+                this.#setInterpolation(firstexpr);
+            });
+
+        }
     }
 
     #getInterplationNodesAndExpressions(root = this.#appElement) 
@@ -1088,14 +1126,17 @@ export class BareaApp
 
                     if (BareaHelper.DIR_GROUP_UI_DUPLEX.includes(directive.directivename))
                     {
-                        if (directive.inputType === BareaHelper.UI_INPUT_TEXT){
+                        if (directive.inputtype === BareaHelper.UI_INPUT_TEXT){
                             this.#setInputText(directive);
                         }
-                        else if (directive.inputType === BareaHelper.UI_INPUT_CHECKBOX){
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_CHECKBOX){
                             this.#setInputCheckbox(directive);
                         }
-                        else if (directive.inputType === BareaHelper.UI_INPUT_RADIO){
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_RADIO){
                             this.#setInputRadio(directive);
+                        }
+                        else if (directive.inputtype === BareaHelper.UI_INPUT_SELECT) {
+                            this.#setSelect(directive);
                         }
                     }
                     else if (directive.directivename===BareaHelper.DIR_CLASS){
@@ -1106,6 +1147,12 @@ export class BareaApp
                     }
                     else if (directive.directivename===BareaHelper.DIR_IMAGE_SRC){
                         this.#setSrc(directive);
+                    }
+                    else if (directive.directivename === BareaHelper.DIR_OPTION_ID) {
+                        this.#setOptionId(directive);
+                    }
+                    else if (directive.directivename === BareaHelper.DIR_OPTION_TEXT) {
+                        this.#setOptionText(directive);
                     }
                     
                     
@@ -1234,6 +1281,15 @@ export class BareaApp
         }
     }
 
+    #setSelect(directive) {
+        if (directive.element && directive.element.value !== directive.data[directive.key]) {
+            if (!directive.data[directive.key])
+                directive.element.value = "";
+            else
+                directive.element.value = directive.data[directive.key];
+        }
+    }
+
     #setInputCheckbox(directive) 
     {
         if (directive.element && directive.element.checked !== directive.data[directive.key]) 
@@ -1283,6 +1339,22 @@ export class BareaApp
 
         directive.element.href = directive.data[directive.key];
     }
+
+    #setOptionId(directive)
+    {
+        if (!directive.data[directive.key])
+            return;
+
+        directive.element.value = directive.data[directive.key];
+    }
+
+    #setOptionText(directive) {
+        if (!directive.data[directive.key])
+            return;
+
+        directive.element.textContent = directive.data[directive.key];
+    }
+
     #setInterpolation(directive)
     {
  
@@ -1293,7 +1365,7 @@ export class BareaApp
         {
 
             let interpol_value = "";
-            const attribute_value_type = this.#getExpressionType(ipstmt.directivevalue,BareaHelper.DIR_INTERPOLATION,directive.renderedvarname);
+            const attribute_value_type = this.#getExpressionType(ipstmt.directivevalue, BareaHelper.DIR_INTERPOLATION, ipstmt.renderedvarname);
             if (attribute_value_type===BareaHelper.EXPR_TYPE_INVALID)
             {
                     console.error(`The ${BareaHelper.DIR_INTERPOLATION} directive has an invalid expression (${ipstmt.directivevalue}).`);
@@ -1302,26 +1374,27 @@ export class BareaApp
     
             if (attribute_value_type===BareaHelper.EXPR_TYPE_COMPUTED){
                 interpol_value=this.#computedProperties[ipstmt.directivevalue].value;
-            }else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type))
-            {
-                if (ipstmt.key && ipstmt.data){
+            }else if ([BareaHelper.EXPR_TYPE_ROOT_PATH,BareaHelper.EXPR_TYPE_OBJREF,BareaHelper.EXPR_TYPE_OBJREF_PATH].includes(attribute_value_type)){
+               
+                if (!ipstmt.isobjectexpression) {
                     interpol_value = ipstmt.data[ipstmt.key];
                 }else{
-                    if (ipstmt.data)
-                        interpol_value = ipstmt.data;
+                    interpol_value = JSON.stringify(ipstmt.data); 
                 } 
+
             }
             else if (attribute_value_type === BareaHelper.INTERPOL_INDEX)
             {
                 interpol_value = String(directive.renderedindex);
             }
     
-            if (!interpol_value)
-                interpol_value ="";
-    
-            if (typeof interpol_value === "object") 
-                interpol_value = JSON.stringify(interpol_value)
+            if (!interpol_value) {
+                interpol_value = "";
+                if (typeof interpol_value === "boolean")
+                    interpol_value = "false";
 
+            }
+              
             nodetemplate = nodetemplate.replaceAll(ipstmt.expression, interpol_value);
 
         });
@@ -1404,7 +1477,6 @@ export class BareaApp
    
                 let newItem = this.#getNewTemplateElement(template_directive, varname, row, counter);
                 fragment.appendChild(newItem);
-                //this.#trackDirectives(newItem, {template:template_directive, rendereddata:row, renderedindex:counter, renderedvarname:varname, renderedobjid: this.#internalSystemCounter});
                 counter++;
             });
 
@@ -1461,6 +1533,15 @@ export class BareaApp
         this.#internalSystemCounter++;
         const newtag = document.createElement(template.templatetagname);
         newtag.innerHTML = template.templatemarkup;
+
+        if (template.elementclone)
+        {
+            for (let attr of template.elementclone.attributes)
+            {
+                if (!BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(attr.name))
+                    newtag.setAttribute(attr.name, attr.value);
+            }
+        }
        
         if (newtag.id)
             newtag.id = newtag.id + `-${this.#internalSystemCounter}` 
@@ -1494,6 +1575,9 @@ export class BareaApp
             if (expression.includes('(') || expression.includes(')'))
                 return BareaHelper.EXPR_TYPE_INVALID;
 
+            if (!expression.includes(BareaHelper.ROOT_OBJECT) && !varname)
+                return BareaHelper.EXPR_TYPE_INVALID;
+
             if (!(expression.includes('.')))
                 return BareaHelper.EXPR_TYPE_INVALID;
 
@@ -1525,9 +1609,15 @@ export class BareaApp
             }
             
             if (!(expression.includes('.')))
-                return BareaHelper.EXPR_TYPE_COMPUTED;
+            {
+                if (this.#computedProperties[expression])
+                    return BareaHelper.EXPR_TYPE_COMPUTED;
+            }
 
-            return BareaHelper.EXPR_TYPE_OBJREF_EXPR;
+            if (expression.includes(varname))
+                return BareaHelper.EXPR_TYPE_OBJREF_EXPR;
+            else
+                return BareaHelper.EXPR_TYPE_INVALID;
         }
 
         if (directive === BareaHelper.DIR_FOREACH)
@@ -1576,15 +1666,6 @@ export class BareaApp
         let result = value !== null && typeof value !== "object" && typeof value !== "function";
         return result;
     }
-
-
-    #loadedHandler =  (event) => {
-       if (this.#enableHideUnloaded)
-       {
-            document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));
-       }
-    }
-
 
     #getNewComputedProperty(func, funcname)
     {
@@ -1790,6 +1871,7 @@ export class BareaApp
         {
             #dependencies = new Map();
             #objectReference = new WeakMap();
+            #objectReferenceInfo = new Map();
             #notifycallback = null;
             #objectCounter=0;
             #trackingCalls=0;
@@ -1805,17 +1887,15 @@ export class BareaApp
                 instance = this;
             }
 
-            #getObjectId(obj) 
-            {
+            #getObjectId(obj) {
                 let isnewobj = false;
                 let retval = 0;
-                if (!this.#objectReference.has(obj)) 
-                {
-                    isnewobj=true;
-                    this.#objectReference.set(obj, ++this.#objectCounter); // Assign a new ID
+                if (!this.#objectReference.has(obj)) {
+                    isnewobj = true;
+                    this.#objectReference.set(obj, ++this.#objectCounter);
                 }
                 retval = this.#objectReference.get(obj);
-                return {id:retval, isnew:isnewobj};
+                return { id: retval, isnew: isnewobj };
             }
 
             removeTemplateDependencies(templateid=-1)
@@ -1891,6 +1971,10 @@ export class BareaApp
                 return this.#dependencies;
             } 
 
+            getTemplateDependencies() {
+                return this.#userTemplates;
+            } 
+
             track(scope, directive) 
             {
                 this.#trackingCalls++;
@@ -1909,9 +1993,9 @@ export class BareaApp
                 {
                     depKey = this.#getObjectId(object).id + ":value:" + directive.key; 
                 }
-                else if (scope==='object')
+                else if (scope==='global')
                 {
-                    depKey = this.#getObjectId(object).id + ":object:"; 
+                    depKey = "global";  //Used by interpolated objects
                 }else{
                     depKey=scope;                   
                 }
@@ -1941,29 +2025,38 @@ export class BareaApp
             {
                 this.#notificationCalls++;
 
-                let objid = this.#getObjectId(reasonobj);
-                if (!objid.isnew)
+                let subobjectcheck = { isnew: false };
+                if (reasonvalue)
                 {
+                    if (reasonvalue != null && typeof reasonvalue === "object" && !reasonfuncname)
+                    {
+                        subobjectcheck = this.#getObjectId(reasonvalue); 
+                    }
+                }
+
+                let objid = this.#getObjectId(reasonobj);
+                if (!objid.isnew && !subobjectcheck.isnew) {
                     let depKey = objid.id + ":value:" + reasonkey;
                     let valueset = this.#dependencies.get(depKey);
                     if (!valueset)
-                        valueset= new Set();
+                        valueset = new Set();
 
-                    depKey = objid.id + ":object:";
+                    depKey = "global";
                     let objectset = this.#dependencies.get(depKey);
                     if (!objectset)
-                        objectset= new Set();
+                        objectset = new Set();
 
                     let resultset = new Set([...valueset, ...objectset]);
-                    if (resultset.size===0)
+                    if (resultset.size === 0)
                         return;
-    
+
                     this.#notifycallback(reasonobj, reasonkey, reasonvalue, path, resultset, reasonfuncname);
+
                 }
-                else
-                {
-                  barea.refresh();
-                  //console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called', reasonobj);
+                else {
+
+                     barea.refresh();
+                     console.warn('UI dependency tracker was notified of an object that was not tracked - barea.refresh() called. (avoid changing the model structure after mount)', reasonobj);
                 }
               
             }
@@ -1976,23 +2069,10 @@ export class BareaApp
                 }
             }
 
-            restoreUITracker()
+            clear()
             {
-                //restore templates
-                this.#userTemplates.forEach(directive => 
-                {
-                    if (BareaHelper.DIR_GROUP_MARKUP_GENERATION.includes(directive.directivename))
-                    {
-                        if (directive.element && directive.parentelement){
-                            directive.parentelement.innerHTML="";
-                            directive.parentelement.appendChild(directive.element);
-                        }
-                    }                           
-                });
-
                 this.#userTemplates=[];
                 this.#dependencies.clear();
-                this.#objectReference=new WeakMap();
             }
            
 
@@ -2429,176 +2509,173 @@ export class BareaViewState extends EventTarget
 }
 
 
-export class BareaDataModel
-{
+export class BareaDataModel {
 
     #dbTableName = "";
     #dbColumns = [];
-    #dataBase=null;
+    #dataBase = null;
 
-    constructor(dbtablename) 
-    {
+    constructor(dbtablename) {
         if (dbtablename)
             this.#dbTableName = dbtablename;
         else
             console.error('A new instance of BareaDataModel was created without a dbtablename');
     }
 
-    useBareaLocalStorageDb()
-    {
-       this.#dataBase={engine: "BareaLocalStorageDb"};
+    useBareaLocalStorageDb() {
+        this.#dataBase = { engine: "BareaLocalStorageDb" };
+    }
+    useIntwentyAPI() {
+        this.#dataBase = { engine: "IntwentyAPI" };
     }
 
-    get DbTableName(){
+    get DbTableName() {
         return this.#dbTableName;
     }
-    get DbColumns(){
+    get DbColumns() {
         return this.#dbColumns;
     }
 
-    addDbStringColumn(columnname, allownull = true)
-    {
-        this.#dbColumns.push({name:columnname, allownull:allownull, datatype:"string", autoincrement:false});
+    addDbStringColumn(columnname, primarykey=false) {
+        this.#dbColumns.push({ name: columnname, datatype: "string", autoincrement: false, primarykey:primarykey });
     }
 
-    addDbIntegerColumn(columnname, autoincrement=false)
-    {
-        this.#dbColumns.push({name:columnname, allownull:false, datatype:"integer", autoincrement:autoincrement});
+    addDbIntegerColumn(columnname, autoincrement = false, primarykey = false) {
+        this.#dbColumns.push({ name: columnname, datatype: "integer", autoincrement: autoincrement, primarykey: primarykey });
     }
 
-    getBareaDataModel(){
+    getBareaDataModel() {
         let model = {};
-       
-       model[this.#dbTableName]={};
-       model['entityList'] =[];
-       this.#dbColumns.forEach(col=>{
-            if (col.datatype==="string")
+
+        model[this.#dbTableName] = {};
+        model['entityList'] = [];
+        this.#dbColumns.forEach(col => {
+            if (col.datatype === "string")
                 model[this.#dbTableName][col.name] = "";
-            if (col.datatype==="text")
+            if (col.datatype === "text")
                 model[this.#dbTableName][col.name] = "";
-            if (col.datatype==="integer")
+            if (col.datatype === "integer")
                 model[this.#dbTableName][col.name] = 0;
-            if (col.datatype==="boolean")
+            if (col.datatype === "boolean")
                 model[this.#dbTableName][col.name] = false;
         });
-        
+
         return model;
     }
 
-    createEntity(obj)
-    {
+    async createEntity(obj) {
         const db = this.#getDataBase();
-        if (!db){
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+        if (!db) {
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
         return db.createEntity(obj);
     }
 
-    updateEntity(obj)
-    {
+    async updateEntity(obj, id) {
         const db = this.#getDataBase();
-        if (!db){
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+        if (!db) {
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
-        return db.updateEntity(obj);
+        return db.updateEntity(obj, id);
     }
 
-    getEntities(sql="")
-    {
+    async getEntities(sql = "") {
         const db = this.#getDataBase();
-        if (!db){
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+        if (!db) {
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return [];
         }
         return db.getEntities(sql);
     }
-        
-    getEntity(id)
-    {
+
+    async getEntity(id) {
         const db = this.#getDataBase();
-        if (!db){
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+        if (!db) {
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return {};
         }
         return db.getEntity(id);
     }
-        
-    deleteEntity(id)
-    { 
+
+    async deleteEntity(id) {
         const db = this.#getDataBase();
-        if (!db){
-            console.error('No databse engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
+        if (!db) {
+            console.error('No database engine was specified, for mockup call: useBareaLocalStorageDb() (BareaDataModel)');
             return false;
         }
         return db.deleteEntity(id);
     }
 
-    #getDataBase()
-    {
+    #getDataBase() {
         if (!this.#dataBase)
             return;
 
-        if (this.#dataBase.engine==='BareaLocalStorageDb')
+        if (this.#dataBase.engine === "BareaLocalStorageDb")
             return this.#getBareaLocalStorageDb();
+        if (this.#dataBase.engine === "IntwentyAPI")
+            return this.#getIntwentyAPI();
 
         return null;
     }
 
-    #getBareaLocalStorageDb()
-    {
+    #getBareaLocalStorageDb() {
         const DataModel = this;
 
-        class BareaLocalStorageDb
-        {
-            #initializeDb()
-            {
-                let db=null;
+        class BareaLocalStorageDb {
+            #initializeDb() {
+                let db = null;
                 let rawdata = localStorage.getItem("BareaDataBase");
                 if (rawdata)
                     db = JSON.parse(rawdata);
-        
-                if (!db){
+
+                if (!db) {
                     db = {};
-                    db[DataModel.DbTableName+'_db'] =[];
-                    localStorage.setItem("BareaDataBase", JSON.stringify(db)); 
+                    db[DataModel.DbTableName + '_db'] = [];
+                    localStorage.setItem("BareaDataBase", JSON.stringify(db));
                 }
 
                 return db;
             }
 
-            #getMaxId(arr)
-            {
-                let id=0;
-                arr.forEach(p=>{
-                    if (!p.id)
+            #getMaxId(arr) {
+                let id = 0;
+                arr.forEach(p => {
+                    if (!BareaHelper.isValue(p,"id"))
                         return;
-                    if (p.id>id)
-                        id=p.id;
+                    if (BareaHelper.getValue(p, "id") > id)
+                        id = BareaHelper.getValue(p, "id");
                 });
                 return id;
             }
 
-            createEntity(obj)
-            {
-                const db =  this.#initializeDb();
-
-                if (!obj.id)
-                {
-                    obj.id=this.#getMaxId(db[DataModel.DbTableName+'_db'])+1;
+            createEntity(obj) {
+                const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype=="integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
                 }
 
-                db[DataModel.DbTableName+'_db'].push(obj);
-                localStorage.setItem("BareaDataBase", JSON.stringify(db)); 
+                if (!obj[idcol.name]) {
+                    obj[idcol.name] = this.#getMaxId(db[DataModel.DbTableName + '_db']) + 1;
+                }
+
+                db[DataModel.DbTableName + '_db'].push(obj);
+                localStorage.setItem("BareaDataBase", JSON.stringify(db));
                 return true;
             }
 
-            updateEntity(obj)
-            {
-                const db =  this.#initializeDb();
-                let entityArray = db[DataModel.DbTableName+'_db'];
-                let index = entityArray.findIndex(p => p.id == obj.id);
+            updateEntity(obj, id) {
+                const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
+                let entityArray = db[DataModel.DbTableName + '_db'];
+                let index = entityArray.findIndex(p => BareaHelper.getValue(p, idcol.name) == id);
                 if (index !== -1) {
                     entityArray[index] = obj;  // Correctly update the object in the array
                     localStorage.setItem("BareaDataBase", JSON.stringify(db));
@@ -2607,33 +2684,42 @@ export class BareaDataModel
                 return false;
             }
 
-            getEntities(sql="")
-            {
-                const db =  this.#initializeDb();
-                let entityArray =  db[DataModel.DbTableName+'_db'];
+            getEntities(sql = "") {
+                const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
+                let entityArray = db[DataModel.DbTableName + '_db'];
                 return entityArray;
             }
-        
-            getEntity(id)
-            {
-                const db =  this.#initializeDb();
-        
-                if (id)
-                {
-                    let entityArray =  db[DataModel.DbTableName+'_db'];
-                    let entityObject = entityArray.find(p=> p.id==id);
+
+            getEntity(id) {
+                const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
+                if (id) {
+                    let entityArray = db[DataModel.DbTableName + '_db'];
+                    let entityObject = entityArray.find(p => BareaHelper.getValue(p, idcol.name) == id);
                     return entityObject;
                 }
-        
+
                 return {};
             }
-        
-            deleteEntity(id)
-            {
-                const db =  this.#initializeDb();
-        
-                let entityArray =  db[DataModel.DbTableName+'_db'];
-                let index = entityArray.findIndex(p => p.id == id);
+
+            deleteEntity(id) {
+                const db = this.#initializeDb();
+                const idcol = DataModel.DbColumns.find(p => p.primarykey && p.autoincrement && p.datatype == "integer");
+                if (!idcol) {
+                    console.error("BareaLocalStorageDb must have an integer autoincremened primary key column");
+                    return;
+                }
+                let entityArray = db[DataModel.DbTableName + '_db'];
+                let index = entityArray.findIndex(p => BareaHelper.getValue(p, idcol.name) == id);
                 if (index !== -1) {
                     entityArray.splice(index, 1);  // Remove the entity at the found index
                     localStorage.setItem("BareaDataBase", JSON.stringify(db));
@@ -2641,9 +2727,168 @@ export class BareaDataModel
                 }
                 return false;
             }
-        
+
         }
         return new BareaLocalStorageDb();
+    }
+
+
+    #getIntwentyAPI()
+    {
+        const DataModel = this;
+        class IntwentyAPI {
+
+
+
+            #initializeDb() {
+                let db = {
+                    newEntityPath: "/Applications/Api/CreateEntity",
+                    editEntityPath: "/Applications/Api/EditEntity",
+                    deleteEntityPath: "/Applications/Api/DeleteEntity",
+                    getEntityPath: "/Applications/Api/GetEntity",
+                    getEntitiesPath: "/Applications/Api/GetEntities"
+                };
+                return db;
+            }
+
+            async createEntity(obj) {
+                const db = this.#initializeDb();
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: "", sqlStatement: "" };
+
+                try {
+                    const response = await fetch(db.newEntityPath, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
+                    return true;
+
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+
+                return false;
+            }
+
+            async updateEntity(obj, id) {
+                const db = this.#initializeDb();
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: obj, entityId: id, sqlStatement: "" };
+                try {
+                    const response = await fetch(db.editEntityPath, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload) // Convert object to JSON string
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
+                    return true;
+
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+
+                return false;
+            }
+
+            async getEntities(sql = "") {
+                const db = this.#initializeDb();
+                const payload = {
+                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: "", sqlStatement: sql };
+                try {
+                    const response = await fetch(db.getEntitiesPath, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload) // Convert object to JSON string
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
+                    const answer = await response.json();
+                    return answer.entities;
+
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+
+                return [];
+            }
+
+            async getEntity(id) {
+                const db = this.#initializeDb();
+                const payload = {
+                    model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: id, sqlStatement: "" };
+                try {
+                    const response = await fetch(db.getEntityPath, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload) // Convert object to JSON string
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
+                    const answer = await response.json();
+                    return answer.entity;
+
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+
+                return {};
+            }
+
+            async deleteEntity(id) {
+                const db = this.#initializeDb();
+                const payload = { model: { dbTableName: DataModel.DbTableName, dbColumns: DataModel.DbColumns }, data: {}, entityId: id, sqlStatement: "" };
+                try {
+                    const response = await fetch(db.deleteEntityPath, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload) // Convert object to JSON string
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                    }
+
+                    return true;
+
+                }
+                catch (error) {
+                    console.error('Error:', error);
+                }
+
+                return false;
+            }
+
+        }
+
+        return new IntwentyAPI();
     }
 
 
@@ -2710,14 +2955,14 @@ export class BareaView
         return this.#viewDescription;
     }
 
-    addDbStringColumn(columnname, allownull = true)
+    addDbStringColumn(columnname, primarykey=false)
     {
-        this.#dataModel.addDbStringColumn(columnname, allownull);
+        this.#dataModel.addDbStringColumn(columnname, primarykey);
     }
 
-    addDbIntegerColumn(columnname, autoincrement=false)
+    addDbIntegerColumn(columnname, autoincrement = false, primarykey = false)
     {
-        this.#dataModel.addDbIntegerColumn(columnname, autoincrement);
+        this.#dataModel.addDbIntegerColumn(columnname, autoincrement,primarykey);
     }
 
     validForUrl(url)
@@ -2776,8 +3021,10 @@ export class BareaHelper
     static DIR_IF = 'ba-if';
     static DIR_HREF = 'ba-href';
     static DIR_INTERPOLATION = 'interpolation';
+    static DIR_OPTION_ID = 'ba-option-id';
+    static DIR_OPTION_TEXT = 'ba-option-text';
 
-    static DIR_GROUP_BIND_TO_PATH = [BareaHelper.DIR_BIND,BareaHelper.DIR_BIND_BLUR,BareaHelper.DIR_CLASS,BareaHelper.DIR_HREF,BareaHelper.DIR_IMAGE_SRC];
+    static DIR_GROUP_BIND_TO_PATH = [BareaHelper.DIR_BIND, BareaHelper.DIR_BIND_BLUR, BareaHelper.DIR_CLASS, BareaHelper.DIR_HREF, BareaHelper.DIR_IMAGE_SRC, BareaHelper.DIR_OPTION_ID, BareaHelper.DIR_OPTION_TEXT];
     static DIR_GROUP_UI_DUPLEX = [BareaHelper.DIR_BIND,BareaHelper.DIR_BIND_BLUR];
     static DIR_GROUP_TRACK_AND_FORGET = [BareaHelper.DIR_CLICK];
     static DIR_GROUP_COMPUTED = [BareaHelper.DIR_CLASS_IF,BareaHelper.DIR_HIDE,BareaHelper.DIR_SHOW, BareaHelper.DIR_IF];
@@ -2786,7 +3033,8 @@ export class BareaHelper
     static UI_INPUT_TEXT = 1;
     static UI_INPUT_CHECKBOX = 2;
     static UI_INPUT_RADIO = 3;
-    static UI_INPUT_CUSTOM = 4;
+    static UI_INPUT_SELECT = 4;
+    static UI_INPUT_CUSTOM = 10;
 
 
     //Verbs
@@ -2830,6 +3078,71 @@ export class BareaHelper
         {id: 10, name: "BareaViewState - On state changed: ", active:false}
     ];
 
+    static deepTraverseObjectToArray = function (obj, parentPath = 'root')
+    {
+        let result = [];
+
+        if (obj !== null && typeof obj === 'object')
+        {
+            for (let key in obj) {
+
+                if (obj.hasOwnProperty(key))
+                {
+                    const currentPath = parentPath ? `${parentPath}.${key}` : key; // Build the full path
+
+                    // Check the type of the current property (object, array, or simple type)
+                    if (Array.isArray(obj[key])) {
+                        result.push({path: currentPath,type: 'array',value: obj[key]});
+                        obj[key].forEach((item, index) => {
+                            result = result.concat(BareaHelper.deepTraverseObjectToArray(item, `${currentPath}[${index}]`));
+                        });
+                    }
+                    else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        result.push({path: currentPath,type: 'object',value: obj[key]});
+                        result = result.concat(BareaHelper.deepTraverseObjectToArray(obj[key], currentPath));
+                    }
+                    else {
+                        result.push({path: currentPath,type: 'primitive',value: obj[key] });
+                    }
+                }
+            }
+
+        }
+        else{
+            result.push({ path: parentPath, type: 'primitive',value: null});
+        }
+
+        return result;
+    }
+
+    //Generates a flat object from any object
+    static getObjectDictionary = function (obj, parentKey = '')
+    {
+        let result = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const newKey = parentKey ? `${parentKey}.${key}` : key;
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    if (Array.isArray(obj[key])) {
+                        result[newKey] = obj[key];
+                        obj[key].forEach((item, index) => {
+                            result[`${newKey}[${index}]`] = item;
+                            Object.assign(result, this.getObjectDictionary(item, `${newKey}[${index}]`));
+                        });
+                    } else {
+                        result[newKey] = obj[key];
+                        Object.assign(result, this.getObjectDictionary(obj[key], newKey));
+                    }
+                } else {
+                    result[newKey] = obj[key];
+                }
+            }
+        }
+
+        return result;
+    }
+
+
     static getLastBareaKeyName = function(path)
     {
         if (!path)
@@ -2845,10 +3158,30 @@ export class BareaHelper
         return key;
     }
 
-    static getLastBareaObjectName = function(path)
+    static isValue =function(object, key) {
+        if (!object || typeof object !== 'object' || !key) return false;
+        const lowerKey = key.toLowerCase();
+        return Object.keys(object).some(objKey => objKey.toLowerCase() === lowerKey && object[objKey] != null);
+    }
+
+    static getValue = function getValue(object, key)
     {
-        if (!path)
-            return 'root';
+        if (!object || typeof object !== 'object' || !key) return undefined;
+        const lowerKey = key.toLowerCase();
+        for (const objKey in object) {
+            if (objKey.toLowerCase() === lowerKey) {
+                return object[objKey];
+            }
+        }
+        return undefined;
+    }
+
+    static getLastBareaObjectPath = function(path)
+    {
+        if (!path) {
+            console.error('callk to BareaHelper.getLastBareaObjectPath() without a path');
+            return;
+        }
 
         let retval = null;
         let keys = path.split('.');
