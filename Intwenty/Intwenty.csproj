@@ -29,6 +29,10 @@
     <Content Remove="Model\UIRendering\**" />
     <EmbeddedResource Remove="Model\UIRendering\**" />
     <None Remove="Model\UIRendering\**" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="Build\intwenty_loggo_small.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
