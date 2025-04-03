@@ -35,19 +35,15 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 
 # Backend Dependencies
 - Net8
-- Microsoft.AspNetCore.Mvc 2.2.0
 - Intwenty.DataClient
-- Swashbuckle.AspNetCore 5.6.3
+- Swashbuckle
 
 # Frontend Dependencies
 - bootstrap 5.2.0
-- popper.js 1.16.1
-- vue.js 2.6.11
-- vue.js 3.4.22 
-- jquery 3.3.1
-- alasql 0.5.5
-- fontawesome-free-5.12.1-web
-- selectize 0.13.3
+- barea.js
+- Net 8
+- Swashbuckle
+- bootstrap 5.2
 
 # Works with the following databases
 - MS Sql Server
