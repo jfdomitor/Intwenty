@@ -8,12 +8,9 @@ namespace Intwenty.Interface
 {
     public interface IIntwentySeeder
     {
-        void SeedLocalization();
         void SeedProductAndOrganization();
         void SeedProductAuthorizationItems();
         void SeedUsersAndRoles();
-        void SeedModel();
-        void SeedData();
         void ConfigureDataBase();
     }
 

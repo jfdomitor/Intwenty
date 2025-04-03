@@ -1,7 +1,9 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Intwenty.Helpers
 {
@@ -47,6 +49,27 @@ namespace Intwenty.Helpers
             catch { }
 
             return string.Empty;
+        }
+
+        public static string GetQuiteUniqueString()
+        {
+            Guid g = Guid.NewGuid();
+            var str = Convert.ToBase64String(g.ToByteArray());
+            var t = DateTime.Now.ToLongTimeString().Replace(":", "").Replace(" ", "");
+
+            if (str.Length > 4)
+                str = str.Insert(3, t);
+
+            char[] arr = str.ToCharArray();
+            arr = Array.FindAll(arr, (c => (char.IsLetterOrDigit(c))));
+            str = new string(arr);
+
+            if (str.Length > 20)
+                str = str.Substring(0, 20).ToUpper();
+
+
+            return str;
+
         }
 
     }

@@ -2,7 +2,7 @@
 
 
 # Intwenty
-Is a meta data driven Template that simplifies developing CMS, Blog Engines and other systems. Intwenty is built on Vue.js and ASP.NET Core.
+Is a meta data driven Template that simplifies developing CMS, Blog Engines and other systems. Intwenty is built on Vue.js and Net.
 
 - It lets you create meta models that describes UI and data.
 - Models are stored as data instead of strongly typed objects.
@@ -34,17 +34,16 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 3. Keep dependencies to a minimum.
 
 # Backend Dependencies
-- Net 8
+- Net8
+- Intwenty.DataClient
 - Swashbuckle
 
 # Frontend Dependencies
+- bootstrap 5.2.0
+- barea.js
+- Net 8
+- Swashbuckle
 - bootstrap 5.2
-- popper.js 1.16.1
-- vue.js 2.6.11
-- jquery 3.3.1
-- alasql 0.5.5
-- fontawesome-free-5.12.1-web
-- selectize 0.13.3
 
 # Works with the following databases
 - MS Sql Server

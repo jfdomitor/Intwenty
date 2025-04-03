@@ -3,8 +3,10 @@ using Intwenty.Areas.Identity.Models;
 using Intwenty.Areas.Identity.Pages.Account;
 using Intwenty.DataClient;
 using Intwenty.Model;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -56,7 +58,7 @@ namespace Intwenty.Areas.Identity.Data
 
          
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
 
             await client.OpenAsync();
 
@@ -93,7 +95,7 @@ namespace Intwenty.Areas.Identity.Data
 
             IAMCache.Remove(UsersCacheKey);
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.DeleteEntityAsync(user);
             await client.CloseAsync();
@@ -109,7 +111,7 @@ namespace Intwenty.Areas.Identity.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var user = await client.GetEntityAsync<IntwentyUser>(userId);
             await client.CloseAsync();
@@ -190,7 +192,7 @@ namespace Intwenty.Areas.Identity.Data
 
             IAMCache.Remove(UsersCacheKey);
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.UpdateEntityAsync(user);
             await client.CloseAsync();
@@ -307,7 +309,7 @@ namespace Intwenty.Areas.Identity.Data
                 return res;
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var users = await client.GetEntitiesAsync<IntwentyUser>();
             await client.CloseAsync();
@@ -329,7 +331,7 @@ namespace Intwenty.Areas.Identity.Data
                 return res;
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var result = await client.GetEntitiesAsync<IntwentyAuthorization>();
             var list = result.Where(p => !string.IsNullOrEmpty(p.UserId) && p.UserId == user.Id).ToList();
@@ -366,7 +368,7 @@ namespace Intwenty.Areas.Identity.Data
             var sql = "SELECT t1.* FROM security_Authorization t1 ";
             sql += "JOIN security_OrganizationMembers t2 ON t1.OrganizationId = t2.OrganizationId ";
             sql += "WHERE (t1.UserId is NULL OR t1.UserId = '') AND t2.UserId = '{0}'";
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var result = await client.GetEntitiesAsync<IntwentyAuthorization>(string.Format(sql, user.Id),false);
             await client.CloseAsync();
@@ -470,7 +472,7 @@ namespace Intwenty.Areas.Identity.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             var user = client.GetEntities<IntwentyUser>().Find(p => p.NormalizedEmail == normalizedEmail);
             client.Close();
@@ -647,7 +649,7 @@ namespace Intwenty.Areas.Identity.Data
                 throw new ArgumentNullException(nameof(login));
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.InsertEntityAsync(new IntwentyUserProductLogin() { Id = Guid.NewGuid().ToString(), ProductId = Settings.ProductId, LoginProvider = login.LoginProvider, ProviderDisplayName = login.ProviderDisplayName, ProviderKey = login.ProviderKey, UserId = user.Id   });
             await client.CloseAsync();
@@ -656,7 +658,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task RemoveLoginAsync(IntwentyUser user, string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var userlogins = await client.GetEntitiesAsync<IntwentyUserProductLogin>();
             await client.CloseAsync();
@@ -681,7 +683,7 @@ namespace Intwenty.Areas.Identity.Data
             }
 
             IList<UserLoginInfo> result = null;
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             result = client.GetEntities<IntwentyUserProductLogin>().Where(p => p.UserId == user.Id && p.ProductId == Settings.ProductId).Select(p => new UserLoginInfo(p.LoginProvider, p.ProviderKey, p.ProviderDisplayName)).ToList();
             client.Close();
@@ -693,7 +695,7 @@ namespace Intwenty.Areas.Identity.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             var login = client.GetEntities<IntwentyUserProductLogin>().Find(p => p.LoginProvider == loginProvider && p.ProviderKey == providerKey && p.ProductId == Settings.ProductId);
             client.Close();
@@ -718,7 +720,7 @@ namespace Intwenty.Areas.Identity.Data
             }
 
             IList<Claim> result = null;
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             result = client.GetEntities<IntwentyUserProductClaim>().Where(p => p.UserId == user.Id && p.ProductId == Settings.ProductId).Select(p=> p.ToClaim()).ToList();
             client.Close();
@@ -740,7 +742,7 @@ namespace Intwenty.Areas.Identity.Data
                 throw new ArgumentNullException(nameof(claims));
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             foreach (var claim in claims)
             {
@@ -767,7 +769,7 @@ namespace Intwenty.Areas.Identity.Data
                 throw new ArgumentNullException(nameof(newClaim));
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var claims = await client.GetEntitiesAsync<IntwentyUserProductClaim>();
             var filter = claims.Where(p => p.UserId == user.Id &&   
@@ -797,7 +799,7 @@ namespace Intwenty.Areas.Identity.Data
                 throw new ArgumentNullException(nameof(claims));
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
 
             await client.OpenAsync();
             foreach (var claim in claims)
@@ -826,7 +828,7 @@ namespace Intwenty.Areas.Identity.Data
                 throw new ArgumentNullException(nameof(claim));
             }
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             client.Open();
             var Users = client.GetEntities<IntwentyUser>();
             var UserClaims = client.GetEntities<IntwentyUserProductClaim>();
@@ -841,7 +843,7 @@ namespace Intwenty.Areas.Identity.Data
             return Task.FromResult(query);
         }
 
-        public Task<string> GetSecurityStampAsync(IntwentyUser user, CancellationToken cancellationToken)
+        public async Task<string> GetSecurityStampAsync(IntwentyUser user, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -849,7 +851,8 @@ namespace Intwenty.Areas.Identity.Data
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return Task.FromResult(user.SecurityStamp);
+            
+            return await Task.FromResult(user.SecurityStamp);
         }
 
         public Task SetSecurityStampAsync(IntwentyUser user, string stamp, CancellationToken cancellationToken)
@@ -867,5 +870,7 @@ namespace Intwenty.Areas.Identity.Data
             user.SecurityStamp = stamp;
             return Task.CompletedTask;
         }
+
+
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Intwenty.Areas.Identity.Data;
 using Intwenty.Areas.Identity.Entity;
@@ -109,6 +110,9 @@ namespace Intwenty.Areas.Identity.Pages.Account
             {
                 throw new InvalidOperationException($"Unable to load two-factor authentication user.");
             }
+
+            if (_settings.LoginAlwaysRemember)
+                rememberMe = true;
 
             var mfastatus = await _userManager.GetTwoFactorStatus(user);
 

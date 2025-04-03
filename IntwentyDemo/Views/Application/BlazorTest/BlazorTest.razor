@@ -1,0 +1,91 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using Intwenty.DataClient
+@using Intwenty.Model
+@using Intwenty.Entity
+@using Microsoft.Extensions.Options
+@inject IOptions<IntwentySettings> Settings
+@inject IJSRuntime JSRuntime
+
+<h3>Blazor Component in NET6</h3>
+<br />
+<br />
+<div>@Data</div>
+<br />
+<br />
+<button @onclick="Test" class="btn btn-dark">Fetch applications in registry</button>
+<br />
+<br />
+<table class="table">
+    <thead>
+        <tr style="cursor:pointer;">
+            <th>Title</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (InformationStatus a in apps)
+        {
+            <tr>
+                <td>@a.ApplicationId + ' - ' + @a.Id + ' ' + @a.CreatedBy</td>
+            </tr>
+          
+        }
+    </tbody>
+</table>
+<br />
+<br />
+<label class="control-label">
+    Binding Test
+</label>
+<input id="blazorTb"
+       @bind="InputValue"
+       name="blazorTb"
+       type="text"
+       class="form-control form-control-sm"
+       maxlength="300" />
+<br />
+<button @onclick="BtnProcessInboundValueClick" class="btn btn-dark">Process bound value</button>
+
+@code {
+
+    private DotNetObjectReference<BlazorTest> dotNetHelper;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.setDotNetHelper", dotNetHelper);
+        }
+    }
+
+
+    [Parameter]
+    public string Data { get; set; } = string.Empty;
+
+    static string InputValue { get; set; } = string.Empty;
+
+    public List<InformationStatus> apps = new List<InformationStatus>();
+
+    private void Test()
+    {
+        var client = new DbConnection(Settings.Value.DefaultConnectionDBMS, Settings.Value.DefaultConnection);
+        client.Open();
+        apps = client.GetEntities<InformationStatus>();
+        client.Close();
+    }
+
+    private async Task BtnProcessInboundValueClick()
+    {
+        apps.Add(new InformationStatus() {  CreatedBy = InputValue });
+        await JSRuntime.InvokeVoidAsync("BlazorTestJSFunctions.raiseDlg");
+    }
+
+    [JSInvokable]
+    public void MessageFromJavaScript()
+    {
+        JSRuntime.InvokeVoidAsync("raiseInformationModal", "Test", InputValue + ": Invoked Net from JS");
+    }
+}   
+

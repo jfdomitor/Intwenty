@@ -15,6 +15,7 @@ namespace Intwenty.Areas.Identity.Models
         public string LastLogin { get; set; }
         public string LastLoginProduct { get; set; }
         public string LastLoginMethod { get; set; }
+        public string EditPath { get; set; }
 
         public List<IntwentyUserProductVm> UserProducts { get; set; }
 
@@ -52,6 +53,7 @@ namespace Intwenty.Areas.Identity.Models
             AllowPublicProfile = entity.AllowPublicProfile;
             AllowSmsNotifications = entity.AllowSmsNotifications;
             UserProducts = new List<IntwentyUserProductVm>();
+            EditPath = "User/" + Id;
         }
 
     }

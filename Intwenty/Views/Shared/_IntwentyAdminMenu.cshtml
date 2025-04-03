@@ -1,43 +1,14 @@
 ﻿<li class="nav-item dropdown">
-    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><span class="nav-label"><span class="fa fa-cog"></span> Administration</span> <span class="caret"></span></a>
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><span class="nav-label"><span class="fa fa-cog"></span> Administration</span> <span class="caret"></span></a>
     <div class="dropdown-menu">
 
 
         @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
         {
-            <a class="dropdown-item" asp-controller="Model" asp-action="ApplicationList"><span class="fa fa-cogs"></span> Manage applications</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="ToolConfigureDatabase"><span class="fa fa-cogs"></span> Configure database</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="EditValueDomains"><span class="fa fa-database"></span> Value domains</a>
 
+            <a class="dropdown-item" asp-controller="Admin" asp-action="Documentation"><span class="fa fa-book"></span> Model documentation</a>
+            <a class="dropdown-item" asp-controller="Admin" asp-action="EventLog" asp-route-logname="Intwenty"><span class="fa fa-cogs"></span> Logviewer</a>
 
-            <div class="dropdown-divider"></div>
-
-            <a class="dropdown-item" asp-controller="Model" asp-action="ToolValidateModel"><span class="fa fa-info"></span> Validate model</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="ToolModelDocumentation"><span class="fa fa-book"></span> Model documentation</a>
-            <a class="dropdown-item" asp-controller="SystemTest" asp-action="RunTests"><span class="fa fa-cogs"></span> Run System Tests</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="ToolCacheMonitor"><span class="fa fa-cogs"></span> Cache Monitor</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="EventLog" asp-route-logname="Intwenty"><span class="fa fa-cogs"></span> Logviewer</a>
-
-
-
-            @if (User.IsInRole("SUPERADMIN"))
-            {
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportJsonModel"><span class="fa fa-cogs"></span> Export Model (json)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportCSharpModel"><span class="fa fa-cogs"></span> Export Model (C#)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportSqlModel"><span class="fa fa-cogs"></span> Export Model (SQL)</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportXmlModel"><span class="fa fa-cogs"></span> Export Model (Xml)</a>
-                <a class="dropdown-item" asp-controller="Model" asp-action="ImportModel"><span class="fa fa-cogs"></span> Import Model</a>
-                <a class="dropdown-item" asp-controller="ModelAPI" asp-action="ExportData"><span class="fa fa-cogs"></span> Export Data</a>
-                <a class="dropdown-item" asp-controller="Model" asp-action="ImportData"><span class="fa fa-cogs"></span> Import Data</a>
-            }
-
-
-
-            <div class="dropdown-divider"></div>
-
-            <a class="dropdown-item" asp-controller="Model" asp-action="EditModelTranslations"><span class="fas fa-globe-europe"></span> Model Localization</a>
-            <a class="dropdown-item" asp-controller="Model" asp-action="EditNonModelTranslations"><span class="fas fa-globe-europe"></span> Localization Keys</a>
         }
 
 

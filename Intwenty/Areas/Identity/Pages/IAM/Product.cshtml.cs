@@ -16,17 +16,12 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     [Authorize(Roles = "SUPERADMIN")]
     public class ProductModel : PageModel
     {
-
-        private IIntwentyDataService DataRepository { get; }
-        private IIntwentyModelService ModelRepository { get; }
         private IIntwentyProductManager ProductManager { get; }
 
         public string Id { get; set; }
 
-        public ProductModel(IIntwentyDataService ms, IIntwentyModelService sr, IIntwentyProductManager prodmanager)
+        public ProductModel(IIntwentyProductManager prodmanager)
         {
-            DataRepository = ms;
-            ModelRepository = sr;
             ProductManager = prodmanager;
         }
 

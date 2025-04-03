@@ -2,11 +2,13 @@
     <ItemGroup>
         <SourceJSFiles Include="$(MSBuildThisFileDirectory)..\content\wwwroot\js\*.js" />
         <SourceCSSFiles Include="$(MSBuildThisFileDirectory)..\content\wwwroot\css\*.css" />
+        <SourceSASSFiles Include="$(MSBuildThisFileDirectory)..\content\wwwroot\css\*.scss" />
         <SourceSQLite Include="$(MSBuildThisFileDirectory)..\content\wwwroot\sqlite\*.txt" />
     </ItemGroup>
     <Target Name="CopyScriptsToProject" BeforeTargets="Build">
         <Copy SourceFiles="@(SourceJSFiles)" DestinationFolder="$(ProjectDir)\wwwroot\js\"/>
         <Copy SourceFiles="@(SourceCSSFiles)" DestinationFolder="$(ProjectDir)\wwwroot\css\"/>
+        <Copy SourceFiles="@(SourceSASSFiles)" DestinationFolder="$(ProjectDir)\wwwroot\css\"/>
         <Copy SourceFiles="@(SourceSQLite)" DestinationFolder="$(ProjectDir)\wwwroot\sqlite\"/>
     </Target>
 </Project>

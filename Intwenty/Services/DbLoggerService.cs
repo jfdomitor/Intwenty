@@ -27,12 +27,12 @@ namespace Intwenty.Services
 
         public IDataClient GetDataClient()
         {
-            return new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
+            return new DataClient.DbConnection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
         }
 
         public IDataClient GetIAMDataClient()
         {
-            return new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            return new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
         }
 
         public async Task LogErrorAsync(string message, int applicationid = 0, string appmetacode = "NONE", string username = "")
@@ -70,10 +70,12 @@ namespace Intwenty.Services
                 parameters.Add(new IntwentySqlParameter("@AppMetaCode", "NONE"));
                 parameters.Add(new IntwentySqlParameter("@ApplicationId", 0));
                 parameters.Add(new IntwentySqlParameter("@UserName", username));
+                parameters.Add(new IntwentySqlParameter("@ProductID", Settings.ProductId));
+                parameters.Add(new IntwentySqlParameter("@ProductTitle", Settings.ProductTitle));
 
                 var getdatecmd = client.GetDbCommandMap().Find(p => p.Key == "GETDATE" && p.DbEngine == Settings.IAMConnectionDBMS);
 
-                await client.RunCommandAsync("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, AppMetaCode, ApplicationId,UserName) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @AppMetaCode, @ApplicationId,@UserName)", parameters: parameters.ToArray());
+                await client.RunCommandAsync("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, AppMetaCode, ApplicationId, UserName, ProductID, ProductTitle) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @AppMetaCode, @ApplicationId, @UserName, @ProductID, @ProductTitle)", parameters: parameters.ToArray());
 
             }
             catch { }
@@ -152,10 +154,12 @@ namespace Intwenty.Services
                 parameters.Add(new IntwentySqlParameter("@AppMetaCode", appmetacode));
                 parameters.Add(new IntwentySqlParameter("@ApplicationId", applicationid));
                 parameters.Add(new IntwentySqlParameter("@UserName", username));
+                parameters.Add(new IntwentySqlParameter("@ProductID", Settings.ProductId));
+                parameters.Add(new IntwentySqlParameter("@ProductTitle", Settings.ProductTitle));
 
                 var getdatecmd = client.GetDbCommandMap().Find(p => p.Key == "GETDATE" && p.DbEngine == Settings.DefaultConnectionDBMS);
 
-                await client.RunCommandAsync("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, AppMetaCode, ApplicationId,UserName) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @AppMetaCode, @ApplicationId,@UserName)", parameters: parameters.ToArray());
+                await client.RunCommandAsync("INSERT INTO sysdata_EventLog (EventDate, Verbosity, Message, AppMetaCode, ApplicationId, UserName, ProductID, ProductTitle) VALUES (" + getdatecmd.Command + ", @Verbosity, @Message, @AppMetaCode, @ApplicationId, @UserName, @ProductID, @ProductTitle)", parameters: parameters.ToArray());
 
             }
             catch { }

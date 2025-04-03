@@ -11,14 +11,12 @@
 
 <div id="app">
 
-    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="model.modelSaved">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" ba-if="root.model.modelSaved">
         <strong>@Localizer["Changes Saved"]</strong><br />
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="alert alert-danger" v-if="(model.resultCode=='PROFILE_SAVE_ERROR')">
+    <div class="alert alert-danger" ba-if="root.model.resultCode=='PROFILE_SAVE_ERROR'">
         @Localizer["PROFILE_SAVE_ERROR"]
     </div>
 
@@ -28,7 +26,7 @@
 
             <div class="form-group">
                 <label>@Localizer["User Name"]</label>
-                <input type="text" v-model="model.userName" class="form-control" disabled />
+                <input type="text" ba-bind="root.model.userName" class="form-control" disabled />
             </div>
 
 
@@ -38,21 +36,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Legal ID Number"]</label>
-                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" disabled />
+                        <input type="text" ba-bind="root.model.legalIdNumber" class="form-control" id="legalidnumber" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Legal ID Number"]</label>
-                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.legalIdNumber" class="form-control" id="legalidnumber" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsLegalIdNumberUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Legal ID Number"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.legalIdNumber" class="form-control" id="legalidnumber" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.legalIdNumber" class="form-control" id="legalidnumber" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -63,21 +61,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Email"]</label>
-                        <input type="email" v-model="model.email" class="form-control" id="email" disabled />
+                        <input type="email" ba-bind="root.model.email" class="form-control" id="email" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Email"]</label>
-                        <input type="email" v-model="model.email" class="form-control" id="email" autocomplete="nope" />
+                        <input type="email" ba-bind="root.model.email" class="form-control" id="email" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsEmailUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Email"] <span style="color: red"> *</span></label>
-                        <input type="email" v-model="model.email" class="form-control" id="email" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="email" ba-bind="root.model.email" class="form-control" id="email" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -88,21 +86,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Phone"]</label>
-                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" disabled />
+                        <input type="number" ba-bind="root.model.phoneNumber" class="form-control" id="phone" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Phone"]</label>
-                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" autocomplete="nope" />
+                        <input type="number" ba-bind="root.model.phoneNumber" class="form-control" id="phone" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsPhoneUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Phone"] <span style="color: red"> *</span></label>
-                        <input type="number" v-model="model.phoneNumber" class="form-control" id="phone" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="number" ba-bind="root.model.phoneNumber" class="form-control" id="phone" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -115,36 +113,36 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["First Name"]</label>
-                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" disabled />
+                        <input type="text" ba-bind="root.model.firstName" class="form-control" id="firstname" disabled />
                     </div>
 
                     <div class="form-group">
                         <label>@Localizer["Last Name"]</label>
-                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" disabled />
+                        <input type="text" ba-bind="root.model.lastName" class="form-control" id="lastname" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["First Name"]</label>
-                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.firstName" class="form-control" id="firstname" autocomplete="nope" />
                     </div>
 
                     <div class="form-group">
                         <label>@Localizer["Last Name"]</label>
-                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.lastName" class="form-control" id="lastname" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsNameUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["First Name"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.firstName" class="form-control" id="firstname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.firstName" class="form-control" id="firstname" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
 
                     <div class="form-group">
                         <label>@Localizer["Last Name"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.lastName" class="form-control" id="lastname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.lastName" class="form-control" id="lastname" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -160,21 +158,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Company Name"]</label>
-                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" disabled />
+                        <input type="text" ba-bind="root.model.companyName" class="form-control" id="companyname" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Company Name"]</label>
-                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.companyName" class="form-control" id="companyname" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsCompanyNameUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Company Name"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.companyName" class="form-control" id="companyname" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.companyName" class="form-control" id="companyname" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -189,7 +187,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Requested Role"]</label>
-                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" disabled>
+                        <select ba-bind="root.model.requestedRole" class="form-control" id="userselectedrole" disabled>
                             @{
                                 foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                                 {
@@ -203,7 +201,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Requested Role"]</label>
-                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole">
+                        <select ba-bind="root.model.requestedRole" class="form-control" id="userselectedrole">
                             @{
                                 foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                                 {
@@ -217,7 +215,7 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Requested Role"] <span style="color: red"> *</span></label>
-                        <select v-model="model.requestedRole" class="form-control" id="userselectedrole" v-on:input="onUserInput(event)" data-required="True">
+                        <select ba-bind="root.model.requestedRole" class="form-control" id="userselectedrole" oninput="onUserInput(event)" data-required="True">
                             @{
                                 foreach (var t in Settings.Value.AccountsUserSelectableRoles)
                                 {
@@ -241,21 +239,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Address"]</label>
-                        <input type="text" v-model="model.address" class="form-control" id="address" disabled />
+                        <input type="text" ba-bind="root.model.address" class="form-control" id="address" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Address"]</label>
-                        <input type="text" v-model="model.address" class="form-control" id="address" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.address" class="form-control" id="address" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsAddressUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Address"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.address" class="form-control" id="address" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.address" class="form-control" id="address" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -266,21 +264,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Zipcode"]</label>
-                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" disabled />
+                        <input type="text" ba-bind="root.model.zipCode" class="form-control" id="zipcode" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Zipcode"]</label>
-                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.zipCode" class="form-control" id="zipcode" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsZipCodeUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Zipcode"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.zipCode" class="form-control" id="zipcode" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.zipCode" class="form-control" id="zipcode" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -291,21 +289,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["City"]</label>
-                        <input type="text" v-model="model.city" class="form-control" id="city" disabled />
+                        <input type="text" ba-bind="root.model.city" class="form-control" id="city" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["City"]</label>
-                        <input type="text" v-model="model.city" class="form-control" id="city" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.city" class="form-control" id="city" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsCityUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["City"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.city" class="form-control" id="city" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.city" class="form-control" id="city" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -316,21 +314,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["County"]</label>
-                        <input type="text" v-model="model.county" class="form-control" id="county" disabled />
+                        <input type="text" ba-bind="root.model.county" class="form-control" id="county" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["County"]</label>
-                        <input type="text" v-model="model.county" class="form-control" id="county" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.county" class="form-control" id="county" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountyUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["County"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.county" class="form-control" id="county" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.county" class="form-control" id="county" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -341,21 +339,21 @@
                 {
                     <div class="form-group">
                         <label>@Localizer["Country"]</label>
-                        <input type="text" v-model="model.country" class="form-control" id="country" disabled />
+                        <input type="text" ba-bind="root.model.country" class="form-control" id="country" disabled />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.Editable)
                 {
                     <div class="form-group">
                         <label>@Localizer["Country"]</label>
-                        <input type="text" v-model="model.country" class="form-control" id="country" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.country" class="form-control" id="country" autocomplete="nope" />
                     </div>
                 }
                 else if (Settings.Value.AccountsCountryUsage.AccountPage == InputUsageType.EditableRequired)
                 {
                     <div class="form-group">
                         <label>@Localizer["Country"] <span style="color: red"> *</span></label>
-                        <input type="text" v-model="model.country" class="form-control" id="country" v-on:input="onUserInput(event)" data-required="True" autocomplete="nope" />
+                        <input type="text" ba-bind="root.model.country" class="form-control" id="country" oninput="onUserInput(event)" data-required="True" autocomplete="nope" />
                     </div>
                 }
             }
@@ -414,13 +412,13 @@
                         if (Settings.Value.AccountsAllowPublicProfileUsage.AccountPage == InputUsageType.Readonly)
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" disabled /><label>@Localizer["Allow Public Profile"]</label>
+                                <input id="cb_allowpublicprofile" type="checkbox" ba-bind="root.model.allowPublicProfile" disabled /><label>@Localizer["Allow Public Profile"]</label>
                             </div>
                         }
                         else
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowpublicprofile" type="checkbox" v-model="model.allowPublicProfile" /><label>@Localizer["Allow Public Profile"]</label>
+                                <input id="cb_allowpublicprofile" type="checkbox" ba-bind="root.model.allowPublicProfile" /><label>@Localizer["Allow Public Profile"]</label>
                             </div>
                         }
                     }
@@ -430,13 +428,13 @@
                         if (Settings.Value.AccountsAllowEmailNotificationsUsage.AccountPage == InputUsageType.Readonly)
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" disabled /><label>@Localizer["Allow Email Notifications"]</label>
+                                <input id="cb_allowemailnotification" type="checkbox" ba-bind="root.model.allowEmailNotifications" disabled /><label>@Localizer["Allow Email Notifications"]</label>
                             </div>
                         }
                         else
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowemailnotification" type="checkbox" v-model="model.allowEmailNotifications" /><label>@Localizer["Allow Email Notifications"]</label>
+                                <input id="cb_allowemailnotification" type="checkbox" ba-bind="root.model.allowEmailNotifications" /><label>@Localizer["Allow Email Notifications"]</label>
                             </div>
                         }
                     }
@@ -446,13 +444,13 @@
                         if (Settings.Value.AccountsAllowSmsNotificationsUsage.AccountPage == InputUsageType.Readonly)
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" disabled /><label>@Localizer["Allow SMS Notifications"]</label>
+                                <input id="cb_allowsmsnotification" type="checkbox" ba-bind="root.model.allowSmsNotifications" disabled /><label>@Localizer["Allow SMS Notifications"]</label>
                             </div>
                         }
                         else
                         {
                             <div class="largecheckbox">
-                                <input id="cb_allowsmsnotification" type="checkbox" v-model="model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
+                                <input id="cb_allowsmsnotification" type="checkbox" ba-bind="root.model.allowSmsNotifications" /><label>@Localizer["Allow SMS Notifications"]</label>
                             </div>
                         }
                     }
@@ -464,198 +462,143 @@
     </div>
 
 
-    <button id="update-profile-button" type="button" v-on:click="saveUserInfo()" class="btn btn-primary">@Localizer["Save"]</button>
+    <button id="update-profile-button" type="button" ba-click="saveUserInfo()" class="btn btn-primary">@Localizer["Save"]</button>
 
 </div>
 
 
 @section Scripts
 {
-    <script>
+    <script type="module">
 
-        var app = new Vue({
-            el: '#app',
-            data:
-            {
+        import { BareaApp } from '/lib/barea/barea.js';
+
+         const content = {
+            data: {
                 model: { resultCode: "" }
-
             },
-            methods: {
+            methods: 
+            {
+                saveUserInfo: async function() {
+                    let baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                    let endpointurl = `${baseurl}Index?handler=UpdateUser`;
+                    let valid = true;
 
-                saveUserInfo: function ()
-                {
-
-
-                    var context = this;
-                    var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
-                    var endpointurl = baseurl + "Index?handler=UpdateUser";
-                    var valid = true;
-
-                    $("[data-required]").each(function () {
-                        var required = $(this).data('required');
-                        var id = $(this).attr('id');
+                    document.querySelectorAll("[data-required]").forEach(element => {
+                        let required = element.getAttribute("data-required");
+                        let id = element.id;
                         if (required === "True" && id) {
-                            var element = $("#" + id);
-                            var val = element[0].value;
-                            if (!val || (val && val.length < 1)) {
-                                element.addClass('requiredNotValid');
+                            let val = element.value;
+                            if (!val || val.length < 1) {
+                                element.classList.add("requiredNotValid");
                                 valid = false;
                             }
                         }
                     });
 
+                    if (!valid) return;
 
-                    if (!valid)
-                        return;
+                    let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-
-                    var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
-
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers: {
-                            RequestVerificationToken: antiforgerytoken
-                        },
-                        success: function (response)
-                        {
-                            context.model = response;
-                            context.model.modelSaved = true;
-                            setTimeout(function () { context.model.modelSaved = false; }, 3000);
-                        },
-                        error: function (response)
-                        {
-                            context.model = response.responseJSON;
-                        }
-                    });
+                    try {
+                        let response = await fetch(endpointurl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": antiforgerytoken
+                            },
+                            body: JSON.stringify(clientdata.model)
+                        });
+                        clientdata.model = await response.json();
+                        clientdata.model.modelSaved = true;
+                        setTimeout(() => { clientdata.model.modelSaved = false; }, 3000);
+                    } catch (error) {
+                        console.error("Error saving user info:", error);
+                    }
                 },
-                onUserInput: function (event)
-                {
-                    if (!event)
-                        return;
+                onUserInput : function(event) {
+                    if (!event || !event.target) return;
+                    let elementId = event.target.id;
+                    if (!elementId) return;
 
-                    var elementId = event.srcElement.id;
-                    if (!elementId)
-                        return;
-
-                    //Remove requiredNotValid if the input is valid
-                    $("[data-required]").each(function () {
-                        var required = $(this).data('required');
-                        var id = $(this).attr('id');
-                        if (required === "True" && id === elementId) {
-                            var val = event.srcElement.value;
-                            if (val) {
-                                if (val.length > 0)
-                                    $("#" + elementId).removeClass('requiredNotValid');
+                    document.querySelectorAll("[data-required]").forEach(element => {
+                        let required = element.getAttribute("data-required");
+                        if (required === "True" && element.id === elementId) {
+                            let val = event.target.value;
+                            if (val && val.length > 0) {
+                                element.classList.remove("requiredNotValid");
                             }
                         }
                     });
                 },
-                setUpCroppie: function ()
-                {
-                    var context = this;
+                setUpCroppie : function(applicationData) {
+                    let baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                    let endpointurl = `${baseurl}Index?handler=ProfilePicture`;
+                    let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                    let fileInput = document.getElementById("upfile");
+                    let uploadButton = document.getElementById("uploadPictureBtn");
+                    let cropperContainer = document.getElementById("croppercontainer");
 
-                    var basic = $('#croppercontainer').croppie({
+                    let croppieInstance = new Croppie(cropperContainer, {
                         viewport: { width: 160, height: 160 },
                         boundary: { width: 210, height: 210 },
                         showZoomer: true,
-                        url: context.model.profilePictureBase64
+                        url: applicationData.model.profilePictureBase64
                     });
 
-                    $('.cr-image').hide();
-                    $('#uploadPictureBtn').hide();
+                    fileInput.addEventListener("change", function () {
+                        let file = fileInput.files[0];
+                        if (!file) return;
 
-                    function readFile(input) {
-                        if (input.files && input.files[0])
-                        {
-                            var reader = new FileReader();
-
-                            reader.onload = function (e)
-                            {
-                                $('.cr-image').show();
-                                $('#uploadPictureBtn').show();
-                                $('#upfile').hide();
-
-                                $('#croppercontainer').croppie('bind', {
-                                    url: e.target.result
-                                });
-
-                            }
-
-                            reader.readAsDataURL(input.files[0]);
-                        }
-                    };
-
-                    $('#upfile').on('change', function ()
-                    {
-                        readFile(this);
+                        let reader = new FileReader();
+                        reader.onload = function (e) {
+                            cropperContainer.classList.remove("hidden");
+                            uploadButton.classList.remove("hidden");
+                            fileInput.classList.add("hidden");
+                            croppieInstance.bind({ url: e.target.result });
+                        };
+                        reader.readAsDataURL(file);
                     });
 
-                    $('#uploadPictureBtn').on('click', function ()
-                    {
+                    uploadButton.addEventListener("click", async function () {
+                        let blob = await croppieInstance.result({ type: "blob" });
+                        let formData = new FormData();
+                        formData.append("profilePicture", blob);
+                        formData.append("fileName", "user_profile_picture.png");
+                        formData.append("userName", "@User.Identity.Name");
 
-                        basic.croppie('result', {'type':'blob'}).then(function (resp)
-                        {
-                            var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
-                            var endpointurl = baseurl + "Index?handler=ProfilePicture";
-
-                            var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
-
-                            var formdata = new FormData();
-                            formdata.append("profilePicture", resp);
-                            formdata.append("fileName", "user_profile_picture.png");
-                            formdata.append("userName", "@User.Identity.Name");
-
-
-                            $.ajax({
-                                url: endpointurl,
-                                method: 'POST',
-                                type: 'POST',
-                                data: formdata,
-                                cache: false,
-                                contentType: false,
-                                processData: false,
-                                headers: {
-                                    RequestVerificationToken: antiforgerytoken
-                                },
-                                success: function (data, textStatus, jqXHR)
-                                {
-                                    $('#uploadPictureBtn').hide();
-                                },
-                                error: function (jqXHR, textStatus, errorThrown) {
-
-                                }
+                        try {
+                            await fetch(endpointurl, {
+                                method: "POST",
+                                body: formData,
+                                headers: { "RequestVerificationToken": antiforgerytoken }
                             });
-
-                         });
-
+                            uploadButton.classList.add("hidden");
+                        } catch (error) {
+                            console.error("Error uploading profile picture:", error);
+                        }
                     });
-
                 }
-
-
             },
-            computed:
-            {
+            mounted: async function(applicationData) {
+                let baseurl = '@Url.Content("~/Identity/Account/Manage/")';
+                let endpointurl = `${baseurl}Index/?handler=Load`;
 
-
-            },
-            mounted: function ()
-            {
-                var context = this;
-                var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
-                var endpointurl = baseurl + "Index/?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                    context.model = response;
-                    context.setUpCroppie();
-                });
-
-
+                try {
+                    let response = await fetch(endpointurl);
+                    applicationData.model = await response.json();
+                    this.setUpCroppie(applicationData);
+                } catch (error) {
+                    console.error("Error loading data:", error);
+                }
             }
-        });
+        };
+
+
+         let app = new BareaApp();
+         let clientdata = await app.mount("app", content);
+
+
     </script>
 
 

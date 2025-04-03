@@ -67,9 +67,7 @@ namespace Intwenty.Areas.Identity.Data
             }
 
             var result = await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
-            if (result.Succeeded)
-                ModelRepository.CreateTenantIsolatedTables(user);
-
+            
             return result;
         }
 
@@ -81,11 +79,31 @@ namespace Intwenty.Areas.Identity.Data
             if (!await OrganizationManager.IsProductUser(Settings.ProductId, user))
                 return SignInResult.NotAllowed;
 
+            
             var result = await base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
-            if (result.Succeeded)
-                ModelRepository.CreateTenantIsolatedTables(user);
-
+          
             return result;
+        }
+
+        public override async Task SignInWithClaimsAsync(IntwentyUser user, AuthenticationProperties authenticationProperties, IEnumerable<Claim> additionalClaims)
+        {
+            if (authenticationProperties != null)
+            {
+                if (authenticationProperties.IsPersistent)
+                    authenticationProperties.ExpiresUtc = DateTimeOffset.Now.AddMinutes(Settings.LoginMaxMinutes);
+            }
+
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
+            }
+            await Context.SignInAsync(AuthenticationScheme,
+                userPrincipal,
+                authenticationProperties ?? new AuthenticationProperties());
+
+            // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+            Context.User = userPrincipal;
         }
 
         public async Task<SignInResult> SignInFrejaId(IntwentyUser user, string authref)
@@ -165,9 +183,47 @@ namespace Intwenty.Areas.Identity.Data
             return base.IsSignedIn(principal);
         }
 
+        public override async Task<IntwentyUser> ValidateSecurityStampAsync(ClaimsPrincipal? principal)
+        {
+            if (principal == null)
+            {
+                return null;
+            }
+            var user = await UserManager.GetUserAsync(principal);
+            string ss = principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType);
+            if (await ValidateSecurityStampAsync(user, ss))
+            {
+                return user;
+            }
 
-      
+            return null;
+        }
 
-      
+        public override async Task<bool> ValidateSecurityStampAsync(IntwentyUser user, string securityStamp)
+        {
+            if (!Settings.UseSecurityStampValidation)
+                return true;
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!UserManager.SupportsUserSecurityStamp || securityStamp == await UserManager.GetSecurityStampAsync(user))
+                return true;
+
+            return false;
+        }
+       
+
+        public override Task<IntwentyUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+        {
+            return base.ValidateTwoFactorSecurityStampAsync(principal);
+        }
+
+
+
+
+
     }
 }

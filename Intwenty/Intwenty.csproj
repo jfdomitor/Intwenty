@@ -1,75 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>1.7.7</Version>
+    <Version>3.0.0</Version>
     <Authors>Johan Filipsson</Authors>
-    <Company>Domitor Consulting AB</Company>
+    <Company></Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Domitor/Intwenty</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jfdomitor/Intwenty</PackageProjectUrl>
     <PackageIcon>intwenty_loggo_small.png</PackageIcon>
     <PackageIconUrl />
-    <RepositoryUrl>https://github.com/Domitor/Intwenty</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jfdomitor/Intwenty</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
-    <Description>Create metadata driven applications with vue.js and ASP.NET Core. Use this package with visual studio 2019 or later. See https://github.com/Domitor/Intwenty for instructions about using this package.</Description>
+    <Description>Create metadata driven applications with barea.js and Net 8. Use this package with visual studio 2022 or later. See https://github.com/Domitor/Intwenty for instructions about using this package.</Description>
     <EnableDefaultContentItems>true</EnableDefaultContentItems>
-    <PackageReleaseNotes>- Bugfixes
-- Feature, Serverside sorting when paging
-- Feature, Vue v-if on UserControls
-- Feature, Switch UI between container and container-fluid, eg make wide screen
-- Feature, IAM, Last Login Method and Product
-- Feature, IAM assign useradmin to specific organization</PackageReleaseNotes>
-    <AssemblyVersion>1.7.7.0</AssemblyVersion>
-    <FileVersion>1.7.7.0</FileVersion>
+    <PackageReleaseNotes>Update to barea.js</PackageReleaseNotes>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Pages\**" />
-    <Content Remove="Pages\**" />
-    <EmbeddedResource Remove="Pages\**" />
-    <None Remove="Pages\**" />
+    <Compile Remove="Model\UIRendering\**" />
+    <Content Remove="Model\UIRendering\**" />
+    <EmbeddedResource Remove="Model\UIRendering\**" />
+    <None Remove="Model\UIRendering\**" />
     <None Include="Build\intwenty_loggo_small.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 
-  
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Intwenty.DataClient" Version="1.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="3.1.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.8" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.11.0" />
-    <PackageReference Include="QRCoder" Version="1.4.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+    <PackageReference Include="Intwenty.DataClient" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.2" />
+    <PackageReference Include="QRCoder" Version="1.5.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
   </ItemGroup>
 
   
-<ItemGroup Label="Packaging">
+   <ItemGroup Label="Packaging">
     <Content Include="Build\Intwenty.targets" PackagePath="build\Intwenty.targets" />
-</ItemGroup>
+   </ItemGroup>
 
   
-<ItemGroup>
-  <Content Update="wwwroot\js\intwenty.js">
-    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-  </Content>
-</ItemGroup>
+   <ItemGroup>
+     <Content Update="wwwroot\js\intwenty.es5.js">
+       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+     </Content>
+     <Content Update="wwwroot\js\intwenty.es5.min.js">
+       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+     </Content>
+     <Content Update="wwwroot\js\intwenty.js">
+       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+     </Content>
+   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   
-
-
+  
 
 </Project>
 

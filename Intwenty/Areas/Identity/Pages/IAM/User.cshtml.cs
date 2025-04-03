@@ -18,16 +18,12 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     public class UserModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
-        private IIntwentyModelService ModelRepository { get; }
         private IntwentyUserManager UserManager { get; }
 
         public string Id { get; set; }
 
-        public UserModel(IIntwentyDataService ms, IIntwentyModelService sr, IntwentyUserManager usermanager)
+        public UserModel(IntwentyUserManager usermanager)
         {
-            DataRepository = ms;
-            ModelRepository = sr;
             UserManager = usermanager;
         }
 
@@ -91,7 +87,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
             var user = await UserManager.FindByNameAsync(model.UserName);
             if (user != null)
             {
-                user.APIKey = Intwenty.Model.BaseModelItem.GetQuiteUniqueString();
+                user.APIKey = Extensions.GetQuiteUniqueString();
                 await UserManager.UpdateAsync(user);
                 return await OnGetLoad(user.Id);
             }

@@ -17,14 +17,10 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     public class ProductListModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
-        private IIntwentyModelService ModelRepository { get; }
         private IIntwentyProductManager ProductManager { get; }
 
-        public ProductListModel(IIntwentyDataService ms, IIntwentyModelService sr, IIntwentyProductManager prodmanager)
+        public ProductListModel(IIntwentyProductManager prodmanager)
         {
-            DataRepository = ms;
-            ModelRepository = sr;
             ProductManager = prodmanager;
         }
 

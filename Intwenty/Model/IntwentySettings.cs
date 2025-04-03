@@ -54,6 +54,7 @@ namespace Intwenty.Model
             AccountsUserSelectableRoleUsage = new IntwentyAccountDataUsage();
             AccountsLegalIdNumberUsage = new IntwentyAccountDataUsage();
             AccountsCompanyNameUsage = new IntwentyAccountDataUsage();
+            AllowBlazor = true;
         }
 
         public LogVerbosityTypes LogVerbosity { get; set; }
@@ -67,6 +68,22 @@ namespace Intwenty.Model
         public DBMS DefaultConnectionDBMS { get; set; }
         public string IAMConnection { get; set; }
         public DBMS IAMConnectionDBMS { get; set; }
+        public bool AllowBlazor { get; set; }
+        public bool AllowSignalR { get; set; }
+        public bool UsePlainTextCookies { get; set; }
+        public bool UseSecurityStampValidation { get; set; }
+        public int SecurityStampValidationIntervalMinutes { get; set; }
+
+
+        #region Login Session
+        public int LoginMaxMinutes { get; set; }
+
+        public bool LoginAlwaysRemember { get; set; }
+
+        public bool LoginRequireCookieConsent{ get; set; }
+
+
+        #endregion
 
         #region Product
         public string ProductId { get; set; }
@@ -85,21 +102,9 @@ namespace Intwenty.Model
         public bool StartUpIntwentyDbObjects { get; set; }
 
         /// <summary>
-        /// If model is programaticly defined, create model container tables and seed the model
-        /// </summary>
-        public bool StartUpSeedModel { get; set; }
-        /// <summary>
         /// Create database objects according to the model
         /// </summary>
         public bool StartUpConfigureDatabase { get; set; }
-        /// <summary>
-        /// Seed application data 
-        /// </summary>
-        public bool StartUpSeedData { get; set; }
-        /// <summary>
-        /// Seed localization definitions 
-        /// </summary>
-        public bool StartUpSeedLocalizations { get; set; }
 
         /// <summary>
         /// Seed product and organization info
@@ -167,7 +172,6 @@ namespace Intwenty.Model
         /// A group admin can accept or reject user requests to join
         /// A group admin can invite users to the group
         /// </summary>
-        public bool AccountsEnableUserGroups { get; set; }
         public bool AccountsEnableProfilePicture { get; set; }
         public string AccountsFacebookAppId { get; set; }
         public string AccountsFacebookAppSecret { get; set; }
@@ -313,7 +317,6 @@ namespace Intwenty.Model
 
         public BankIdUsageTypes BankIdUsage { get; set; }
         #endregion
-
 
         #region UIControls
         public bool UIControlsEnableVueIf { get; set; }

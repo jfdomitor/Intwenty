@@ -75,7 +75,7 @@ namespace Intwenty.Areas.Identity.Pages.IAM
 
             if (Settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
             {
-                user.UserName = BaseModelItem.GetQuiteUniqueString();
+                user.UserName = Extensions.GetQuiteUniqueString();
             }
 
             var password = PasswordGenerator.GeneratePassword(false, true, true, false, 6);

@@ -1,9 +1,9 @@
-﻿<div class="modal" id="msg_dlg_modal" role="dialog">
+﻿<div class="modal fade"id="msg_dlg_modal" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 id="msg_dlg_modal_hdr" class="modal-title">Information</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -11,28 +11,26 @@
                 <p id="msg_dlg_modal_text"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal" id="msg_dlg_modal_closebtn">Close</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" id="msg_dlg_modal_closebtn">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 
-<div class="modal" id="yesno_dlg_modal" role="dialog">
+<div class="modal fade" id="yesNoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="yesno_dlg_modal_hdr" class="modal-title">Information</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="confirmModalTitle">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p id="yesno_dlg_modal_text"></p>
+            <div class="modal-body" id="confirmModalBody">
+                Are you sure?
             </div>
             <div class="modal-footer">
-                <button id="yesno_dlg_modal_yesbtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Yes</button>
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmModalOkBtn">OK</button>
             </div>
         </div>
     </div>
@@ -41,22 +39,3 @@
 
 
 
-
-<div class="modal" id="property_dlg_modal" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="property_dlg_modal_hdr" class="modal-title">Properties</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="property_dlg_modal_body">
-                
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>

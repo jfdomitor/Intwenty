@@ -2,6 +2,8 @@
 using Intwenty.Entity;
 using Intwenty.Interface;
 using Intwenty.Model;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -21,11 +23,21 @@ namespace Intwenty.Localization
 
         private IMemoryCache ModelCache { get; }
         private IntwentySettings Settings { get; }
+        private IntwentyModel Model { get; }
+        private IHttpContextAccessor Context { get; }
 
-        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings)
+        public IntwentyStringLocalizerFactory(IMemoryCache cache, IOptions<IntwentySettings> settings, IntwentyModel model, IHttpContextAccessor context)
         {
             ModelCache = cache;
             Settings = settings.Value;
+            Model = model;
+            Context = context;
+        }
+
+        private string GetUserCulture()
+        {
+            var httpContext = Context.HttpContext;
+            return httpContext?.Features.Get<IRequestCultureFeature>()?.RequestCulture.Culture.Name;
         }
 
         public IStringLocalizer Create(string basename, string location)
@@ -41,7 +53,7 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(GetLocalizations(), Settings);
+            value = new IntwentyStringLocalizer(Model, Settings, GetUserCulture());
 
             Cache.TryAdd(basename, value);
 
@@ -59,29 +71,14 @@ namespace Intwenty.Localization
                 return value;
             }
 
-            value = new IntwentyStringLocalizer(GetLocalizations(), Settings);
+            value = new IntwentyStringLocalizer(Model, Settings, GetUserCulture());
 
             Cache.TryAdd(basename, value);
 
             return value;
         }
 
-        private List<TranslationModelItem> GetLocalizations()
-        {
-            List<TranslationModelItem> res;
-            if (ModelCache.TryGetValue("UILOCALIZATIONS", out res))
-            {
-                return res;
-            }
-            var client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
-            client.Open();
-            var t = client.GetEntities<TranslationItem>().Select(p => new TranslationModelItem(p)).ToList();
-            client.Close();
-
-            ModelCache.Set("UILOCALIZATIONS", t);
-
-            return t;
-        }
+       
     }
     
 }

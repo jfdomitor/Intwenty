@@ -21,7 +21,7 @@
 
     <div>
 
-        <div class="btn btn-sm btn-secondary" v-on:click="addEntity()">
+        <div class="btn btn-sm btn-secondary" ba-click="addEntity()">
             <span class="fa fa-plus"></span>
         </div>
     </div>
@@ -37,10 +37,10 @@
                 <th style="width:15%">Name</th>
             </tr>
         </thead>
-        <tbody v-for="item in list">
-            <tr>
-                <td><div class="btn btn-sm btn-danger" v-on:click="deleteEntity(item)" title=" Delete"><i class="fa fa-trash"></i></div></td>
-                <td><a role="button" class="btn btn-sm btn-secondary" v-bind:href="'Product/' + item.id" title="Edit"><i class="fas fa-edit"></i></a></td>
+        <tbody>
+            <tr ba-foreach="item in root.list">
+                <td><div class="btn btn-sm btn-danger" ba-click="deleteEntity()" title=" Delete"><i class="fa fa-trash"></i></div></td>
+                <td><a role="button" class="btn btn-sm btn-secondary" ba-click="goToProduct()" title="Edit"><i class="fas fa-edit"></i></a></td>
                 <td>{{item.id}}</td>
                 <td>{{item.productName}}</td>
 
@@ -48,24 +48,24 @@
         </tbody>
     </table>
 
-    <div class="modal" id="addEntityModal" role="dialog">
+    <div class="modal" data-bs-backdrop="static" id="addEntityModal" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Product</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="control-label">Name<span style="color: red"> *</span></label>
-                        <input id="tb_firstname" type="text" class="form-control form-control-sm" v-model="model.productName" />
+                        <input id="tb_firstname" type="text" class="form-control form-control-sm" ba-bind="root.model.productName" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="addEntityModal_okBtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="addEntityOkBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Ok</button>
                 </div>
             </div>
         </div>
@@ -76,13 +76,14 @@
 @section Scripts
     {
 
-    <script>
+         <script type="module">
 
-        var app = new Vue({
-            el: '#app',
+        import {BareaApp} from '/lib/barea/barea.js';
+
+        const appcontent = {
             data:
             {
-                model: {  },
+                model: {productName:""},
                 list: [],
                 idgen: -1
             },
@@ -91,66 +92,67 @@
 
                 addEntity: function ()
                 {
-
-                    var context = this;
-                    var okfunc = function ()
+                    let okfunc = function ()
                     {
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "ProductList?handler=AddEntity";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "ProductList?handler=AddEntity";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(context.model),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response)
-                            {
-                                context.model = {};
-                                context.list = response;
-                            },
-                            error: function (response)
-                            {
-                                //raiseErrorModal(response.responseJSON);
-                            }
+                        fetch(endpointurl, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": antiforgerytoken
+                          },
+                          body: JSON.stringify(clientdata.model)
+                        })
+                        .then(response => response.json())  
+                        .then(data => {
+                          clientdata.list = data;
+                        })
+                        .catch(error => {
+                          console.error("Error:", error);
                         });
                     }
 
-                    $("#addEntityModal_okBtn").off().on('click', okfunc);
-                    $("#addEntityModal").modal();
+                    raiseAddProductModal(okfunc);
 
                 },
-                deleteEntity: function (item)
+                goToProduct: function (a,b,entry)
                 {
-                    var context = this;
-                    var yesfunc = function ()
+                    //'Product/' + item.id
+                    window.location.href = `/Identity/IAM/Product/${entry.id}`;
+                },
+                deleteEntity: function (a,b,entry)
+                {
+
+                    let yesfunc = async function () 
                     {
+                        let baseurl = '@Url.Content("~/Identity/IAM/")';
+                        let endpointurl = baseurl + "ProductList?handler=DeleteEntity";
+                        let antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                        var baseurl = '@Url.Content("~/Identity/IAM/")';
-                        var endpointurl = baseurl + "ProductList?handler=DeleteEntity";
-                        var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
+                        try {
+                            const response = await fetch(endpointurl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "RequestVerificationToken": antiforgerytoken
+                                },
+                                body: JSON.stringify(entry)
+                            });
 
-                        $.ajax({
-                            url: endpointurl,
-                            type: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify(item),
-                            headers: {
-                                RequestVerificationToken: antiforgerytoken
-                            },
-                            success: function (response) {
-                                context.list = response;
-                            },
-                            error: function (response) {
-                                raiseErrorModal(response.responseJSON);
+                            if (!response.ok) {
+                                throw await response.json();
                             }
-                        });
-                     }
 
-                    raiseYesNoModal("Delete Product ?", "If you proceed all access to it will be deleted, continue ?", yesfunc);
+                            clientdata.list = await response.json();
+                        } catch (error) {
+                            raiseErrorModal(error);
+                        }
+                    };
+
+                    raiseYesNoModal("Delete product ?", "The product will be deleted, continue ?", yesfunc);
                 }
             },
             computed:
@@ -161,19 +163,38 @@
                 }
 
             },
-            mounted: function ()
+            mounted: function (applicationData)
             {
+                let baseurl = '@Url.Content("~/Identity/IAM/")';
+                let endpointurl = baseurl + "ProductList?handler=Load";
+                const retval = fetch(endpointurl)
+                    .then(response => response.json()) 
+                    .then(data => {
+                        applicationData.list = data;
+                        return data;
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
 
-                var context = this;
-                var baseurl = '@Url.Content("~/Identity/IAM/")';
-                var endpointurl = baseurl + "ProductList?handler=Load";
-                $.get(endpointurl, function (response) {
-                  context.list = response;
-                });
-
+                return retval;
             }
-        });
+        };
+
+        const app = new BareaApp();
+        let clientdata = await app.mount("app", appcontent);
+
+
+         let raiseAddProductModal = function(callback) {
+            let modal = new bootstrap.Modal(document.getElementById("addEntityModal"));
+            document.getElementById("addEntityOkBtn").onclick = function () {
+                modal.hide();
+                if (typeof callback === "function") callback();
+            };
+            modal.show();
+        }
+
     </script>
 
+
+  
 }
 

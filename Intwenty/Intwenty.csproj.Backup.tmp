@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Version>2.0.4</Version>
+    <Authors>Johan Filipsson</Authors>
+    <Company></Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Domitor/Intwenty</PackageProjectUrl>
+    <PackageIcon>intwenty_loggo_small.png</PackageIcon>
+    <PackageIconUrl />
+    <RepositoryUrl>https://github.com/Domitor/Intwenty</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+    <Description>Create metadata driven applications with vue.js and Net 8. Use this package with visual studio 2022 or later. See https://github.com/Domitor/Intwenty for instructions about using this package.</Description>
+    <EnableDefaultContentItems>true</EnableDefaultContentItems>
+    <PackageReleaseNotes>Update to .Net 8 and Vue 3</PackageReleaseNotes>
+    <AssemblyVersion>2.0.0.4</AssemblyVersion>
+    <FileVersion>2.0.0.4</FileVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Model\UIRendering\**" />
+    <Compile Remove="Pages\**" />
+    <Compile Remove="Views\Model\**" />
+    <Content Remove="Model\UIRendering\**" />
+    <Content Remove="Pages\**" />
+    <Content Remove="Views\Model\**" />
+    <EmbeddedResource Remove="Model\UIRendering\**" />
+    <EmbeddedResource Remove="Pages\**" />
+    <EmbeddedResource Remove="Views\Model\**" />
+    <None Remove="Model\UIRendering\**" />
+    <None Remove="Pages\**" />
+    <None Remove="Views\Model\**" />
+    <None Include="Build\intwenty_loggo_small.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.2" />
+    <PackageReference Include="QRCoder" Version="1.5.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
+  </ItemGroup>
+
+  
+   <ItemGroup Label="Packaging">
+    <Content Include="Build\Intwenty.targets" PackagePath="build\Intwenty.targets" />
+   </ItemGroup>
+
+  
+   <ItemGroup>
+     <ProjectReference Include="..\..\Intwenty.DataClient\Intwenty.DataClient\Intwenty.DataClient.csproj" />
+   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  
+  
+
+</Project>
+

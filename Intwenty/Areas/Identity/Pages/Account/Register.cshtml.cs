@@ -21,6 +21,7 @@ using Intwenty.Model.Dto;
 using Intwenty.Services;
 using Intwenty.Interface;
 using Intwenty.Model.BankId;
+using Intwenty.Helpers;
 
 namespace Intwenty.Areas.Identity.Pages.Account
 {
@@ -166,7 +167,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
                 if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
                 {
-                    user.UserName = BaseModelItem.GetQuiteUniqueString();
+                    user.UserName = Extensions.GetQuiteUniqueString();
                 }
 
 
@@ -518,7 +519,7 @@ namespace Intwenty.Areas.Identity.Pages.Account
 
                             if (_settings.AccountsUserNameGeneration == UserNameGenerationStyles.GenerateRandom)
                             {
-                                user.UserName = BaseModelItem.GetQuiteUniqueString();
+                                user.UserName = Extensions.GetQuiteUniqueString();
                             }
 
                             if (string.IsNullOrEmpty(user.Culture))

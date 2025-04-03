@@ -9,41 +9,41 @@
 <h4>@ViewData["Title"]</h4>
 
 <div id="app">
-    <div class="alert alert-primary" v-if="step==1">
+    <div class="alert alert-primary" ba-if="root.step==1">
         @Localizer["MFASMSPHONEREQ"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger" v-if="errorSendingSms">
+    <div class="alert alert-danger" ba-if="root.errorSendingSms">
         Something went wrong. This service is not available at the moment
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-primary" v-if="step==2">
+    <div class="alert alert-primary" ba-if="root.step==2">
         @Localizer["MFASMSCODESENT"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger" v-if="errorVerifySms">
+    <div class="alert alert-danger" ba-if="root.errorVerifySms">
         @Localizer["MFANOTVERIFIED"] <a asp-page="./MfaSms">@Localizer["clicking here"]</a>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-success" v-if="step==3">
+    <div class="alert alert-success" ba-if="root.step==3">
         @Localizer["Thank you. Two-factor authentication is now set up"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <div class="row">
         <div class="col-md-6">
 
-            <div class="form-group" v-if="step==1">
+            <div class="form-group" ba-if="root.step==1">
                 <label clase="control-label">@Localizer["Phone"]</label>
-                <input type="number" v-model="model.phoneNumber" class="form-control" />
-                <div class="text-danger" v-if="errorInvalidPhone">@Localizer["Invalid format"]</div>
-                <button class="btn btn-primary m-2" v-on:click="sendPhoneNumber()">@Localizer["Send"]</button>
+                <input type="number" ba-bind="root.model.phoneNumber" class="form-control" />
+                <div class="text-danger" ba-if="root.errorInvalidPhone">@Localizer["Invalid format"]</div>
+                <button class="btn btn-primary m-2" ba-click="sendPhoneNumber()">@Localizer["Send"]</button>
             </div>
 
-            <div class="form-group" v-if="step==2">
+            <div class="form-group" ba-if="root.step==2">
                 <label clase="control-label">@Localizer["Code"]</label>
-                <input type="number" v-model="model.code" class="form-control" />
-                <button class="btn btn-primary m-2" v-on:click="sendCode()">@Localizer["Verify"]</button>
+                <input type="number" ba-bind="root.model.code" class="form-control" />
+                <button class="btn btn-primary m-2" ba-click="sendCode()">@Localizer["Verify"]</button>
             </div>
         </div>
     </div>
@@ -51,11 +51,11 @@
 
 @section Scripts
     {
+    <script type="module">
 
-    <script>
+        import {BareaApp} from '/lib/barea/barea.js';
 
-        var app = new Vue({
-            el: '#app',
+        const appcontent = {
             data:
             {
                 model: { phoneNumber: "", code: "", resultCode:"" },
@@ -64,91 +64,86 @@
                 errorInvalidPhone: false,
                 errorVerifySms: false
             },
-            methods: {
-
-                sendPhoneNumber: function ()
+            methods: 
+            {
+                sendPhoneNumber: function () 
                 {
-                    var context = this;
+
                     var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
                     var endpointurl = baseurl + "MfaSms?handler=UpdatePhoneNumber";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
+                    fetch(endpointurl, {
+                        method: "POST",
                         headers: {
-                            RequestVerificationToken: antiforgerytoken
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": antiforgerytoken
                         },
-                        success: function (response)
-                        {
-                            context.step = 2;
-                            context.model = response;
-                        },
-                        error: function (response)
-                        {
-                            context.model = response.responseJSON;
-                            if (context.model.resultCode == "ERROR_INVALID_PHONE")
-                            {
-                                context.errorInvalidPhone = true;
-                            }
-                            if (context.model.resultCode == "ERROR_GEN_TOKEN")
-                            {
-                                context.errorSendingSms = true;
-                            }
-                          
-                            
+                        body: JSON.stringify(clientdata.model)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        clientdata.step = 2;
+                        clientdata.model = data;
+                    })
+                    .catch(error => {
+                        clientdata.model = error;
+                        if (clientdata.model.resultCode == "ERROR_INVALID_PHONE") {
+                            clientdata.errorInvalidPhone = true;
+                        }
+                        if (clientdata.model.resultCode == "ERROR_GEN_TOKEN") {
+                            clientdata.errorSendingSms = true;
                         }
                     });
                 },
-                sendCode: function ()
-                {
-                    var context = this;
+                sendCode: function () {
                     var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
                     var endpointurl = baseurl + "MfaSms?handler=VerifyCode";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers:
-                        {
-                            RequestVerificationToken: antiforgerytoken
+                    fetch(endpointurl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": antiforgerytoken
                         },
-                        success: function (response) {
-                            context.step = 3;
-                            context.model = response;
-                        },
-                        error: function (response) {
-                            context.errorVerifySms = true;
-                            context.model = response;
-                        }
+                        body: JSON.stringify(clientdata.model)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        clientdata.step = 3;
+                        clientdata.model = data;
+                    })
+                    .catch(error => {
+                        clientdata.errorVerifySms = true;
+                        clientdata.model = error;
                     });
                 }
-
             },
-            computed:
-            {
-                example: function ()
-                {
-
+            computed: {
+                example: function () {
+                    // Any computed logic goes here
                 }
-
             },
-            mounted: function ()
-            {
-                var context = this;
+            mounted: function (applicationData) {
                 var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
                 var endpointurl = baseurl + "MfaSms?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                    context.model = response;
-                });
+
+                const retval = fetch(endpointurl)
+                    .then(response => response.json())
+                    .then(data => {
+                        applicationData.model = data;
+                    })
+                    .catch(error => console.error("Error loading data:", error));
+
+                    return retval;
             }
-        });
+
+        };
+
+        const app = new BareaApp();
+        let clientdata = await app.mount("app", appcontent);
+
     </script>
 
 }

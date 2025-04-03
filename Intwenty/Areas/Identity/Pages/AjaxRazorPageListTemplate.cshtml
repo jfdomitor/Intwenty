@@ -48,12 +48,12 @@
         </tbody>
     </table>
 
-    <div class="modal" id="addEntityModal" role="dialog">
+    <div class="modal" data-bs-backdrop="static" id="addEntityModal" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add [Entity]</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -64,8 +64,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="addEntityModal_okBtn" type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="addEntityModal_okBtn" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Ok</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@
                     }
 
                     $("#addEntityModal_okBtn").off().on('click', okfunc);
-                    $("#addEntityModal").modal();
+                    $("#addEntityModal").modal('show');
 
                 },
                 deleteEntity: function (item)

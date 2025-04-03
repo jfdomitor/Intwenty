@@ -1,93 +1,294 @@
-﻿@model Intwenty.Model.ViewModel
-<!--
-   To override this view for all applications:
-   1. Add this file to the folder Views/Application/View.cshtml in the project that consumes the intwenty RCL Package (Razor Class Library)
-
-
-   To override this view for one application:
-   1. Add this file to the folder Views/Application/[Your app name]/yourviewname.cshtml
-   2. Set the razor view property in the propertylist of the view (view designer) to Views/Application/[Your app name]/yourviewname.cshtml
--->
-
-<br />
-<br />
-
-@await Html.PartialAsync("_Modals")
-
-
-<div id="@Model.RuntimeRequestInfo.ViewHtmlId">
-
-    <!-- 1. ADD MODALS AND SOME CONFIG -->
-    @foreach (var iface in Model.UserInterface)
-    {
-        @foreach (var mip in iface.ModalInterfaces)
-        {
-            @await Html.PartialAsync("UISections/_ModalInputInterface", mip)
-        }
-    }
-
-
-    <!-- 2. RENDER THE VIEW HEADER -->
-    @await Html.PartialAsync("UISections/_ApplicationViewHeader", Model)
-
-
-    <br />
-
-    <!-- 3. AFTER SAVE MESSAGE -->
-    <div class="alert alert-success alert-dismissible fade show" role="alert" id="savealert" v-if="modelSaved">
-        <strong>@Localizer["Changes Saved"] !</strong><br />
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-
-
-    @foreach (var iface in Model.UserInterface)
-    {
-
-        iface.CurrentRenderContext = CurrentRenderContextOptions.View;
-
-        <!-- 4. RENDER APPLICATION LISTVIEW -->
-        if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsMainApplicationTableInterface && Model.IsApplicationListView())
-        {
-            @await Html.PartialAsync("UISections/_MainTableListInterface", iface)
-        }
-
-        <!-- 5. RENDER APPLICATION ONPAGE INPUT INTERFACES -->
-        if (iface.IsMetaTypeInputInterface && iface.IsMainApplicationTableInterface && Model.IsApplicationInputView())
-        {
-            @await Html.PartialAsync("UISections/_InputInterface", iface)
-        }
-
-        <!-- 6. RENDER APPLICATION ONPAGE SUBTABLE INTERFACES -->
-        if (iface.IsMetaTypeListInterface && iface.Table.Id > 0 && iface.IsSubTableUserInterface && Model.IsApplicationInputView())
-        {
-            @await Html.PartialAsync("UISections/_SubTableListInterface", iface)
-        }
-
-    }
-
-
-</div>
-
-<br />
-
-<!-- CHILD APPLICATION VIEWS -->
-@foreach (var childview in Model.RuntimeRequestInfo.ChildViews)
-{
-    <div id="@childview.RuntimeRequestInfo.ViewHtmlId">
-        @await Html.PartialAsync("UISections/_ChildApplicationInterface", childview)
-    </div>
-
+﻿@model Intwenty.Model.Dto.RenderModel
+@{
+    var listPath = "";
 }
 
+<br />
+<br />
 
-@section Scripts
-{
-    @await Html.PartialAsync("UISections/_ApplicationViewJSPrototypes", Model)
-    @await Html.PartialAsync("UISections/_ApplicationViewJS", Model)
-    @foreach (var childview in Model.RuntimeRequestInfo.ChildViews)
+<div id="app">
+
+
+    @foreach(var view in Model.ApplicationModel.Views)
     {
-        @await Html.PartialAsync("UISections/_ApplicationViewJS", childview)
-    }
+        if (view.IsListView)
+        {
+            listPath = view.RequestPath;
+        }
+
+        if (view.Id != Model.RequestedView.Id && !Model.ApplicationModel.UseBrowserState){
+                continue;
+            }
+            if (view.IsListView)
+            {
+                listPath = view.RequestPath;    
+                <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                        <data isListView="true" />
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <a class="btn btn-primary btn-sm" tabindex="-1" role="button" href="/Customers/Create" style="margin:5px">Create New</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                    <design>
+                        <div>
+                            <table class="table table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        @foreach (var col in view.GetRenderedColumns())
+                                        {
+                                            <td>@col.DbColumnName</td>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ba-foreach="row in root.model.entityList">
+                                        <td><button class="btn btn-danger btn-sm" ba-click="deleteApplication()" style="margin:5px">Delete</button></td>
+                                        <td><button class="btn btn-primary btn-sm" ba-click="editApplication('/Customers/Edit/:ID')" style="margin:5px">Edit</button></td>
+                                        @foreach (var col in view.GetRenderedColumns())
+                                        {
+                                            <td>{{row.@col.DbColumnName}}</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
+            if (view.IsPersistedEntityView)
+            {
+                 <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                     <design>
+                        <div>
+                            <div class="col-md-12">
+                                @foreach (var col in view.GetRenderedColumns())
+                                {
+                                    <div class="mb-3">
+                                        <label for="tbName" class="form-label">@col.DbColumnName</label>
+                                        <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                                    </div>
+                                 }
+                            <div>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
+            if (view.IsNewEntityView)
+            {
+                 <template>
+                   <view id="@view.Id" path="@view.RequestPath">
+                     <title>@view.LocalizedTitle</title>
+                     <description>@view.LocalizedDescription</description>
+                     <data isNewEntityView="true" />
+                   </view>
+                    <design>
+                        <div class="card">
+                            <div class="card-header"><h2>{{root.viewInfo.title}}</h2></div>
+                            <div class="card-body">
+                                <p>{{root.viewInfo.description}}</p>
+                                <ul class="nav">
+                                    <li class="nav-item">
+                                        <button class="btn btn-primary btn-sm" tabindex="-1" role="button" ba-click="saveApplication()" style="margin:5px">Save</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </design>
+                </template>
+                <br />
+                <br />
+                <template>
+                    <view id="@view.Id" path="@view.RequestPath" />
+                    <design>
+                        <div>
+                            <div class="col-md-12">
+                                @foreach (var col in view.GetRenderedColumns())
+                                {
+                                    <div class="mb-3">
+                                        <label for="tbName" class="form-label">@col.DbColumnName</label>
+                                        <input id="tbName" type="text" class="form-control" ba-bind-blur="root.model.@Model.ApplicationModel.DbTableName.@col.DbColumnName">
+                                    </div>
+                                }
+                            <div>
+                        </div>
+                    </design>
+                </template>
+                continue;
+            }
+
+        }
+       
+    </div>
+
+ @section Scripts
+ {
+
+<script type="module">
+
+
+     import {BareaApp,BareaViewState,BareaDataModel,BareaHelper} from '/lib/barea/barea.js';
+
+     //Just for debugging
+     //BareaHelper.printDebugLogs();
+     //BareaHelper.enableDebugLog(10);
+
+     //Barea app element
+      const appElement = document.getElementById("app");
+
+     //Createa a data model and database helper
+     let db = new BareaDataModel("@Model.ApplicationModel.DbTableName");
+     @foreach (var col in Model.ApplicationModel.DataColumns)
+      {
+            var columnName = col.Name;
+            switch (col.DataType)
+            {
+                case IntwentyDataType.Int:
+                    if (col.IsPrimaryKey)
+                    {
+                        @:db.addDbIntegerColumn("@columnName",@col.IsAutoIncremental.ToString().ToLower(),@col.IsPrimaryKey.ToString().ToLower());
+                    }
+                    else
+                    {
+                        @:db.addDbIntegerColumn("@columnName");
+                    }
+                    break;
+
+                case IntwentyDataType.String:
+                    if (col.IsPrimaryKey)
+                    {
+                        @:db.addDbStringColumn("@columnName",@col.IsPrimaryKey.ToString().ToLower());
+                    }
+                    else
+                    {
+                        @:db.addDbStringColumn("@columnName");
+                    }
+                    break;
+            }
+       }
+    
+     db.useIntwentyAPI();
+     //db.useBareaLocalStorageDb();
+
+     const state = new BareaViewState(appElement, db, @(Model.ApplicationModel.UseBrowserState.ToString().ToLower()));
+
+     const appcontent = {
+         data:{model:{}},
+         methods:{
+             saveApplication: async function()
+             {
+                 let data = this.getData();
+                 let editobj = data.model[db.DbTableName];
+                 if (BareaHelper.isValue(editobj,"Id"))
+                     await db.updateEntity(editobj, BareaHelper.getValue(editobj,"Id"));
+                 else
+                     await db.createEntity(editobj);
+
+                 //After save, go back to the list
+                 state.setStateAndNavigate("@listPath", "", true);
+             },
+             editApplication: function(event,element,data,path)
+             {
+                  state.setStateAndNavigate(path, BareaHelper.getValue(data,"Id"));
+             },
+             deleteApplication: async function(event,element,data)
+             {
+                   await db.deleteEntity(BareaHelper.getValue(data,"Id"));
+                 state.setStateAndNavigate(state.CurrentState.currentPath, "",true);
+             }
+
+
+         },
+         computed:{},
+         mounted: function(applicationData) {}
+     };
+
+
+     //Get the data model on page load
+     appcontent.data.model = db.getBareaDataModel();
+
+     state.onChange(async ()=>
+    {
+         //Determine app/view from path
+         if (state.CurrentView)
+         {
+              //Create Barea App
+             const app = new BareaApp();
+
+             //Render the view from the model
+             state.CurrentView.render();
+
+             //Optional but useful if you would like to present info that belons to the view itself
+             appcontent.data.viewInfo = state.CurrentView.getViewDescription();
+
+             //The listview is the primary view in this example
+             if (state.CurrentView &&  appcontent.data.viewInfo.islistview)
+             {
+                 appcontent.data.model.entityList = await db.getEntities();
+             }
+             else if (state.CurrentView && state.CurrentView.IsPersistedEntityView && state.EntityId)
+             {
+                 //Typical edit mode, when an id of the data to present is feteched from the path
+                 appcontent.data.model[db.DbTableName] = await db.getEntity(state.EntityId);
+             }
+             else if (state.CurrentView && appcontent.data.viewInfo.isnewentityview)
+             {
+                 //Typical edit mode, when an id of the data to present is feteched from the path
+                 appcontent.data.model[db.DbTableName] = {};
+             }
+
+             //Bind the datamodel with the UI
+             let bareadata = app.mount(appElement, appcontent);
+
+         }
+
+     });
+
+     //Init state
+     state.init();
+
+</script>
+
 }

@@ -13,7 +13,7 @@ namespace IntwentyDemo.Services
     public class CustomEventService : EventService
     {
         private IntwentySettings Settings { get; }
-        public CustomEventService(IIntwentyEmailService emailservice, IIntwentySmsService smsservice, IIntwentyDataService dataservice, IOptions<IntwentySettings> settings, IIntwentyDbLoggerService dblogger) : base(emailservice, smsservice, dataservice, dblogger)
+        public CustomEventService(IIntwentyEmailService emailservice, IIntwentySmsService smsservice,IOptions<IntwentySettings> settings, IIntwentyDbLoggerService dblogger) : base(emailservice, smsservice, dblogger)
         {
             Settings = settings.Value;
         }

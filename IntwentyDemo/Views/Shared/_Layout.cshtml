@@ -1,4 +1,22 @@
-﻿
+﻿@{
+
+    var currentpath = Context.Request.Path.ToUriComponent();
+    var ishomepath = string.IsNullOrEmpty(currentpath) || currentpath.Length < 5 || currentpath.Contains("Home/Index");
+    var isblazorview = false;
+    var useragent = "";
+    if (Settings.Value.AllowBlazor && ViewData["ISBLAZORVIEW"] != null && (string)ViewData["ISBLAZORVIEW"] == "TRUE")
+    {
+        isblazorview = true;
+    }
+
+    if (Context.Request.Headers.ContainsKey("User-Agent"))
+    {
+        useragent = Context.Request.Headers["User-Agent"];
+    }
+   
+  
+}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,73 +24,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Intwenty - @ViewData["Title"]</title>
     <meta name="google" content="notranslate" />
-    <meta name="description" content="Intwenty Demo. Login and try out Intwenty it's free." />
-    <meta name="keywords" content="cms,blogg engine,open source" />
+    <meta name="description" content="Intwenty - A .net core mvc template" />
+    <meta name="keywords" content=".net core, template" />
     <link rel="stylesheet" href="~/css/site.min.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-free-5.12.1-web/css/all.min.css" />
-    <link rel="stylesheet" href="~/lib/selectize.js/css/selectize.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/css/bootstrap5.min.css">
     <link rel="stylesheet" href="~/lib/Croppie/croppie.css" />
+    @if (isblazorview)
+    {
+        <base href="~/" />
+    }
 </head>
 
-@{
 
-    var currentpath = Context.Request.Path.ToUriComponent();
-    var ishomepath = string.IsNullOrEmpty(currentpath) || currentpath.Length < 5 || currentpath.Contains("Home/Index");
-    
-}
 
 
 <body class="@(ishomepath ? "landingpage" : "")">
 
-
     <div class="container" id="main_menu_container">
-        @if (ishomepath)
+        @if (ishomepath && Settings.Value.LoginRequireCookieConsent)
         {
             <partial name="_CookieConsentPartial" />
 
         }
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/">Intwenty</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarText">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">Intwenty</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse" id="collapse">
 
-                <ul class="nav navbar-nav mr-auto">
+                    <ul class="navbar-nav me-auto">
 
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        @await Html.PartialAsync("_IntwentyAppMenu")
-
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
+                        @if (User.Identity.IsAuthenticated)
                         {
-                            @await Html.PartialAsync("_IntwentyAdminMenu")
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><span class="nav-label"><span class="fa fa-table"></span> @Localizer["Menu"]</span> <span class="caret"></span></a>
+                                <div class="dropdown-menu">
+                                      <div class="dropdown-divider"></div>
+                                       <div class="dropdown-item"><strong>Intwenty Demo</strong></div>
+                                       <div class="dropdown-divider"></div>
+                                       <a class="dropdown-item" href="/Customers/List">Customers</a>
+                                </div>
+                            </li>
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN"))
+                            {
+                                @await Html.PartialAsync("_IntwentyAdminMenu")
+                            }
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("USERADMIN"))
+                            {
+                                //IF NOT CENTRALIZED IAM DB, ALLOW USERADMIN TO IAM
+                                @await Html.PartialAsync("_IntwentyIdentityAccessMenu")
+                            }
+
+                            @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN") || User.IsInRole("APIUSER"))
+                            {
+                                @await Html.PartialAsync("_IntwentyAPIMenu")
+                            }
                         }
 
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("USERADMIN"))
-                        {
-                            //IF NOT CENTRALIZED IAM DB, ALLOW USERADMIN TO IAM
-                            @await Html.PartialAsync("_IntwentyIdentityAccessMenu")
-                        }
+                    </ul>
 
-                        @if (User.IsInRole("SUPERADMIN") || User.IsInRole("SYSTEMADMIN") || User.IsInRole("APIUSER"))
-                        {
-                            @await Html.PartialAsync("_IntwentyAPIMenu")
-                        }
-                    }
+                    @await Html.PartialAsync("_LoginPartial")
 
-
-
+                </div>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
+                    </li>
                 </ul>
-                <partial name="_LoginPartial" />
-            </div>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a id="expand_ui_btn" class="nav-link" href="#"><span class="nav-label"><i class="fas fa-expand-arrows-alt fa-lg"></i></span></a>
-                </li>
-            </ul>
-           
+           </div>
             
         </nav>
 
@@ -81,7 +106,7 @@
 
 
 
-    <div class="container body-content" id="main_content_container">
+    <div class="container body-content ba-cloak" id="main_content_container">
 
 
         @RenderBody()
@@ -90,7 +115,8 @@
         {
             <hr />
             <footer>
-                <p>&copy; @Localizer["COPYRIGHT"]</p>
+                <p>&copy; @Localizer["COPYRIGHT"] Mobile Device: @DeviceDetector.IsMobileDeviceBrowser(useragent)</p>
+                <p>User Agent: @useragent</p>
             </footer>
             <br />
             <br />
@@ -99,30 +125,27 @@
     </div>
 
 
+    @if (isblazorview)
+    {
+        <script src="~/_framework/blazor.server.js"></script>
+    }
 
-
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/alasql/alasql.min.js"></script>
-    <script src="~/lib/xlsx/xlsx.core.min.js"></script>
-    <script src="~/lib/popper.js/umd/popper.min.js"></script>
-    <script src="~/lib/bootstrap-4.4.1/dist/js/bootstrap.min.js"></script>
-    <script src="~/lib/vue/vue.min.js"></script>
+    <script src="~/lib/bootstrap5/bootstrap.bundle.min.js"></script>
     <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
-    <script src="~/lib/selectize.js/js/standalone/selectize.min.js"></script>
-    <script src="~/js/intwenty.js" asp-append-version="true"></script>
     <script src="~/lib/Croppie/croppie.js"></script>
+    <script src="~/js/intwenty.js"></script>
 
     <script>
-        $(function ()
-        {
 
-            $("#expand_ui_btn").on("click", function expandUI()
-            {
+         document.addEventListener('DOMContentLoaded', function(){ document.querySelectorAll(".ba-cloak").forEach(el => el.classList.remove("ba-cloak"));});
+
+          getTag("expand_ui_btn").onclick = function expandUI()
+          {
                 handleIntwentyViewMode(true);
-            });
+          };
 
-            handleIntwentyViewMode(false);
-        }); 
+          handleIntwentyViewMode(false);
+
     </script>
 
     @RenderSection("Scripts", required: false)

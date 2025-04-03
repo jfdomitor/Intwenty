@@ -9,25 +9,25 @@
 <h4>@ViewData["Title"]</h4>
 
 <div id="app">
-    <div class="alert alert-danger" v-if="errorVerifyCode">
+    <div class="alert alert-danger" ba-if="root.errorVerifyCode">
         @Localizer["MFATOTPUNVERIFIED"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-success" v-if="step==2">
+    <div class="alert alert-success" ba-if="root.step==2">
         @Localizer["Thank you. Two-factor authentication is now set up"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div v-if="step==1">
+    <div ba-if="root.step==1">
         <p>@Localizer["MFATOTPSTEPS_1"]</p>
         <ol class="list">
             <li>
                 <p>@Localizer["MFATOTPSTEPS_2"]</p>
             </li>
             <li>
-                <p>@Localizer["MFATOTPSTEPS_3"] <kbd>{{model.sharedKey}}</kbd> @Localizer["MFATOTPSTEPS_4"]</p>
+                <p>@Localizer["MFATOTPSTEPS_3"] <kbd>{{root.model.sharedKey}}</kbd> @Localizer["MFATOTPSTEPS_4"]</p>
                 <div id="qrCode"></div>
-                <div id="qrCodeData" v-bind:data-url="model.authenticatorURI"></div>
+                <div id="qrCodeData" ba-href="root.model.authenticatorURI"></div>
             </li>
             <li>
                 <br />
@@ -36,9 +36,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="control-label">@Localizer["Code"]</label>
-                            <input type="number" class="form-control" autocomplete="off" v-model="model.code" />
+                            <input type="number" class="form-control" autocomplete="off" ba-bind="root.model.code" />
                         </div>
-                        <button type="submit" class="btn btn-primary" v-on:click="sendCode()">@Localizer["Verify"]</button>
+                        <button type="submit" class="btn btn-primary" ba-click="sendCode()">@Localizer["Verify"]</button>
                     </div>
                 </div>
             </li>
@@ -50,15 +50,11 @@
 
 
     <script type="text/javascript" src="~/lib/qrcode/qrcode.min.js"></script>
-    <script type="text/javascript">
-       
-    </script>
+    <script type="module">
 
+        import {BareaApp} from '/lib/barea/barea.js';
 
-    <script>
-
-        var app = new Vue({
-            el: '#app',
+        const appcontent = {
             data:
             {
                 model: { code: "", resultCode:"" },
@@ -66,63 +62,61 @@
                 errorVerifyCode: false,
                 qrCode: {}
             },
-            methods: {
+            methods:
+            {
 
-
-                sendCode: function ()
-                {
-                    var context = this;
+                sendCode: function () {
+       
                     var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
                     var endpointurl = baseurl + "MfaTotp?handler=VerifyCode";
                     var antiforgerytoken = '@AntiForgery.GetAndStoreTokens(HttpContext).RequestToken';
 
-                    $.ajax({
-                        url: endpointurl,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(context.model),
-                        headers:
-                        {
-                            RequestVerificationToken: antiforgerytoken
+                    fetch(endpointurl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": antiforgerytoken
                         },
-                        success: function (response) {
-                            context.step = 2;
-                            context.model = response;
-                        },
-                        error: function (response) {
-                            context.errorVerifyCode = true;
-                            context.model = response.responseJSON;
-                            context.qrCode.makeCode(context.model.authenticatorURI);
-                          
-                        }
+                        body: JSON.stringify(clientdata.model)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        clientdata.step = 2;
+                        clientdata.model = data;
+                    })
+                    .catch(error => {
+                        clientdata.errorVerifyCode = true;
+                        clientdata.model = error;
+                        clientdata.qrCode.makeCode(context.model.authenticatorURI);
                     });
                 }
-
             },
-            computed:
-            {
-                example: function ()
-                {
-
-                }
-
+            computed: {
             },
-            mounted: function ()
-            {
-                var context = this;
+            mounted: function (applicationData) {
+
                 var baseurl = '@Url.Content("~/Identity/Account/Manage/")';
                 var endpointurl = baseurl + "MfaTotp?handler=Load";
-                $.get(endpointurl, function (response)
-                {
-                    context.model = response;
-                    context.qrCode = new QRCode(document.getElementById("qrCode"),
-                        {
-                            text: context.model.authenticatorURI,
+
+                const retval = fetch(endpointurl)
+                    .then(response => response.json())
+                    .then(data => {
+                        applicationData.model = data;
+                        applicationData.qrCode = new QRCode(document.getElementById("qrCode"), {
+                            text: applicationData.model.authenticatorURI,
                             width: 150,
                             height: 150
                         });
-                });
+                    })
+                    .catch(error => console.error("Error loading data:", error));
+
+                    return retval;
             }
-        });
+
+        };
+
+        const app = new BareaApp();
+        let clientdata = await app.mount("app", appcontent);
+
     </script>
 }

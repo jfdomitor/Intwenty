@@ -17,12 +17,9 @@ namespace Intwenty.Areas.Identity.Pages.IAM
     public class AjazRazorPageEditTemplateModel : PageModel
     {
 
-        private IIntwentyDataService DataRepository { get; }
 
-
-        public AjazRazorPageEditTemplateModel(IIntwentyDataService ms)
+        public AjazRazorPageEditTemplateModel()
         {
-            DataRepository = ms;
 
         }
 

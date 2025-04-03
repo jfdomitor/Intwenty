@@ -1,0 +1,122 @@
+﻿﻿@{
+    ViewData["Title"] = "Logviewer";
+    var logname = "Intwenty";
+    if (ViewBag.LogName != null)
+    {
+        logname = ViewBag.LogName;
+
+    }
+}
+
+<div id="app">
+
+    <br />
+    <br />
+    <div class="card">
+        <div class="card-header"><h2>Logviewer</h2></div>
+        <div class="card-body">
+            @if (logname == "Intwenty")
+            {
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    This is the intwenty event log; it contains events regarding models and applications.
+                    @if (Settings.Value.UseSeparateIAMDatabase)
+                    {
+                        <span>This instance is configured with a separate IAM database. See IAM-related events <a asp-controller="model" asp-action="EventLog" asp-route-logname="IAM">here...</a></span>
+                    }
+                    else
+                    {
+                        <span>This instance is configured to share the database with IAM (Identity Access Management), which implies that events related to users, organizations, and products are also visible.</span>
+                    }
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (logname == "IAM")
+            {
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    This is the IAM event log it contains events regarding users, organization and products.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <br />
+
+    <br />
+
+    <h5>Logentries</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Event Date</th>
+                <th>Verbosity</th>
+                <th>Message</th>
+                <th>User</th>
+                <th>App</th>
+            </tr>
+        </thead>
+        <tr ba-foreach="item in root.list">
+            <td>{{item.id}}</td>
+            <td>{{item.eventDate}}</td>
+            <td>{{item.verbosity}}</td>
+            <td>{{item.message}}</td>
+            <td>{{item.userName}}</td>
+            <td>{{item.appMetaCode}}</td>
+        </tr>
+    </table>
+
+
+
+</div>
+
+@section Scripts
+{
+
+
+    <script type="module">
+
+        import { BareaApp } from '/lib/barea/barea.js';
+
+        const content =
+        {
+              data:
+              {
+                  list:[]
+              },
+              methods: {
+
+
+              },
+              computed:
+              {
+                  example: function ()
+                  {
+
+                  }
+
+              },
+              mounted: async function (applicationData)
+              {
+
+                    let baseurl = '@Url.Content("~/Admin/API/")';
+                    let endpointurl = `${baseurl}GetEventlog/@logname`;
+                    try {
+                        let response = await fetch(endpointurl);
+                        if (!response.ok) throw new Error("Failed to fetch event log");
+                        applicationData.list = await response.json();
+                    } catch (error) {
+                        console.error("Error fetching event log:", error);
+                    }
+                    return true;
+              }
+          };
+
+         let app = new BareaApp();
+         let clientdata = await app.mount("app", content);
+
+
+    </script>
+
+
+}

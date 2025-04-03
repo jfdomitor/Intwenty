@@ -14,6 +14,8 @@ using Intwenty.WebHostBuilder;
 using IntwentyDemo.Services;
 using IntwentyDemo.Seed;
 using Intwenty.Areas.Identity.Models;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace IntwentyDemo
 {
@@ -40,32 +42,37 @@ namespace IntwentyDemo
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.AddUserSecrets("b77e8d87-d3be-4daf-9074-ec3ccd53ed21");
+                    config.AddIntwentyModel();
+              
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStaticWebAssets();
+
+                  
 
                     webBuilder.ConfigureServices((buildercontext, services) =>
                     {
 
                         var configuration = buildercontext.Configuration;
                         var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                       
+
 
                         //****** Required ******
                         //Plug in your own communication service that implements IIntwentyEmailService and IIntwentySmsService
-                        services.TryAddTransient<IIntwentyEmailService, EmailService>();
-                        services.TryAddTransient<IIntwentySmsService, AspSmsService>();
+                        //services.TryAddTransient<IIntwentyEmailService, YourEmailService>();
+                        //services.TryAddTransient<IIntwentySmsService, YourSmsService>();
+
                         //Default services
-                        //services.TryAddTransient<IIntwentyEmailService, EmailService>();
-                        //services.TryAddTransient<IIntwentySmsService, SmsService>();
+                        services.TryAddTransient<IIntwentyEmailService, EmailService>();
+                        services.TryAddTransient<IIntwentySmsService, SmsService>();
 
                         //****** Required ******
                         //Add intwenty 
                         //Here's where you plug in your own code in intwenty, by overriding esential services.
-                        services.AddIntwenty<CustomDataService, CustomEventService, DemoSeeder,CustomModelService>(configuration);
+                        //services.AddIntwenty<CustomDataService, CustomEventService, DemoSeeder, CustomModelService>(configuration);
                         //Default services
-                        //services.AddIntwenty<IntwentyDataService, EventService>(configuration);
+                        services.AddIntwenty<EventService>(configuration);
 
 
                         //****** Required ******
@@ -88,8 +95,11 @@ namespace IntwentyDemo
                         //****** Required ******
                         //Remove AddRazorRuntimeCompilation() in production
                         services.AddRazorPages().AddViewLocalization().AddRazorRuntimeCompilation();
+                        if (settings.AllowBlazor)
+                        {
+                            services.AddServerSideBlazor().AddCircuitOptions(option => option.DetailedErrors = true);
+                        }
 
-                        
                     })
                     .Configure((buildercontext, app) =>
                     {
@@ -106,34 +116,21 @@ namespace IntwentyDemo
                         //Services,routing,endpoints,localization,data seeding and more....
                         app.UseIntwenty();
 
-                       
+
                     });
                 });
-
+                
+            /*
+                WARNING: Use to turn of dependency injection validation
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateScopes = false;
+                    options.ValidateOnBuild = true;
+                   
+                 });
+            */
         }
-        /*
-        private void OnShutdown()
-        {
-            try
-            {
-                var settings = Configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
-                client.InsertEntity<EventLog>(new EventLog() { ApplicationId = 0, AppMetaCode = "", EventDate = DateTime.Now, Id = 0, Message = "Instance stopped", UserName = "", Verbosity = "INFO" });
-            }
-            catch { }
-        }
-
-        private void OnStarted()
-        {
-            try
-            {
-                var settings = Configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
-                client.InsertEntity<EventLog>(new EventLog() { ApplicationId = 0, AppMetaCode = "", EventDate = DateTime.Now, Id = 0, Message = "Instance started", UserName = "", Verbosity = "INFO" });
-            }
-            catch { }
-        }
-        */
+      
 
       
     }

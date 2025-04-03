@@ -31,35 +31,66 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Routing;
 using Intwenty.Helpers;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Intwenty.WebHostBuilder
 {
+
+   
+
     public static class IntwentyBuilder
     {
-        public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
-                         where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService
+
+        public static IConfigurationBuilder AddIntwentyModel(this IConfigurationBuilder builder)
         {
-            services.AddIntwenty<TIntwentyDataService, TIntwentyEventService, IntwentySeeder>(configuration);
+            return builder.AddJsonFile("intwenty.json", optional: false, reloadOnChange: true);
+
+        }
+     
+        public static void AddIntwenty<TIntwentyEventService>(this IServiceCollection services, IConfiguration configuration)
+                         where TIntwentyEventService : class, IIntwentyEventService
+        {
+            services.AddIntwenty<TIntwentyEventService, IntwentySeeder>(configuration);
         }
 
-        public static void AddIntwenty<TIntwentyDataService, TIntwentyEventService, TInwentySeeder>(this IServiceCollection services, IConfiguration configuration)
-                         where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder
+        public static void AddIntwenty<TIntwentyEventService, TInwentySeeder>(this IServiceCollection services, IConfiguration configuration)
+                         where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder
         {
-            services.AddIntwenty<TIntwentyDataService, TIntwentyEventService, TInwentySeeder, IntwentyModelService>(configuration);
+            services.AddIntwenty<TIntwentyEventService, TInwentySeeder, IntwentyModelService>(configuration);
         }
 
-       public static void AddIntwenty<TIntwentyDataService,TIntwentyEventService,TInwentySeeder,TIntwentyModelService>(this IServiceCollection services, IConfiguration configuration) 
-                           where TIntwentyDataService : class, IIntwentyDataService where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
+       public static void AddIntwenty<TIntwentyEventService,TInwentySeeder,TIntwentyModelService>(this IServiceCollection services, IConfiguration configuration) 
+                           where TIntwentyEventService : class, IIntwentyEventService where TInwentySeeder : class, IIntwentySeeder where TIntwentyModelService : class, IIntwentyModelService
         {
-            services.AddSignalR();
-
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
 
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
+
+            //Add Model
+            //services.Configure<IntwentyModel>(options => configuration.Bind(options));
+            var intwentyConfig = configuration.Get<IntwentyModel>();
+            services.AddSingleton(intwentyConfig);
+
+
+
+            if (settings.AllowSignalR)
+            {
+                services.AddSignalR();
+            }
+
+            if (settings.LoginRequireCookieConsent)
+            {
+                services.Configure<CookiePolicyOptions>(options =>
+                {
+                    options.CheckConsentNeeded = context => true;
+                    options.MinimumSameSitePolicy = SameSiteMode.None;
+
+                });
+            }
+         
 
             if (string.IsNullOrEmpty(settings.DefaultConnection))
                 throw new InvalidOperationException("Could not find default database connection in setting file");
@@ -77,13 +108,11 @@ namespace Intwenty.WebHostBuilder
 
             //Required for Intwenty: Services
             services.TryAddTransient<IIntwentyDbLoggerService, DbLoggerService>();
-            services.TryAddTransient<IIntwentyDataService, TIntwentyDataService>();
             services.TryAddTransient<IIntwentyModelService, TIntwentyModelService>();
             services.TryAddTransient<IIntwentyEventService, TIntwentyEventService>();
             services.TryAddTransient<IIntwentyProductManager, IntwentyProductManager>();
             services.TryAddTransient<IIntwentyOrganizationManager, IntwentyOrganizationManager>();
             services.TryAddTransient<IIntwentySeeder, TInwentySeeder>();
-
 
 
             //Required for Intwenty services to work correctly
@@ -95,10 +124,99 @@ namespace Intwenty.WebHostBuilder
                 options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
 
-            //Required for Intwenty if Identity is used
-            services.AddIdentity<IntwentyUser, IntwentyProductAuthorizationItem>(options =>
+
+            //Identity authentication start
+            //-------------------------------
+            
+            //Time service needed by identity
+            services.AddSingleton(TimeProvider.System);
+
+            //Http Context Accessor
+            services.AddHttpContextAccessor();
+
+            services.TryAddScoped<IIntwentySecurityStampValidator, IntwentySecurityStampValidator>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
+            services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IntwentyUser>>();
+
+            /*
+                Cookie Validation
+                1. On evry call to the server: IntwentyCookieAuthEvents.ValidatePrincipal
+                2. IntwentySecurityStampVerifyer.ValidateAsync
+                3. IntwentySecurityStampValidator.ValidateAsync
+                --- IF TIME ELAPSED SEE PostConfigureSecurityStampValidatorOptions (In this file) --
+                4. IntwentySecurityStampValidator.VerifySecurityStamp
+                5. IntwentySignInManager.ValidateSecurityStampAsync (The comparrison of security stamps) (Return true if SecurityStamp were turned of in settings)
+                6. IntwentySignInManager.VerifySecurityStampAsync
+                7. IntwentySecurityStampValidator.SecurityStampVerified
+              
+             */
+
+            services.AddAuthentication(o =>
             {
+                o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 
+                
+            })
+           .AddCookie(IdentityConstants.ApplicationScheme, o =>
+           {
+               o.AccessDeniedPath = "/Identity/Account/AccessDenied";
+               o.Cookie.Name = "AC_" + settings.ProductId; //IdentityConstants.ApplicationScheme; 
+               o.LoginPath = "/Identity/Account/Login";
+               o.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+               //o.SlidingExpiration = true;
+               o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+               o.Events = new IntwentyCookieAuthEvents
+               {
+                   OnValidatePrincipal = IntwentySecurityStampVerifyer.ValidatePrincipalAsync
+                  
+               };
+               
+               //Removes cookie security
+               if (settings.UsePlainTextCookies) 
+                   o.DataProtectionProvider = new IntwentyDataProtector();
+
+               //If cookie info should be stored in another data source
+               //o.SessionStore = new IntwentyCookieStore();
+               
+               
+           })
+           .AddCookie(IdentityConstants.ExternalScheme, o =>
+            {
+                o.Cookie.Name = IdentityConstants.ExternalScheme;
+                //o.SlidingExpiration = true;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+           })
+           .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+            {
+                o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
+                };
+                //o.SlidingExpiration = true;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+            })
+            .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
+            {
+                   o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+                   o.Events = new CookieAuthenticationEvents
+                   {
+                       OnRedirectToReturnUrl = _ => Task.CompletedTask
+                   };
+                   //o.SlidingExpiration = true;
+                   o.ExpireTimeSpan = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+                   o.Cookie.MaxAge = TimeSpan.FromMinutes(settings.LoginMaxMinutes);
+             });
+
+
+            services.AddIdentityCore<IntwentyUser>(options =>
+            {
+
                 options.SignIn.RequireConfirmedAccount = settings.AccountsRequireConfirmed;
 
                 options.Password.RequireDigit = false;
@@ -115,7 +233,6 @@ namespace Intwenty.WebHostBuilder
                 options.User.RequireUniqueEmail = true;
 
                 
-                
 
             })
              .AddRoles<IntwentyProductAuthorizationItem>()
@@ -126,40 +243,28 @@ namespace Intwenty.WebHostBuilder
              .AddClaimsPrincipalFactory<IntwentyClaimsPricipalFactory>()
              .AddDefaultTokenProviders();
 
-            //If remember me is clicked on sign in, the cookiw will be valid 14 days, otherwise only the session
-            services.ConfigureApplicationCookie(options =>
-            {
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.Cookie.Name = "IntwentyAuthCookie";
-                options.Cookie.HttpOnly = true;
-                options.LoginPath = "/Identity/Account/Login";
-                options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-                options.SlidingExpiration = true;
-                options.ExpireTimeSpan = TimeSpan.FromDays(365);
-                
-            });
-
-
-
             if (settings.UseExternalLogins && settings.UseFacebookLogin)
             {
-                services.AddAuthentication().AddFacebook(options =>
+                services.AddAuthentication()
+                .AddFacebook(options =>
                 {
                     options.AppId = settings.AccountsFacebookAppId;
                     options.AppSecret = settings.AccountsFacebookAppSecret;
 
-                });
+                 });
             }
 
             if (settings.UseExternalLogins && settings.UseGoogleLogin)
             {
-                services.AddAuthentication().AddGoogle(options =>
+                services.AddAuthentication()
+                .AddGoogle(options =>
                 {
                     options.ClientId = settings.AccountsGoogleClientId;
                     options.ClientSecret = settings.AccountsGoogleClientSecret;
 
                 });
             }
+
 
             if (settings.UseFrejaEIdLogin)
             {
@@ -268,39 +373,31 @@ namespace Intwenty.WebHostBuilder
                 
             }).AddViewLocalization();
 
+
             if (settings.APIEnable)
             {
+                services.AddEndpointsApiExplorer();
                 services.AddSwaggerGen(options =>
                 {
-                    options.DocumentFilter<APIDocumentFilter>();
-                    options.AddSecurityDefinition("API-Key", new OpenApiSecurityScheme
+                    options.SwaggerDoc("v1", new OpenApiInfo
                     {
-                        Description = "API-Key",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.ApiKey,
-                        Scheme = "API-Key"
-
-                    });
-
-                    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
+                        Version = "v1",
+                        Title = "Intwenty API",
+                        Description = "",
+                        TermsOfService = new Uri("https://example.com/terms"),
+                        Contact = new OpenApiContact
                         {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "API-Key"
-                                }
-                            },
-                            Array.Empty<string>()
+                            Name = "Example Contact",
+                            Url = new Uri("https://example.com/contact")
+                        },
+                        License = new OpenApiLicense
+                        {
+                            Name = "Example License",
+                            Url = new Uri("https://example.com/license")
                         }
                     });
-
                 });
             }
-
 
         }
 
@@ -310,7 +407,11 @@ namespace Intwenty.WebHostBuilder
             var settings = configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
 
             builder.UseHttpsRedirection();
-            builder.UseCookiePolicy();
+
+            if (settings.LoginRequireCookieConsent)
+            {
+                builder.UseCookiePolicy();
+            }
 
             builder.UseRouting();
 
@@ -340,59 +441,37 @@ namespace Intwenty.WebHostBuilder
 
                 endpoints.MapDefaultControllerRoute();
 
-                //INTWENTY ENDPOINT ROUTING
                 using (var scope = builder.ApplicationServices.CreateScope())
                 {
                     var serviceProvider = scope.ServiceProvider;
                     var modelservice = serviceProvider.GetRequiredService<IIntwentyModelService>();
 
-                    //REGISTER ENDPOINTS
-                    if (settings.APIEnable)
-                    {
-                        var epmodels = modelservice.GetEndpointModels();
-
-                        foreach (var ep in epmodels)
-                        {
-                            if (ep.IsMetaTypeCustomPost)
-                                continue;
-                            if (ep.IsMetaTypeCustomGet)
-                                continue;
-
-                            endpoints.MapControllerRoute(ep.MetaCode, ep.Path + "{action=" + ep.Action + "}/{id?}", defaults: new { controller = "DynamicEndpoint" });
-                        }
-                    }
-
+                 
                     //INTWENTY EXPLICIT APP ROUTING
                     if (settings.StartUpRoutingMode == RoutingModeOptions.Explicit)
                     {                     
-                        var appmodels = modelservice.GetApplicationModels();
-                        foreach (var a in appmodels)
-                        {
-
-                            foreach (var view in a.Views)
+                       
+                            foreach (var view in modelservice.Model.Systems.SelectMany(p=>p.Applications).SelectMany(v=>v.Views).ToList())
                             {
-                                if (string.IsNullOrEmpty(view.Path))
+                                if (string.IsNullOrEmpty(view.RequestPath))
                                     continue;
 
-                                var path = view.Path.Trim();
+                                var path = view.RequestPath.Trim();
+                                if (path.Contains("/:"))
+                                    path = path.Split("/:")[0];
+
                                 if (!path.EndsWith("/"))
-                                    path = path + "/";
+                                        path = path + "/";
 
-                                var lbc = path.Count(p => p == '{');
-                                var lbr = path.Count(p => p == '}');
+                               
+                                endpoints.MapControllerRoute(
+                                  name: "app_route_" + view.ApplicationId + "_" + view.Id,
+                                  pattern: path + "{id?}", // Allows an optional ID parameter
+                                  defaults: new { controller = "Application", action = "ModelView" }
+                                );
 
-                                if (lbc == lbr)
-                                {
-                                    //View Paths in the model will never be mapped, so default values will be used
-                                    endpoints.MapControllerRoute("app_route_" + a.Application.MetaCode + "_" + view.MetaCode, path, defaults: new { controller = "Application", action = "View" });
-                                }
-                                else
-                                {
-                                    //
-                                }
-                                
-                            }
                         }
+                        
                     }
 
                    
@@ -411,8 +490,15 @@ namespace Intwenty.WebHostBuilder
                 }
 
                 endpoints.MapRazorPages();
-                endpoints.MapHub<Intwenty.PushData.ServerToClientPush>("/serverhub");
 
+                if (settings.AllowSignalR)
+                {
+                    endpoints.MapHub<Intwenty.PushData.ServerToClientPush>("/serverhub");
+                }
+                if (settings.AllowBlazor)
+                {
+                    endpoints.MapBlazorHub();
+                }
 
                 /* Handle all responses
                 endpoints.MapGet("/{**slug}", async context =>
@@ -440,6 +526,7 @@ namespace Intwenty.WebHostBuilder
         {
             if (settings.APIEnable)
             {
+             
                 // Enable middleware to serve generated Swagger as a JSON endpoint.
                 builder.UseSwagger();
 
@@ -472,11 +559,6 @@ namespace Intwenty.WebHostBuilder
                 var seederservice = serviceProvider.GetRequiredService<IIntwentySeeder>();
 
                 //The order is important
-
-                if (settings.StartUpSeedLocalizations)
-                {
-                    seederservice.SeedLocalization();
-                }
                 if (settings.StartUpSeedProductAndOrganization || settings.StartUpSeedDemoUserAccounts)
                 {
                     seederservice.SeedProductAndOrganization();
@@ -484,14 +566,6 @@ namespace Intwenty.WebHostBuilder
                 if (settings.StartUpSeedDemoUserAccounts)
                 {
                     seederservice.SeedUsersAndRoles();
-                }
-                if (settings.StartUpSeedModel)
-                {
-                    seederservice.SeedModel();
-                }
-                if (settings.StartUpSeedData)
-                {
-                    seederservice.SeedData();
                 }
                 if (settings.StartUpConfigureDatabase)
                 {
@@ -510,25 +584,14 @@ namespace Intwenty.WebHostBuilder
             if (!settings.StartUpIntwentyDbObjects)
                 return;
 
-            var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
+            var client = new DataClient.DbConnection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
 
             try
             {
                 client.Open();
-                client.ModifyTable<SystemItem>();
-                client.ModifyTable<ApplicationItem>();
-                client.ModifyTable<DatabaseItem>();
                 client.ModifyTable<EventLog>();
                 client.ModifyTable<InformationStatus>();
                 client.ModifyTable<InstanceId>();
-                client.ModifyTable<ViewItem>();
-                client.ModifyTable<UserInterfaceStructureItem>();
-                client.ModifyTable<UserInterfaceItem>();
-                client.ModifyTable<FunctionItem>();
-                client.ModifyTable<ValueDomainItem>();
-                client.ModifyTable<DefaultValue>();
-                client.ModifyTable<TranslationItem>();
-                client.ModifyTable<EndpointItem>();
                 client.Close();
 
             }
@@ -551,7 +614,7 @@ namespace Intwenty.WebHostBuilder
             if (!settings.StartUpIntwentyDbObjects)
                 return;
 
-            var client = new Connection(settings.IAMConnectionDBMS, settings.IAMConnection);
+            var client = new DataClient.DbConnection(settings.IAMConnectionDBMS, settings.IAMConnection);
 
             try
             {
@@ -587,7 +650,24 @@ namespace Intwenty.WebHostBuilder
 
         }
 
-      
+        private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
+        {
+            public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider, IOptions<IntwentySettings> settings)
+            {
+                TimeProvider = timeProvider;
+                Settings = settings.Value;
+            }
+
+            private TimeProvider TimeProvider { get; }
+
+            private IntwentySettings Settings { get; }
+
+            public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+            {
+                options.TimeProvider ??= TimeProvider;
+                options.ValidationInterval = TimeSpan.FromMinutes(Settings.SecurityStampValidationIntervalMinutes);
+            }
+        }
 
 
     }

@@ -15,14 +15,10 @@ namespace IntwentyDemo.Controllers
     public class HomeController : Controller
     {
 
-        private IIntwentyDataService DataService { get; }
-        private IIntwentyModelService ModelService { get; }
         private IntwentyUserManager UserManager { get; }
 
-        public HomeController(IIntwentyDataService dataservice, IIntwentyModelService modelservice, IntwentyUserManager usermanager)
+        public HomeController(IntwentyUserManager usermanager)
         {
-            DataService = dataservice;
-            ModelService = modelservice;
             UserManager = usermanager;
         }
 

@@ -3,24 +3,8 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "jquery@3.4.1",
-      "destination": "wwwroot/lib/jquery/"
-    },
-    {
-      "library": "vue@2.6.11",
-      "destination": "wwwroot/lib/vue/"
-    },
-    {
       "library": "popper.js@1.16.1",
       "destination": "wwwroot/lib/popper.js/"
-    },
-    {
-      "library": "alasql@0.5.5",
-      "destination": "wwwroot/lib/alasql/"
-    },
-    {
-      "library": "xlsx@0.15.6",
-      "destination": "wwwroot/lib/xlsx/"
     },
     {
       "provider": "unpkg",
@@ -31,12 +15,18 @@
       ]
     },
     {
-      "library": "selectize.js@0.13.3",
-      "destination": "wwwroot/lib/selectize.js/"
-    },
-    {
       "library": "croppie@2.6.5",
       "destination": "wwwroot/lib/croppie/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "barea.js@1.2.4",
+      "destination": "wwwroot/lib/barea/",
+      "files": [
+        "barea.js",
+        "barea.min.js",
+        "LICENSE"
+      ]
     }
   ]
 }

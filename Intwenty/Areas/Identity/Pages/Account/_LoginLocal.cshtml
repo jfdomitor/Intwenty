@@ -12,20 +12,20 @@
 
 <div class="col-md-6">
 
-    <div class="alert alert-danger" v-if="model.resultCode=='MISSING_USERNAME_OR_PWD'">
+    <div class="alert alert-danger" ba-if="root.model.resultCode=='MISSING_USERNAME_OR_PWD'">
         @Localizer["You must type a user name and a password"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger" v-if="model.resultCode=='INVALID_LOGIN_ATTEMPT'">
+    <div class="alert alert-danger" ba-if="root.model.resultCode=='INVALID_LOGIN_ATTEMPT'">
         @Localizer["Invalid login attemt"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="alert alert-danger" v-if="model.resultCode=='REQUIRECONFIRMATION'">
+    <div class="alert alert-danger" ba-if="root.model.resultCode=='REQUIRECONFIRMATION'">
         @Localizer["LOGIN_REQUIRE_CONF"]
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <form v-on:submit.prevent="localLogin">
+    <div id="localLogin">
         <div class="form-group">
             @if (Settings.Value.AccountsUserNameGeneration == UserNameGenerationStyles.Email)
             {
@@ -35,24 +35,27 @@
             {
                 <label>@Localizer["User Name"] @demouser</label>
             }
-            <input id="local_email" type="email" v-model="model.userName" class="form-control" />
+            <input id="local_email" type="email" ba-bind="root.model.userName" class="form-control" />
             <span id="local_email_validation" class="text-danger"></span>
         </div>
 
 
         <div class="form-group">
             <label>@Localizer["Password"] @demopwd</label>
-            <input id="local_password" type="password" v-model="model.password" class="form-control" />
+            <input id="local_password" type="password" ba-bind="root.model.password" class="form-control" />
             <span id="local_password_validation" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <div class="checkbox">
-                <label><input type="checkbox" v-model="model.rememberMe" /> @Localizer["Remember Me"] ?</label>
+        @if (!Settings.Value.LoginAlwaysRemember)
+        {
+            <div class="form-group">
+                <div class="checkbox">
+                <label><input type="checkbox" ba-bind="root.model.rememberMe" /> @Localizer["Remember Me"] ?</label>
             </div>
         </div>
-    </form>
+        }
+    </div>
     <div class="form-group">
-        <button type="button" class="btn btn-primary" v-on:click="localLogin()">@Localizer["Login"]</button>
+        <button type="button" class="btn btn-primary" ba-click="localLogin()">@Localizer["Login"]</button>
     </div>
     <div class="form-group">
         <p>

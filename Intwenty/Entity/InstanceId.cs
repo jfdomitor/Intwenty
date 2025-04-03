@@ -14,11 +14,9 @@ namespace Intwenty.Entity
 
         public int ParentId { get; set; }
 
-        public int ApplicationId { get; set; }
+        public string ApplicationId { get; set; }
 
         public string MetaType { get; set; }
-
-        public string MetaCode { get; set; }
 
         public DateTime GeneratedDate { get; set; }
 
