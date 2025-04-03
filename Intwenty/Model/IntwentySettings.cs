@@ -85,7 +85,6 @@ namespace Intwenty.Model
 
         #endregion
 
-
         #region Product
         public string ProductId { get; set; }
         public string ProductTitle { get; set; }
@@ -103,21 +102,9 @@ namespace Intwenty.Model
         public bool StartUpIntwentyDbObjects { get; set; }
 
         /// <summary>
-        /// If model is programaticly defined, create model container tables and seed the model
-        /// </summary>
-        public bool StartUpSeedModel { get; set; }
-        /// <summary>
         /// Create database objects according to the model
         /// </summary>
         public bool StartUpConfigureDatabase { get; set; }
-        /// <summary>
-        /// Seed application data 
-        /// </summary>
-        public bool StartUpSeedData { get; set; }
-        /// <summary>
-        /// Seed localization definitions 
-        /// </summary>
-        public bool StartUpSeedLocalizations { get; set; }
 
         /// <summary>
         /// Seed product and organization info

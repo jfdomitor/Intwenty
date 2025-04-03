@@ -38,11 +38,6 @@ namespace IntwentyDemo.Seed
             base.SeedUsersAndRoles();
         }
 
-        public override void SeedData()
-        {
-            base.SeedData();
-        }
-
         public override void ConfigureDataBase()
         {
             base.ConfigureDataBase();

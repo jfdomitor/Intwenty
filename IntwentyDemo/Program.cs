@@ -60,11 +60,12 @@ namespace IntwentyDemo
 
                         //****** Required ******
                         //Plug in your own communication service that implements IIntwentyEmailService and IIntwentySmsService
-                        services.TryAddTransient<IIntwentyEmailService, EmailService>();
-                        services.TryAddTransient<IIntwentySmsService, AspSmsService>();
+                        //services.TryAddTransient<IIntwentyEmailService, YourEmailService>();
+                        //services.TryAddTransient<IIntwentySmsService, YourSmsService>();
+
                         //Default services
-                        //services.TryAddTransient<IIntwentyEmailService, EmailService>();
-                        //services.TryAddTransient<IIntwentySmsService, SmsService>();
+                        services.TryAddTransient<IIntwentyEmailService, EmailService>();
+                        services.TryAddTransient<IIntwentySmsService, SmsService>();
 
                         //****** Required ******
                         //Add intwenty 
@@ -129,29 +130,7 @@ namespace IntwentyDemo
                  });
             */
         }
-        /*
-        private void OnShutdown()
-        {
-            try
-            {
-                var settings = Configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
-                client.InsertEntity<EventLog>(new EventLog() { ApplicationId = 0, AppMetaCode = "", EventDate = DateTime.Now, Id = 0, Message = "Instance stopped", UserName = "", Verbosity = "INFO" });
-            }
-            catch { }
-        }
-
-        private void OnStarted()
-        {
-            try
-            {
-                var settings = Configuration.GetSection("IntwentySettings").Get<IntwentySettings>();
-                var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
-                client.InsertEntity<EventLog>(new EventLog() { ApplicationId = 0, AppMetaCode = "", EventDate = DateTime.Now, Id = 0, Message = "Instance started", UserName = "", Verbosity = "INFO" });
-            }
-            catch { }
-        }
-        */
+      
 
       
     }

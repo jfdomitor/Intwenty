@@ -10,9 +10,6 @@ namespace Intwenty.Interface
     {
         Task NewUserCreated(NewUserCreatedData data);
         Task EmailChanged(EmailChangedData data);
-        Task UserInvitedToGroup(UserInvitedData data);
-        Task UserRemovedFromGroup(UserRemovedFromGroupData data);
-        Task UserRequestedToJoinGroup(UserRequestedToJoinGroupData data);
         Task UserActivatedEmailMfa(UserActivatedEmailMfaData data);
         Task UserActivatedSmsMfa(UserActivatedSmsMfaData data);
         Task UserRequestedEmailMfaCode(UserRequestedEmailMfaCodeData data);

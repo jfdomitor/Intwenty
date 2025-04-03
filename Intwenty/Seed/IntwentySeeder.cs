@@ -251,20 +251,6 @@ namespace Intwenty.Seed
         }
 
 
-     
-
-        public virtual void SeedModel()
-        {
-
-        }
-
-      
-
-        public virtual void SeedData()
-        {
-
-        }
-
         public virtual void ConfigureDataBase()
         {
 

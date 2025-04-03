@@ -11,7 +11,6 @@ namespace Intwenty.Interface
         void SeedProductAndOrganization();
         void SeedProductAuthorizationItems();
         void SeedUsersAndRoles();
-        void SeedData();
         void ConfigureDataBase();
     }
 

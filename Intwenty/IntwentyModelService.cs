@@ -280,7 +280,7 @@ namespace Intwenty
             return this.Model.ValueDomains;
         }
 
-        public IIBasicDbTable GetBasicTableModel(string dbtablename)
+        public IBasicDbTable GetBasicTableModel(string dbtablename)
         {
             return this.Model.Systems.SelectMany(p=> p.Applications).FirstOrDefault(p=> p.DbTableName.ToUpper() == dbtablename.ToUpper());
         }

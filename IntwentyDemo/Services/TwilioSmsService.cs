@@ -24,11 +24,11 @@ namespace IntwentyDemo.Services
         }
 
       
-        public async Task SendSmsAsync(string number, string message)
+        public async Task<bool> SendSmsAsync(string number, string message)
         {
 
             if (string.IsNullOrEmpty(Settings.SmsServiceAccountKey) || string.IsNullOrEmpty(Settings.SmsServiceAuthToken) || string.IsNullOrEmpty(number))
-                return;
+                return false;
 
          
             string tonumber = "";
@@ -49,6 +49,8 @@ namespace IntwentyDemo.Services
 
 
             await MessageResource.CreateAsync(messageOptions);
+
+            return true;
 
         }
     }

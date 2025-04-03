@@ -29,7 +29,7 @@ namespace Intwenty.Interface
         IntwentyView GetLocalizedViewModelByPath(string path);
         string GetLocalizedString(string localizationkey);
         List<IntwentyValueDomainItem> GetValueDomains();
-        IIBasicDbTable GetBasicTableModel(string dbtablename);
+        IBasicDbTable GetBasicTableModel(string dbtablename);
 
 
     }

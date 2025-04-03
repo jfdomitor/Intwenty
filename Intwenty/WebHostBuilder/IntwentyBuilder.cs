@@ -567,10 +567,6 @@ namespace Intwenty.WebHostBuilder
                 {
                     seederservice.SeedUsersAndRoles();
                 }
-                if (settings.StartUpSeedData)
-                {
-                    seederservice.SeedData();
-                }
                 if (settings.StartUpConfigureDatabase)
                 {
                     seederservice.ConfigureDataBase();

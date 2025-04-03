@@ -7,7 +7,7 @@ namespace Intwenty.Interface
 {
     public interface IIntwentySmsService
     {
-        Task SendSmsAsync(string number, string message);
+        Task<bool> SendSmsAsync(string number, string message);
     }
 
 }

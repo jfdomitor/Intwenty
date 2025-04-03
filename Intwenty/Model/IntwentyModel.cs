@@ -146,7 +146,7 @@ namespace Intwenty.Model
         public List<IntwentyApplication> Applications { get; set; }
     }
 
-    public class IntwentyApplication : IntwentyModelBase, IIBasicDbTable
+    public class IntwentyApplication : IntwentyModelBase, IBasicDbTable
     {
         public string SystemId { get; set; }
         public string Description { get; set; }
@@ -163,7 +163,7 @@ namespace Intwenty.Model
             }
         }
 
-        List<IBasicDbColumn> IIBasicDbTable.DataColumns
+        List<IBasicDbColumn> IBasicDbTable.DataColumns
         {
             get 
             { 

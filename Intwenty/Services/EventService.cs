@@ -49,9 +49,7 @@ namespace Intwenty.Services
         {
             await DbLoggerService.LogIdentityActivityAsync("INFO", string.Format("A user {0} requested a password reset email sent to  {1}", data.UserName, data.Email), data.UserName);
         }
-        public virtual Task UserInvitedToGroup(UserInvitedData data) { return Task.FromResult(0);  }
-        public virtual Task UserRemovedFromGroup(UserRemovedFromGroupData data) { return Task.FromResult(0);  }
-        public virtual Task UserRequestedToJoinGroup(UserRequestedToJoinGroupData data) { return Task.FromResult(0); }
+
 
 
     }
@@ -62,21 +60,6 @@ namespace Intwenty.Services
     {
         public string SenderUserName { get; set; }
         public string ReceiverUserName { get; set; }
-    }
-
-    public class UserInvitedData : SenderReceiverUserData
-    {
-        public string GroupName { get; set; }
-    }
-
-    public class UserRemovedFromGroupData : SenderReceiverUserData
-    {
-        public string GroupName { get; set; }
-    }
-
-    public class UserRequestedToJoinGroupData : SenderReceiverUserData
-    {
-        public string GroupName { get; set; }
     }
 
     public class NewUserCreatedData
