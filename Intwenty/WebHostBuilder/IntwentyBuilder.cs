@@ -584,7 +584,7 @@ namespace Intwenty.WebHostBuilder
             if (!settings.StartUpIntwentyDbObjects)
                 return;
 
-            var client = new Connection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
+            var client = new DataClient.DbConnection(settings.DefaultConnectionDBMS, settings.DefaultConnection);
 
             try
             {
@@ -614,7 +614,7 @@ namespace Intwenty.WebHostBuilder
             if (!settings.StartUpIntwentyDbObjects)
                 return;
 
-            var client = new Connection(settings.IAMConnectionDBMS, settings.IAMConnection);
+            var client = new DataClient.DbConnection(settings.IAMConnectionDBMS, settings.IAMConnection);
 
             try
             {

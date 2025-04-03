@@ -60,14 +60,14 @@ namespace Intwenty.Areas.Identity.Data
 
         public IDataClient GetIAMDataClient()
         {
-            return new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            return new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
         }
 
 
         public async Task<IdentityResult> CreateAsync(IntwentyOrganization organization)
         {
             organization.NormalizedName = organization.Name.ToUpper();
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
 
             //TABLE PREFIX
@@ -93,7 +93,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> UpdateAsync(IntwentyOrganization organization)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var t = await client.UpdateEntityAsync(organization);
             await client.CloseAsync();
@@ -102,7 +102,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> DeleteAsync(IntwentyOrganization organization)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.DeleteEntityAsync(organization);
             await client.CloseAsync();
@@ -113,7 +113,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IntwentyOrganization> FindByIdAsync(int id)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(id);
             await client.CloseAsync();
@@ -122,7 +122,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IntwentyOrganization> FindByNameAsync(string name)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var allorgs = await client.GetEntitiesAsync<IntwentyOrganization>();
             await client.CloseAsync();
@@ -131,7 +131,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<List<IntwentyOrganization>> GetAllAsync()
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var orgs = await client.GetEntitiesAsync<IntwentyOrganization>();
             await client.CloseAsync();
@@ -143,7 +143,7 @@ namespace Intwenty.Areas.Identity.Data
             if (string.IsNullOrEmpty(username))
                 return new List<IntwentyOrganization>();
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var orgs = await client.GetEntitiesAsync<IntwentyOrganization>();
             var members = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
@@ -155,7 +155,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<List<IntwentyOrganizationMember>> GetMembersAsync(int organizationid)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var members = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
             await client.CloseAsync();
@@ -164,7 +164,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> AddMemberAsync(IntwentyOrganizationMember member)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var allexisting = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
             await client.CloseAsync();
@@ -174,7 +174,7 @@ namespace Intwenty.Areas.Identity.Data
 
             //----------------------------------------------------------
             //Get all organizations products
-            client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var orgproducts = await client.GetEntitiesAsync<IntwentyOrganizationProduct>();
             await client.CloseAsync();
@@ -213,7 +213,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> RemoveMemberAsync(IntwentyOrganizationMember member)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var allexisting = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
             await client.CloseAsync();
@@ -229,7 +229,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<List<IntwentyOrganizationProduct>> GetProductsAsync(int organizationid)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var members = await client.GetEntitiesAsync<IntwentyOrganizationProduct>();
             await client.CloseAsync();
@@ -238,7 +238,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> AddProductAsync(IntwentyOrganizationProduct product)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var allexisting = await client.GetEntitiesAsync<IntwentyOrganizationProduct>();
             await client.CloseAsync();
@@ -248,7 +248,7 @@ namespace Intwenty.Areas.Identity.Data
 
             //----------------------------------------------------------
             //Get all organizations members
-            client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var orgmembers = await client.GetEntitiesAsync<IntwentyOrganizationMember>();
             await client.CloseAsync();
@@ -288,7 +288,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> RemoveProductAsync(IntwentyOrganizationProduct product)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var allexisting = await client.GetEntitiesAsync<IntwentyOrganizationProduct>();
             await client.CloseAsync();
@@ -312,7 +312,7 @@ namespace Intwenty.Areas.Identity.Data
             var parameters = new List<IntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter() { Name = "@UserId", Value= user.Id });
             parameters.Add(new IntwentySqlParameter() { Name = "@ProductId", Value = productid });
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var result = await client.GetScalarValueAsync(sql, false, parameters.ToArray());
             await client.CloseAsync();
@@ -334,7 +334,7 @@ namespace Intwenty.Areas.Identity.Data
             sql += "WHERE EXISTS (SELECT 1 FROM security_OrganizationMembers WHERE UserId = @UserId AND OrganizationId = t2.Id)";
             var parameters = new List<IntwentySqlParameter>();
             parameters.Add(new IntwentySqlParameter() { Name = "@UserId", Value = userid });
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var result = await client.GetEntitiesAsync<IntwentyOrganizationProductInfoVm>(sql, false, parameters.ToArray());
             await client.CloseAsync();
@@ -350,7 +350,7 @@ namespace Intwenty.Areas.Identity.Data
         public async Task<IntwentyOrganizationProductVm> GetOrganizationProductAsync(int organizationid, string productid)
         {
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(organizationid);
             var product = await client.GetEntityAsync<IntwentyProduct>(productid);
@@ -378,7 +378,7 @@ namespace Intwenty.Areas.Identity.Data
         public async Task<IdentityResult> AddUpdateRoleAuthorizationAsync(string normalizedAuthName, int organizationid, string productid)
         {
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(organizationid);
             await client.CloseAsync();
@@ -389,7 +389,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> AddUpdateSystemAuthorizationAsync(string normalizedAuthName, int organizationid, string productid, bool denyauthorization)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(organizationid);
             await client.CloseAsync();
@@ -409,7 +409,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> AddUpdateApplicationAuthorizationAsync(string normalizedAuthName, int organizationid, string productid, bool denyauthorization)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(organizationid);
             await client.CloseAsync();
@@ -429,7 +429,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> AddUpdateViewAuthorizationAsync(string normalizedAuthName, int organizationid, string productid, bool denyauthorization)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var org = await client.GetEntityAsync<IntwentyOrganization>(organizationid);
             await client.CloseAsync();
@@ -449,7 +449,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> RemoveAuthorizationAsync(int organizationid, int authorizationId)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var existing_auths = await client.GetEntitiesAsync<IntwentyAuthorization>();
             await client.CloseAsync();
@@ -477,7 +477,7 @@ namespace Intwenty.Areas.Identity.Data
         private async Task<IdentityResult> AddUpdateAuthorizationAsync(IntwentyAuthorization authorization)
         {
            
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var productauths = await client.GetEntitiesAsync<IntwentyProductAuthorizationItem>();
             await client.CloseAsync();

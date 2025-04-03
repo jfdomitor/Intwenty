@@ -41,7 +41,7 @@ namespace Intwenty.Areas.Identity.Data
             if (string.IsNullOrEmpty(item.ProductId))
                 item.ProductId = Settings.ProductId;
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.InsertEntityAsync(item);
             await client.CloseAsync();
@@ -54,7 +54,7 @@ namespace Intwenty.Areas.Identity.Data
         {
             IAMCache.Remove(RolesCacheKey);
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.DeleteEntityAsync(item);
             await client.CloseAsync();
@@ -68,7 +68,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IntwentyProductAuthorizationItem> FindByIdAsync(string itemid, CancellationToken cancellationToken)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var roles = await client.GetEntitiesAsync<IntwentyProductAuthorizationItem>();
             var role = roles.Find(p => p.Id == itemid && p.ProductId == Settings.ProductId);
@@ -78,7 +78,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IntwentyProductAuthorizationItem> FindByNameAsync(string normalizedName, CancellationToken cancellationToken)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var roles = await client.GetEntitiesAsync<IntwentyProductAuthorizationItem>();
             var role = roles.Find(p => p.NormalizedName == normalizedName && p.ProductId == Settings.ProductId);
@@ -126,7 +126,7 @@ namespace Intwenty.Areas.Identity.Data
 
             IAMCache.Remove(RolesCacheKey);
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.UpdateEntityAsync(item);
             await client.CloseAsync();

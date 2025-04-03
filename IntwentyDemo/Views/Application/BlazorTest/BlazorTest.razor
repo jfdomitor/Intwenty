@@ -70,7 +70,7 @@
 
     private void Test()
     {
-        var client = new Connection(Settings.Value.DefaultConnectionDBMS, Settings.Value.DefaultConnection);
+        var client = new DbConnection(Settings.Value.DefaultConnectionDBMS, Settings.Value.DefaultConnection);
         client.Open();
         apps = client.GetEntities<InformationStatus>();
         client.Close();

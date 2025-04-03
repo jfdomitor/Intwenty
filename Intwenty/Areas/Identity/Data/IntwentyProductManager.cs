@@ -41,12 +41,12 @@ namespace Intwenty.Areas.Identity.Data
 
         public IDataClient GetIAMDataClient()
         {
-            return new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            return new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
         }
 
         public async Task<IdentityResult> CreateAsync(IntwentyProduct product)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var t = await client.InsertEntityAsync(product);
             await client.CloseAsync();
@@ -55,7 +55,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> UpdateAsync(IntwentyProduct product)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var t = await client.UpdateEntityAsync(product);
             await client.CloseAsync();
@@ -64,7 +64,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> DeleteAsync(IntwentyProduct product)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             await client.DeleteEntityAsync(product);
             await client.CloseAsync();
@@ -75,7 +75,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IntwentyProduct> FindByIdAsync(string productid)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var products = await client.GetEntitiesAsync<IntwentyProduct>();
             var product = products.Find(p => p.Id == productid);
@@ -85,7 +85,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<List<IntwentyProduct>> GetAllAsync()
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var products = await client.GetEntitiesAsync<IntwentyProduct>();
             await client.CloseAsync();
@@ -104,7 +104,7 @@ namespace Intwenty.Areas.Identity.Data
 
             item.NormalizedName = item.Name.ToUpper();
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var t = await client.InsertEntityAsync(item);
             await client.CloseAsync();
@@ -115,7 +115,7 @@ namespace Intwenty.Areas.Identity.Data
         {
           
 
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var entity = await client.GetEntityAsync<IntwentyProductAuthorizationItem>(id);
             await client.CloseAsync();
@@ -131,7 +131,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<IdentityResult> DeleteAuthorizationItemAsync(IntwentyProductAuthorizationItem item)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var t = await client.DeleteEntityAsync(item);
             await client.CloseAsync();
@@ -142,7 +142,7 @@ namespace Intwenty.Areas.Identity.Data
 
         public async Task<List<IntwentyProductAuthorizationItem>> GetAthorizationItemsAsync(string productid)
         {
-            var client = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var client = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             await client.OpenAsync();
             var members = await client.GetEntitiesAsync<IntwentyProductAuthorizationItem>();
             await client.CloseAsync();

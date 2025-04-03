@@ -142,7 +142,7 @@ namespace Intwenty.Seed
         {
             
           
-            var iamclient = new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            var iamclient = new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
             iamclient.Open();
             var current_permissions =  iamclient.GetEntities<IntwentyProductAuthorizationItem>();
 

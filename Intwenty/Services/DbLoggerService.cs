@@ -27,12 +27,12 @@ namespace Intwenty.Services
 
         public IDataClient GetDataClient()
         {
-            return new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
+            return new DataClient.DbConnection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
         }
 
         public IDataClient GetIAMDataClient()
         {
-            return new Connection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
+            return new DataClient.DbConnection(Settings.IAMConnectionDBMS, Settings.IAMConnection);
         }
 
         public async Task LogErrorAsync(string message, int applicationid = 0, string appmetacode = "NONE", string username = "")

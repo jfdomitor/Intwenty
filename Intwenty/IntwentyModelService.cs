@@ -13,6 +13,7 @@ using Intwenty.Interface;
 using Microsoft.AspNetCore.Identity;
 using Intwenty.DataClient;
 using Intwenty.DataClient.Model;
+using Intwenty.DataClient.Reflection;
 using System.Media;
 using System.Security.Claims;
 using Intwenty.Areas.Identity.Models;
@@ -28,7 +29,6 @@ using System.Reflection;
 using Npgsql.Replication.PgOutput;
 using System.Text;
 using System.Text.Json;
-using Intwenty.DataClient.Reflection;
 
 
 namespace Intwenty
@@ -71,7 +71,7 @@ namespace Intwenty
                     CurrentCulture = Settings.LocalizationDefaultCulture;
             }
             IntwentyModel.EnsureModel(Model, CurrentCulture);
-            Client = new Connection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
+            Client = new DbConnection(Settings.DefaultConnectionDBMS, Settings.DefaultConnection);
             DataTypes = Client.GetDbTypeMap();
            
 
