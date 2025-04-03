@@ -1,4 +1,4 @@
-![alt text](https://github.com/Domitor/Intwenty/blob/master/IntwentyDemo/wwwroot/images/intwenty_loggo_small.png)
+![alt text](https://github.com/jfdomitor/Intwenty/blob/master/IntwentyDemo/wwwroot/images/intwenty_loggo_small.png)
 
 
 # Intwenty
