@@ -2,32 +2,16 @@
 
 
 # Intwenty
-Is a meta data driven Template that simplifies developing CMS, Blog Engines and other systems. Intwenty is built on Vue.js and Net.
+Is a .net core template that can give you a rapid start for any .net project.
 
-- It lets you create meta models that describes UI and data.
-- Models are stored as data instead of strongly typed objects.
-- It uses the model to create the database, render UI and make you happier.
-- Applications (models) are easily localized and may be defined either programaticly or visually with included designers.
+- It let's you describe views and data as json. Se thee file intwenty.json
+- It let's you create small applications without any strongly typed objects
+- Includes barea.js which simplifies java script applications and SPA:s
 - Implements and extends Asp.Net Core Identity. Intwenty adds organization and product management.
-- Has built in support for tenant isolation
 - Uses Intwenty.DataClient (Instead of entity framework) a small but fast Db connection library with ORM functions and JSON support
-- The Nuget version is an RCL Package (Razor Class Library) that includes both UI and Controllers to get you up and running fast.
-- Is constantly improved (and changing)
-
- 
-# How to ?
-
-| Task |
-| ------------- |
-| <a href="https://github.com/Domitor/Intwenty/wiki/How-to-get-started">Quick start</a> |  
-| <a href="https://github.com/Domitor/Intwenty/wiki/Intwenty-Settings">Configure intwenty (Settings)</a> |  
-| <a href="https://github.com/Domitor/Intwenty/wiki/Application-startup">Configure intwenty (Application Startup)</a> | 
-| <a href="https://github.com/Domitor/Intwenty/wiki/The-Intwenty-DataService">The Intwenty DataService</a> |
-| <a href="https://github.com/Domitor/Intwenty/wiki/The-Intwenty-ModelService">The Intwenty ModelService</a> |
+- The Nuget version is an RCL Package (Razor Class Library) that includes both UI and generic functions.
 
 
-
- 
 # Intentions
 1. Boost productivity
 2. To be lightweight
@@ -41,9 +25,6 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 # Frontend Dependencies
 - bootstrap 5.2.0
 - barea.js
-- Net 8
-- Swashbuckle
-- bootstrap 5.2
 
 # Works with the following databases
 - MS Sql Server
@@ -52,14 +33,12 @@ Is a meta data driven Template that simplifies developing CMS, Blog Engines and 
 - PostgreSQL
 - SQLite
 
-
-# How to get started
-<a href="https://github.com/Domitor/Intwenty/wiki">Consult the Wiki</a>
-
-# How to get Intwenty
+# How to use it
 - Fork this Repository.
 - Download the latest release on github.
-- Use the nuget package.
+
+
+
 
 
 
